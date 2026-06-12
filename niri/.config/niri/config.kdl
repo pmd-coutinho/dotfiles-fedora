@@ -24,28 +24,26 @@ input {
 // Matched by "manufacturer model serial" (niri msg outputs), not by
 // connector name — the NVIDIA/Intel drivers assign different connector
 // names, so names like DP-3 are not stable across driver changes.
-// Laptop is the main display, centered below the two externals.
-// Huawei is bottom-aligned with the Gigabyte (y=360) so the cursor can
-// cross every shared edge.
+// Note: the Huawei's EDID serial is literally 13 spaces — keep them.
+// Layout: Gigabyte and Huawei top-aligned; laptop directly below Huawei.
 
 // Gigabyte M28U — top-left. 4K@144 works via DSC on the NVIDIA driver.
 output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763" {
     mode "3840x2160@144"
     scale 1.5
     position x=0 y=0
-    variable-refresh-rate on-demand=true
 }
 
-// Huawei AD80HW — top-right (bottom-aligned with the Gigabyte)
+// Huawei AD80HW — top-right, top-aligned with the Gigabyte
 output "Huawei Technologies Co., Inc. HUAWEI AD80HW              " {
     mode "1920x1080@60"
-    position x=2560 y=360
+    position x=2560 y=0
 }
 
-// Laptop panel — main, bottom-center
+// Laptop panel — main, directly below the Huawei
 output "Chimei Innolux Corporation 0x1621 Unknown" {
     mode "1920x1200@144"
-    position x=1280 y=1440
+    position x=2560 y=1080
 }
 
 // ── Layout ────────────────────────────────────────────────────────────

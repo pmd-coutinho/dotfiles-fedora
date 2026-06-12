@@ -15,7 +15,6 @@
         "modules-left": ["niri/workspaces", "niri/window"],
         "modules-center": ["clock"],
         "modules-right": [
-            "mpris",
             "tray",
             "cpu",
             "memory",
@@ -125,14 +124,6 @@
             "on-click": "swaync-client -t -sw",
             "on-click-right": "swaync-client -d -sw",
             "escape": true
-        },
-
-        "mpris": {
-            "format": "{status_icon} {dynamic}",
-            "dynamic-order": ["title", "artist"],
-            "dynamic-len": 32,
-            "status-icons": { "playing": "", "paused": "", "stopped": "" },
-            "tooltip-format": "{player}: {title} — {artist}"
         }
     },
     {
@@ -147,7 +138,7 @@
 
         "modules-left": ["niri/workspaces", "niri/window"],
         "modules-center": ["clock"],
-        "modules-right": ["mpris", "pulseaudio", "bluetooth", "custom/notification"],
+        "modules-right": ["pulseaudio", "bluetooth", "custom/notification"],
 
         "niri/workspaces": {
             "format": "{icon}",
@@ -162,14 +153,6 @@
 
         "clock": {
             "format": "{:%a %d %b  %H:%M}"
-        },
-
-        "mpris": {
-            "format": "{status_icon} {dynamic}",
-            "dynamic-order": ["title", "artist"],
-            "dynamic-len": 32,
-            "status-icons": { "playing": "", "paused": "", "stopped": "" },
-            "tooltip-format": "{player}: {title} — {artist}"
         },
 
         "pulseaudio": {
