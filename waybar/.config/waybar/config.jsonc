@@ -1,9 +1,7 @@
 // Waybar — Catppuccin Mocha "floating islands"
-// Main bar (laptop, eDP-1) + slim secondary bar (externals) below.
+// One full bar on every output.
 [
     {
-        "name": "main",
-        "output": ["eDP-1"],
         "layer": "top",
         "position": "top",
         "height": 38,
@@ -103,73 +101,6 @@
             "format-icons": ["󰁺", "󰁻", "󰁽", "󰁿", "󰂁", "󰁹"],
             "states": { "warning": 25, "critical": 10 },
             "interval": 30
-        },
-
-        "custom/notification": {
-            "tooltip": false,
-            "format": "{icon}",
-            "format-icons": {
-                "notification": "󱅫",
-                "none": "󰂚",
-                "dnd-notification": "󰂛",
-                "dnd-none": "󰂛",
-                "inhibited-notification": "󱅫",
-                "inhibited-none": "󰂚",
-                "dnd-inhibited-notification": "󰂛",
-                "dnd-inhibited-none": "󰂛"
-            },
-            "return-type": "json",
-            "exec-if": "which swaync-client",
-            "exec": "swaync-client -swb",
-            "on-click": "swaync-client -t -sw",
-            "on-click-right": "swaync-client -d -sw",
-            "escape": true
-        }
-    },
-    {
-        "name": "secondary",
-        "output": ["!eDP-1", "*"],
-        "layer": "top",
-        "position": "top",
-        "height": 34,
-        "margin-top": 6,
-        "margin-left": 10,
-        "margin-right": 10,
-
-        "modules-left": ["niri/workspaces", "niri/window"],
-        "modules-center": ["clock"],
-        "modules-right": ["pulseaudio", "bluetooth", "custom/notification"],
-
-        "niri/workspaces": {
-            "format": "{icon}",
-            "format-icons": { "active": "", "default": "" }
-        },
-
-        "niri/window": {
-            "format": "{title}",
-            "max-length": 60,
-            "separate-outputs": true
-        },
-
-        "clock": {
-            "format": "{:%a %d %b  %H:%M}"
-        },
-
-        "pulseaudio": {
-            "format": "{icon}  {volume}%",
-            "format-muted": "  muted",
-            "format-icons": { "headphone": "", "default": ["", "", ""] },
-            "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-            "on-click-right": "pavucontrol",
-            "scroll-step": 5
-        },
-
-        "bluetooth": {
-            "format": "",
-            "format-connected": " {num_connections}",
-            "format-disabled": "",
-            "tooltip-format-connected": "{device_enumerate}",
-            "on-click": "blueman-manager"
         },
 
         "custom/notification": {

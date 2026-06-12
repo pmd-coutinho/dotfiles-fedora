@@ -25,25 +25,26 @@ input {
 // connector name — the NVIDIA/Intel drivers assign different connector
 // names, so names like DP-3 are not stable across driver changes.
 // Note: the Huawei's EDID serial is literally 13 spaces — keep them.
-// Layout: Gigabyte and Huawei top-aligned; laptop directly below Huawei.
+// Layout: Huawei top-left, laptop directly below it, Gigabyte on the
+// right (top-aligned with the Huawei).
 
-// Gigabyte M28U — top-left. 4K@144 works via DSC on the NVIDIA driver.
-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763" {
-    mode "3840x2160@144"
-    scale 1.5
-    position x=0 y=0
-}
-
-// Huawei AD80HW — top-right, top-aligned with the Gigabyte
+// Huawei AD80HW — top-left
 output "Huawei Technologies Co., Inc. HUAWEI AD80HW              " {
     mode "1920x1080@60"
-    position x=2560 y=0
+    position x=0 y=0
 }
 
 // Laptop panel — main, directly below the Huawei
 output "Chimei Innolux Corporation 0x1621 Unknown" {
     mode "1920x1200@144"
-    position x=2560 y=1080
+    position x=0 y=1080
+}
+
+// Gigabyte M28U — right. 4K@144 works via DSC on the NVIDIA driver.
+output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763" {
+    mode "3840x2160@144"
+    scale 1.5
+    position x=1920 y=0
 }
 
 // ── Layout ────────────────────────────────────────────────────────────
