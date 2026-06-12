@@ -28,18 +28,18 @@ input {
 // Huawei is bottom-aligned with the Gigabyte (y=360) so the cursor can
 // cross every shared edge.
 
-// Huawei AD80HW — top-left
-output "Huawei Technologies Co., Inc. HUAWEI AD80HW" {
-    mode "1920x1080@60"
-    position x=0 y=360
-}
-
-// Gigabyte M28U — top-right. 4K@144 works via DSC on the NVIDIA driver.
+// Gigabyte M28U — top-left. 4K@144 works via DSC on the NVIDIA driver.
 output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763" {
     mode "3840x2160@144"
     scale 1.5
-    position x=1920 y=0
+    position x=0 y=0
     variable-refresh-rate on-demand=true
+}
+
+// Huawei AD80HW — top-right (bottom-aligned with the Gigabyte)
+output "Huawei Technologies Co., Inc. HUAWEI AD80HW              " {
+    mode "1920x1080@60"
+    position x=2560 y=360
 }
 
 // Laptop panel — main, bottom-center

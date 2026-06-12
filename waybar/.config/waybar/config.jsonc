@@ -15,6 +15,7 @@
         "modules-left": ["niri/workspaces", "niri/window"],
         "modules-center": ["clock"],
         "modules-right": [
+            "mpris",
             "tray",
             "cpu",
             "memory",
@@ -124,11 +125,19 @@
             "on-click": "swaync-client -t -sw",
             "on-click-right": "swaync-client -d -sw",
             "escape": true
+        },
+
+        "mpris": {
+            "format": "{status_icon} {dynamic}",
+            "dynamic-order": ["title", "artist"],
+            "dynamic-len": 32,
+            "status-icons": { "playing": "", "paused": "", "stopped": "" },
+            "tooltip-format": "{player}: {title} — {artist}"
         }
     },
     {
         "name": "secondary",
-        "output": ["!eDP-1"],
+        "output": ["!eDP-1", "*"],
         "layer": "top",
         "position": "top",
         "height": 34,
@@ -138,7 +147,7 @@
 
         "modules-left": ["niri/workspaces", "niri/window"],
         "modules-center": ["clock"],
-        "modules-right": [],
+        "modules-right": ["mpris", "pulseaudio", "bluetooth", "custom/notification"],
 
         "niri/workspaces": {
             "format": "{icon}",
@@ -153,6 +162,52 @@
 
         "clock": {
             "format": "{:%a %d %b  %H:%M}"
+        },
+
+        "mpris": {
+            "format": "{status_icon} {dynamic}",
+            "dynamic-order": ["title", "artist"],
+            "dynamic-len": 32,
+            "status-icons": { "playing": "", "paused": "", "stopped": "" },
+            "tooltip-format": "{player}: {title} — {artist}"
+        },
+
+        "pulseaudio": {
+            "format": "{icon}  {volume}%",
+            "format-muted": "  muted",
+            "format-icons": { "headphone": "", "default": ["", "", ""] },
+            "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+            "on-click-right": "pavucontrol",
+            "scroll-step": 5
+        },
+
+        "bluetooth": {
+            "format": "",
+            "format-connected": " {num_connections}",
+            "format-disabled": "",
+            "tooltip-format-connected": "{device_enumerate}",
+            "on-click": "blueman-manager"
+        },
+
+        "custom/notification": {
+            "tooltip": false,
+            "format": "{icon}",
+            "format-icons": {
+                "notification": "󱅫",
+                "none": "󰂚",
+                "dnd-notification": "󰂛",
+                "dnd-none": "󰂛",
+                "inhibited-notification": "󱅫",
+                "inhibited-none": "󰂚",
+                "dnd-inhibited-notification": "󰂛",
+                "dnd-inhibited-none": "󰂛"
+            },
+            "return-type": "json",
+            "exec-if": "which swaync-client",
+            "exec": "swaync-client -swb",
+            "on-click": "swaync-client -t -sw",
+            "on-click-right": "swaync-client -d -sw",
+            "escape": true
         }
     }
 ]
