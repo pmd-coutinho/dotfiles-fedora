@@ -1,0 +1,162 @@
+/* Waybar — Catppuccin Mocha "floating islands"
+ * Three pill groups float over the wallpaper; 12px radius matches the
+ * niri window corners. Mauve is the only loud accent. */
+
+@define-color base     #1e1e2e;
+@define-color mantle   #181825;
+@define-color crust    #11111b;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color overlay0 #6c7086;
+@define-color text     #cdd6f4;
+@define-color subtext  #a6adc8;
+@define-color mauve    #cba6f7;
+@define-color lavender #b4befe;
+@define-color blue     #89b4fa;
+@define-color teal     #94e2d5;
+@define-color green    #a6e3a1;
+@define-color yellow   #f9e2af;
+@define-color peach    #fab387;
+@define-color red      #f38ba8;
+
+* {
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @text;
+}
+
+/* ── The three islands ── */
+.modules-left,
+.modules-center,
+.modules-right {
+    background: alpha(@base, 0.92);
+    border: 1px solid alpha(@surface0, 0.9);
+    border-radius: 12px;
+    padding: 0 6px;
+    box-shadow: 0 4px 12px alpha(@crust, 0.5);
+}
+
+/* ── Workspaces ── */
+#workspaces {
+    padding: 0;
+}
+
+#workspaces button {
+    padding: 0 7px;
+    margin: 5px 2px;
+    border-radius: 8px;
+    color: @overlay0;
+    background: transparent;
+    transition: all 0.2s cubic-bezier(0.55, 0, 0.28, 1.68);
+}
+
+#workspaces button.active {
+    color: @crust;
+    background: @mauve;
+    padding: 0 14px;
+}
+
+#workspaces button.urgent {
+    color: @crust;
+    background: @red;
+}
+
+#workspaces button:hover {
+    color: @text;
+    background: @surface0;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+/* ── Window title ── */
+#window {
+    padding: 0 12px;
+    color: @subtext;
+    font-style: italic;
+}
+
+window#waybar.empty #window {
+    background: transparent;
+}
+
+/* ── Clock ── */
+#clock {
+    padding: 0 16px;
+    color: @lavender;
+    font-weight: 700;
+}
+
+/* ── Right island modules ── */
+#tray,
+#cpu,
+#memory,
+#pulseaudio,
+#bluetooth,
+#network,
+#battery,
+#custom-notification {
+    padding: 0 11px;
+    color: @subtext;
+}
+
+#tray {
+    padding-right: 6px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#cpu.warning,    #memory.warning  { color: @peach; }
+#cpu.critical,   #memory.critical { color: @red; }
+
+#pulseaudio        { color: @teal; }
+#pulseaudio.muted  { color: @overlay0; }
+
+#bluetooth           { color: @blue; }
+#bluetooth.disabled  { color: @overlay0; }
+
+#network              { color: @green; }
+#network.disconnected { color: @overlay0; }
+
+#battery          { color: @green; }
+#battery.warning  { color: @peach; }
+
+#battery.critical:not(.charging) {
+    color: @red;
+    animation: battery-blink 1s steps(4) infinite alternate;
+}
+
+@keyframes battery-blink {
+    to { color: @crust; background: @red; border-radius: 8px; }
+}
+
+#battery.charging { color: @yellow; }
+
+#custom-notification {
+    color: @mauve;
+    padding-right: 14px;
+    font-size: 14px;
+}
+
+/* dividers between right-island modules */
+#cpu, #pulseaudio, #battery {
+    border-left: 1px solid alpha(@surface0, 0.8);
+}
+
+tooltip {
+    background: @mantle;
+    border: 1px solid @surface0;
+    border-radius: 12px;
+}
+
+tooltip label {
+    color: @text;
+    padding: 4px;
+}
