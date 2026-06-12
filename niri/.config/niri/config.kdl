@@ -21,33 +21,36 @@ input {
 }
 
 // ── Monitors ──────────────────────────────────────────────────────────
+// Matched by "manufacturer model serial" (niri msg outputs), not by
+// connector name — the NVIDIA/Intel drivers assign different connector
+// names, so names like DP-3 are not stable across driver changes.
 // Laptop is the main display, centered below the two externals.
 // Huawei is bottom-aligned with the Gigabyte (y=360) so the cursor can
 // cross every shared edge.
 
 // Huawei AD80HW — top-left
-output "DP-2" {
+output "Huawei Technologies Co., Inc. HUAWEI AD80HW" {
     mode "1920x1080@60"
     position x=0 y=360
 }
 
-// Gigabyte M28U — top-right. 144 needs DSC over DP; niri falls back
-// automatically if only 120 is exposed.
-output "DP-3" {
+// Gigabyte M28U — top-right. 4K@144 works via DSC on the NVIDIA driver.
+output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763" {
     mode "3840x2160@144"
     scale 1.5
     position x=1920 y=0
+    variable-refresh-rate on-demand=true
 }
 
 // Laptop panel — main, bottom-center
-output "eDP-1" {
+output "Chimei Innolux Corporation 0x1621 Unknown" {
     mode "1920x1200@144"
     position x=1280 y=1440
 }
 
 // ── Layout ────────────────────────────────────────────────────────────
 layout {
-    gaps 12
+    gaps 8
     center-focused-column "never"
 
     preset-column-widths {
@@ -105,6 +108,8 @@ hotkey-overlay {
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 animations {
+    // Below 1.0 = faster than default.
+    slowdown 0.6
 }
 
 // ── Window rules ──────────────────────────────────────────────────────

@@ -128,7 +128,7 @@
     },
     {
         "name": "secondary",
-        "output": ["DP-2", "DP-3"],
+        "output": ["!eDP-1"],
         "layer": "top",
         "position": "top",
         "height": 34,
