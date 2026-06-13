@@ -14,17 +14,11 @@ step "Installing walker + elephant"
 dnf -y install walker elephant || { warn "walker/elephant install failed"; exit 1; }
 
 # ── Bluetooth ────────────────────────────────────────────────────────
-# The Intel BE200 controller needs bluetooth.service running; it was
-# enabled but dead, so waybar reported "no controller found".
-step "Enabling + starting bluetooth.service"
-systemctl enable --now bluetooth.service
-sleep 2
-if bluetoothctl list 2>/dev/null | grep -q Controller; then
-    echo "Controller detected:"
-    bluetoothctl list
-else
-    warn "Still no controller — check 'journalctl -u bluetooth -b' (may need firmware/reboot)"
-fi
+# NOTE: bluetooth lives in the kernel-modules package, which was missing
+# from the half-installed 7.0.12 kernel. That fix is in
+# fix-kernel-modules.sh — run that, not a bare `systemctl start` here
+# (the controller doesn't exist until the modules are installed).
+warn "Bluetooth is fixed by fix-kernel-modules.sh — see that script."
 
 echo
-echo -e "\033[1;32mDone. Tell Claude — it'll enable the elephant user service, stow walker, and restart the bars.\033[0m"
+echo -e "\033[1;32mWalker installed. Tell Claude — it'll enable the elephant user service, stow walker, and restart the bars.\033[0m"
