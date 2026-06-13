@@ -92,7 +92,6 @@ spawn-at-startup "swaync"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpapers/cat-waves.png -m fill"
 spawn-sh-at-startup "swayidle -w timeout 600 'pgrep -x hyprlock || hyprlock' timeout 900 'niri msg action power-off-monitors' before-sleep 'pgrep -x hyprlock || hyprlock'"
 spawn-at-startup "/usr/libexec/mate-polkit/polkit-mate-authentication-agent-1"
-spawn-sh-at-startup "wl-paste --watch cliphist store"
 spawn-at-startup "nm-applet"
 spawn-at-startup "blueman-applet"
 // walker launcher daemon (elephant backend runs as a user service)
@@ -134,7 +133,7 @@ binds {
     Mod+D hotkey-overlay-title="Run an Application: walker" { spawn "walker"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
     Mod+Shift+N hotkey-overlay-title="Notification Center: swaync" { spawn "swaync-client" "-t"; }
-    Mod+Shift+S hotkey-overlay-title="Clipboard History" { spawn-sh "cliphist list | walker --dmenu | cliphist decode | wl-copy"; }
+    Mod+Shift+S hotkey-overlay-title="Clipboard History (text + images)" { spawn "walker" "-m" "clipboard"; }
 
     Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 
