@@ -5,10 +5,13 @@ theme = "catppuccin"
 # Centered floating window (not full-screen anchored).
 layer = "overlay"
 
+# Installed providers (elephant listproviders): desktopapplications,
+# websearch, runner, clipboard, symbols, unicode, nirisessions, todo.
+# calc lives in a separate elephant-calc package — add it here once
+# installed.
 [providers]
-default = ["desktopapplications", "calc", "websearch"]
+default = ["desktopapplications", "websearch", "runner"]
 empty = ["desktopapplications"]
 
 [placeholders]
-input = "Search…"
-list = "No results"
+"default" = { input = "Search…", list = "No results" }
