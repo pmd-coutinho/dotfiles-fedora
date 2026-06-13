@@ -5,13 +5,33 @@ theme = "catppuccin"
 # Centered floating window (not full-screen anchored).
 layer = "overlay"
 
-# Installed providers (elephant listproviders): desktopapplications,
-# websearch, runner, clipboard, symbols, unicode, nirisessions, todo.
-# calc lives in a separate elephant-calc package — add it here once
-# installed.
+# calc computes inline as you type in the default set; websearch falls
+# through when nothing else matches. Dedicated providers (files, symbols)
+# are reached via prefixes below, or the Mod+E / Mod+Slash niri binds.
 [providers]
-default = ["desktopapplications", "websearch", "runner"]
+default = ["desktopapplications", "calc", "runner", "websearch"]
 empty = ["desktopapplications"]
+
+# Prefix → exclusive provider (type the prefix as the first char)
+[[providers.prefixes]]
+prefix = "/"
+provider = "files"
+
+[[providers.prefixes]]
+prefix = "@"
+provider = "websearch"
+
+[[providers.prefixes]]
+prefix = ":"
+provider = "symbols"
+
+[[providers.prefixes]]
+prefix = ";"
+provider = "providerlist"
+
+[[providers.prefixes]]
+prefix = "="
+provider = "calc"
 
 [placeholders]
 "default" = { input = "Search…", list = "No results" }

@@ -19,6 +19,7 @@
             "pulseaudio",
             "bluetooth",
             "network",
+            "custom/powerprofile",
             "battery",
             "custom/notification"
         ],
@@ -108,6 +109,17 @@
             "format-icons": ["󰁺", "󰁻", "󰁽", "󰁿", "󰂁", "󰁹"],
             "states": { "warning": 25, "critical": 10 },
             "interval": 30
+        },
+
+        "custom/powerprofile": {
+            "format": "{}",
+            "interval": 5,
+            "exec": "p=$(busctl --system get-property net.hadess.PowerProfiles /net/hadess/PowerProfiles net.hadess.PowerProfiles ActiveProfile 2>/dev/null | sed 's/.*\"\\(.*\\)\".*/\\1/'); case \"$p\" in performance) echo '󱐋' ;; balanced) echo '󰾅' ;; power-saver) echo '󰌪' ;; *) echo '󰈐' ;; esac",
+            "on-click": "busctl --system set-property net.hadess.PowerProfiles /net/hadess/PowerProfiles net.hadess.PowerProfiles ActiveProfile s performance",
+            "on-click-middle": "busctl --system set-property net.hadess.PowerProfiles /net/hadess/PowerProfiles net.hadess.PowerProfiles ActiveProfile s balanced",
+            "on-click-right": "busctl --system set-property net.hadess.PowerProfiles /net/hadess/PowerProfiles net.hadess.PowerProfiles ActiveProfile s power-saver",
+            "tooltip": true,
+            "tooltip-format": "power profile (L: performance · M: balanced · R: saver)"
         },
 
         "custom/notification": {

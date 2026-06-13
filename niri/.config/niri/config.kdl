@@ -134,6 +134,8 @@ binds {
     Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
     Mod+Shift+N hotkey-overlay-title="Notification Center: swaync" { spawn "swaync-client" "-t"; }
     Mod+Shift+S hotkey-overlay-title="Clipboard History (text + images)" { spawn "walker" "-m" "clipboard"; }
+    Mod+E hotkey-overlay-title="Emoji / symbol picker" { spawn "walker" "-m" "symbols"; }
+    Mod+Slash hotkey-overlay-title="File search" { spawn "walker" "-m" "files"; }
 
     Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 
@@ -271,9 +273,14 @@ binds {
 
     Mod+W { toggle-column-tabbed-display; }
 
-    Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }
+    // Screenshot + annotate with satty. satty's config.toml handles
+    // save dir, copy-to-clipboard, and filename.
+    Print hotkey-overlay-title="Screenshot region → annotate (satty)" { spawn-sh "grim -g \"$(slurp -d)\" - | satty -f -"; }
+    Shift+Print hotkey-overlay-title="Screenshot whole desktop → annotate (satty)" { spawn-sh "grim - | satty -f -"; }
+    // Quick grabs without annotation (niri native: select + copy)
+    Mod+Print hotkey-overlay-title="Quick screenshot (region → clipboard)" { screenshot; }
+    Alt+Print hotkey-overlay-title="Quick screenshot (window)" { screenshot-window; }
+    Ctrl+Print hotkey-overlay-title="Quick screenshot (screen)" { screenshot-screen; }
 
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
