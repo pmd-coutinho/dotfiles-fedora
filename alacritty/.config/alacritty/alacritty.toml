@@ -4,7 +4,7 @@
 size = 14.0
 
 [font.normal]
-family = "JetBrainsMono Nerd Font"
+family = "CaskaydiaCove Nerd Font"
 
 [window]
 padding = { x = 8, y = 8 }

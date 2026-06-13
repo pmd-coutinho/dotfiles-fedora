@@ -1,0 +1,14 @@
+# Walker — Catppuccin Mocha
+# Backend providers come from the elephant daemon (systemd --user service).
+theme = "catppuccin"
+
+# Centered floating window (not full-screen anchored).
+layer = "overlay"
+
+[providers]
+default = ["desktopapplications", "calc", "websearch"]
+empty = ["desktopapplications"]
+
+[placeholders]
+input = "Search…"
+list = "No results"

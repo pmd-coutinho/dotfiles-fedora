@@ -95,6 +95,8 @@ spawn-at-startup "/usr/libexec/mate-polkit/polkit-mate-authentication-agent-1"
 spawn-sh-at-startup "wl-paste --watch cliphist store"
 spawn-at-startup "nm-applet"
 spawn-at-startup "blueman-applet"
+// walker launcher daemon (elephant backend runs as a user service)
+spawn-at-startup "walker" "--gapplication-service"
 
 environment {
     QT_QPA_PLATFORM "wayland"
@@ -129,10 +131,10 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     Mod+T hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
-    Mod+D hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
+    Mod+D hotkey-overlay-title="Run an Application: walker" { spawn "walker"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
     Mod+Shift+N hotkey-overlay-title="Notification Center: swaync" { spawn "swaync-client" "-t"; }
-    Mod+Shift+S hotkey-overlay-title="Clipboard History" { spawn-sh "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"; }
+    Mod+Shift+S hotkey-overlay-title="Clipboard History" { spawn-sh "cliphist list | walker --dmenu | cliphist decode | wl-copy"; }
 
     Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 
