@@ -27,8 +27,17 @@
         "niri/workspaces": {
             "format": "{icon}",
             "format-icons": {
-                "active": "",
-                "default": ""
+                "1-slack": "slack",
+                "2-ayugram": "ayugram",
+                "3-firefox": "firefox",
+                "4-laptop": "4",
+                "5-term": "term",
+                "6-code": "code",
+                "7-rider": "rider",
+                "8-giga": "8",
+                "9-vivaldi": "vivaldi",
+                "10-obsidian": "obsidian",
+                "default": "·"
             }
         },
 
