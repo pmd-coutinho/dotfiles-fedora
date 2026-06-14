@@ -31,6 +31,7 @@ sudo dnf -y install \
   akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
+  bat ripgrep eza btop \
   starship atuin zoxide stow tmux \
   SwayNotificationCenter swaybg swayidle hyprlock \
   walker elephant elephant-calc elephant-files elephant-clipboard \
@@ -74,8 +75,8 @@ mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
 step "Stowing dotfiles"
 cd "$DOTS"
 # back up any real files stow would collide with
-for pkg in alacritty atuin fuzzel ghostty gtk hyprlock niri satty starship \
-           swaync tmux walker waybar zsh; do
+for pkg in alacritty atuin btop fuzzel ghostty gtk hyprlock lazygit niri satty \
+           starship swaync tmux walker waybar zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
@@ -111,6 +112,19 @@ if ! grep -q 'xe.force_probe' /etc/kernel/cmdline 2>/dev/null; then
     step "Applying Intel iGPU fix (xe.force_probe)"
     sudo bash "$DOTS/fix-igpu.sh"
 fi
+
+# ── 8. Applications (Round 3): repos, flatpaks, COPR CLI tools ───────────
+step "Apps + CLI tools (VS Code, Vivaldi, OpenVPN3, Slack/Obsidian/AyuGram, lazygit/lazydocker)"
+sudo bash "$DOTS/setup-round3.sh"
+
+step "atuin: import existing shell history"
+atuin import auto 2>/dev/null || true
+
+step "JetBrains Toolbox (then open it and install Rider)"
+bash "$DOTS/install-toolbox.sh" || warn "run install-toolbox.sh manually later"
+
+echo "  .NET SDK: run 'mise use -g dotnet@9' (or the version your solutions target)."
+echo "  Note: GUI-launched Rider won't inherit mise PATH — set its SDK path or DOTNET_ROOT."
 
 echo
 ok "Bootstrap complete. REBOOT to land on the CachyOS kernel + greetd + zswap."

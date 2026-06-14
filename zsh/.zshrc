@@ -41,20 +41,50 @@ bindkey '^[[H'    beginning-of-line   # home
 bindkey '^[[F'    end-of-line         # end
 
 # ── Aliases ───────────────────────────────────────────────────────────
-alias ll='ls -lah --color=auto'
-alias ls='ls --color=auto'
+# eza in place of ls
+if command -v eza >/dev/null; then
+    alias ls='eza --group-directories-first --icons=auto'
+    alias ll='eza -lah --group-directories-first --icons=auto --git'
+    alias la='eza -a --group-directories-first --icons=auto'
+    alias lt='eza --tree --level=2 --icons=auto'
+else
+    alias ll='ls -lah --color=auto'
+    alias ls='ls --color=auto'
+fi
+# bat in place of cat (auto-passes-through when piped, so scripts are safe;
+# raw cat is still available as \cat)
+command -v bat >/dev/null && alias cat='bat --style=plain --paging=never'
 alias grep='grep --color=auto'
 alias ip='ip -color=auto'
+alias lg='lazygit'
+alias lzd='lazydocker'
+
+# ── Tool env ──────────────────────────────────────────────────────────
+export BAT_THEME="Catppuccin Mocha"
+# lazydocker → podman's docker-compatible socket
+export DOCKER_HOST="unix://${XDG_RUNTIME_DIR}/podman/podman.sock"
+# fzf: fd as the engine + Catppuccin Mocha colors
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+--color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+--color=selected-bg:#45475a --height=40% --layout=reverse --border=rounded"
 
 # ── PATH ──────────────────────────────────────────────────────────────
 path=(~/.local/bin $path)
 export PATH
 
-# ── Tool hooks (order matters: starship last) ─────────────────────────
+# ── Tool hooks (order matters) ────────────────────────────────────────
 command -v mise    >/dev/null && eval "$(mise activate zsh)"
-command -v zoxide  >/dev/null && eval "$(zoxide init zsh)"
+command -v zoxide  >/dev/null && eval "$(zoxide init zsh --cmd cd)"   # cd = zoxide, cdi = interactive
+# fzf keybindings BEFORE atuin so atuin keeps Ctrl-R (fzf gets Ctrl-T / Alt-C)
+[[ -r /usr/share/fzf/shell/key-bindings.zsh ]] && source /usr/share/fzf/shell/key-bindings.zsh
+[[ -r /usr/share/fzf/shell/completion.zsh ]]   && source /usr/share/fzf/shell/completion.zsh
 command -v atuin   >/dev/null && eval "$(atuin init zsh)"
-command -v starship >/dev/null && eval "$(starship init zsh)"
+command -v starship >/dev/null && eval "$(starship init zsh)"  # prompt last
 
 # ── Syntax highlighting (must be sourced last) ────────────────────────
 [[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \

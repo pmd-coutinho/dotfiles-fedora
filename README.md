@@ -31,6 +31,8 @@ on re-run).
 | `bootstrap.sh` | **Start here.** Full ordered rebuild. |
 | `setup-root.sh` | NVIDIA app-profile (VRAM-leak fix), greetd + keyring PAM, gdm→greetd, base services. |
 | `setup-round2.sh` | 32G btrfs swapfile + zswap, power auto-switch udev rule, tuigreet polish, CachyOS kernel + NVIDIA akmod rebuild. |
+| `setup-round3.sh` | Apps: VS Code (MS repo), Vivaldi, OpenVPN3, Slack/Obsidian/AyuGram (Flatpak), lazygit/lazydocker (COPR), bat/ripgrep/eza/btop. |
+| `install-toolbox.sh` | JetBrains Toolbox (user-level) → install Rider from its GUI. |
 | `fix-igpu.sh` | `xe.force_probe=a788` — kernel 7.0+ dropped i915 for this Raptor Lake iGPU; without it the laptop panel + Huawei go dark. |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
 | `*/` | stow packages: niri, waybar, walker, ghostty, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, alacritty. |
@@ -68,6 +70,10 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **CachyOS kernel updates** re-trigger the NVIDIA akmod build; wait for it (`modinfo -F version nvidia -k <kver>`) before rebooting, or boot the Fedora kernel.
 - **Monitors are matched by make/model/serial** in niri (connector names like DP-3 shuffle when the NVIDIA driver loads). The Huawei's EDID serial is literally 13 spaces — keep them in the config string.
 - **Walker file search needs `fd`** (`fd-find`); the emoji/symbol & calc providers are separate `elephant-*` packages.
+- **atuin ↑ history**: if up-arrow only shows the current session, set `filter_mode_shell_up_key_binding = "global"` and run `atuin import auto`.
+- **lazydocker** talks to **podman** via `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` (zshrc) + `systemctl --user enable --now podman.socket`.
+- **Rider + mise .NET**: GUI-launched Rider doesn't inherit mise's shell PATH — point Rider at the mise dotnet SDK path or export `DOTNET_ROOT` where the graphical session sees it. `mise use -g dotnet@9` (not `@latest`, which is currently a .NET 11 preview).
+- **`cd` is zoxide** (`--cmd cd`); `ls`/`ll`/`la`/`lt` are eza; `cat` is bat (raw `\cat` still works). fzf owns Ctrl-T/Alt-C, atuin owns Ctrl-R.
 
 ## TODO
 
