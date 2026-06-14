@@ -76,7 +76,7 @@ step "Stowing dotfiles"
 cd "$DOTS"
 # back up any real files stow would collide with
 for pkg in alacritty atuin btop fuzzel ghostty gtk hyprlock lazygit niri satty \
-           starship swaync tmux walker waybar zsh; do
+           starship swaync systemd tmux walker waybar zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
@@ -97,6 +97,8 @@ step "Enabling services"
 sudo systemctl enable --now tuned bluetooth nvidia-powerd 2>/dev/null || true
 systemctl --user enable --now elephant 2>/dev/null || true
 elephant service enable 2>/dev/null || true
+# auto-rescan elephant when apps are installed/removed (so walker sees them)
+systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 # tmux plugins (non-interactive)
 ~/.tmux/plugins/tpm/bin/install_plugins 2>/dev/null || true
 

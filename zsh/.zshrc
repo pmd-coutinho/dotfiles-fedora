@@ -63,6 +63,9 @@ alias lzd='lazydocker'
 export BAT_THEME="Catppuccin Mocha"
 # lazydocker → podman's docker-compatible socket
 export DOCKER_HOST="unix://${XDG_RUNTIME_DIR}/podman/podman.sock"
+# zoxide must init before atuin/starship/syntax-highlighting for our setup;
+# its doctor flags that ordering but cd works fine — silence the nag.
+export _ZO_DOCTOR=0
 # fzf: fd as the engine + Catppuccin Mocha colors
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
@@ -78,6 +81,10 @@ path=(~/.local/bin $path)
 export PATH
 
 # ── Tool hooks (order matters) ────────────────────────────────────────
+# .NET SDK provided by mise. Static fallback so DOTNET_ROOT exists even
+# outside a mise-managed dir (e.g. terminal-launched Rider); `mise activate`
+# below still overrides it per-project.
+export DOTNET_ROOT="$HOME/.local/share/mise/dotnet-root"
 command -v mise    >/dev/null && eval "$(mise activate zsh)"
 command -v zoxide  >/dev/null && eval "$(zoxide init zsh --cmd cd)"   # cd = zoxide, cdi = interactive
 # fzf keybindings BEFORE atuin so atuin keeps Ctrl-R (fzf gets Ctrl-T / Alt-C)

@@ -71,6 +71,7 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **Monitors are matched by make/model/serial** in niri (connector names like DP-3 shuffle when the NVIDIA driver loads). The Huawei's EDID serial is literally 13 spaces — keep them in the config string.
 - **Walker file search needs `fd`** (`fd-find`); the emoji/symbol & calc providers are separate `elephant-*` packages.
 - **atuin ↑ history**: if up-arrow only shows the current session, set `filter_mode_shell_up_key_binding = "global"` and run `atuin import auto`.
+- **New apps not in walker**: elephant only scans at startup. The `elephant-rescan.path` user unit (in the `systemd/` stow pkg) watches the app dirs and restarts elephant automatically; if it's not enabled, `systemctl --user restart elephant`.
 - **lazydocker** talks to **podman** via `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` (zshrc) + `systemctl --user enable --now podman.socket`.
 - **Rider + mise .NET**: GUI-launched Rider doesn't inherit mise's shell PATH — point Rider at the mise dotnet SDK path or export `DOTNET_ROOT` where the graphical session sees it. `mise use -g dotnet@9` (not `@latest`, which is currently a .NET 11 preview).
 - **`cd` is zoxide** (`--cmd cd`); `ls`/`ll`/`la`/`lt` are eza; `cat` is bat (raw `\cat` still works). fzf owns Ctrl-T/Alt-C, atuin owns Ctrl-R.

@@ -1,0 +1,10 @@
+[Unit]
+Description=Restart elephant so walker picks up new/removed apps
+After=elephant.service
+
+[Service]
+Type=oneshot
+# Brief debounce so a multi-step install (which touches the dir several
+# times) coalesces into a single restart.
+ExecStartPre=/usr/bin/sleep 3
+ExecStart=/usr/bin/systemctl --user restart elephant.service
