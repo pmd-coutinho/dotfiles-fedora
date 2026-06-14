@@ -13,7 +13,7 @@ else
     mkdir -p "$DEST"
     curl -fsSL "$URL" -o /tmp/toolbox.tar.gz
     tar -xzf /tmp/toolbox.tar.gz -C /tmp
-    cp /tmp/jetbrains-toolbox-*/jetbrains-toolbox "$DEST/"
+    cp /tmp/jetbrains-toolbox-*/bin/jetbrains-toolbox "$DEST/"
     echo "Installed to $DEST"
 fi
 echo "Launching Toolbox — in its window, install Rider. It self-registers a .desktop entry."
