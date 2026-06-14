@@ -143,14 +143,16 @@ window-rule {
 }
 
 // ── App → workspace routing ───────────────────────────────────────────
-window-rule { match app-id=r#"^com\.slack\.Slack$"#;      open-on-workspace "1-slack"; }
-window-rule { match app-id=r#"^com\.ayugram\.desktop$"#;  open-on-workspace "2-ayugram"; }
-window-rule { match app-id=r#"^org\.mozilla\.firefox$"#;  open-on-workspace "3-firefox"; }
-window-rule { match app-id=r#"^com\.mitchellh\.ghostty$"#; open-on-workspace "5-term"; }
-window-rule { match app-id=r#"^code$"#;                   open-on-workspace "6-code"; }
-window-rule { match app-id=r#"^jetbrains-rider$"#;        open-on-workspace "7-rider"; }
-window-rule { match app-id=r#"^vivaldi-stable$"#;         open-on-workspace "9-vivaldi"; }
-window-rule { match app-id=r#"^obsidian$"#;               open-on-workspace "10-obsidian"; }
+// open-focused true → switch to the workspace when the app opens.
+// open-maximized true → open as a full-width (maximized) column.
+window-rule { match app-id=r#"^com\.slack\.Slack$"#;       open-on-workspace "1-slack";     open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^com\.ayugram\.desktop$"#;   open-on-workspace "2-ayugram";   open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^org\.mozilla\.firefox$"#;   open-on-workspace "3-firefox";   open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^com\.mitchellh\.ghostty$"#; open-on-workspace "5-term";      open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^code$"#;                    open-on-workspace "6-code";      open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^jetbrains-rider$"#;         open-on-workspace "7-rider";     open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^vivaldi-stable$"#;          open-on-workspace "9-vivaldi";   open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^obsidian$"#;                open-on-workspace "10-obsidian"; open-focused true; open-maximized true; }
 
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
