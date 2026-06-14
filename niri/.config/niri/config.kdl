@@ -113,19 +113,20 @@ animations {
 }
 
 // ── Named workspaces (pinned to monitors) ─────────────────────────────
-// niri prepends each declared workspace, so declare each monitor's group
-// in REVERSE to get left-to-right order 1→10 on the bar.
+// Declaration order = display order on a fresh niri start (top→bottom,
+// left→right on the bar). NOTE: adding these while niri is already running
+// prepends them (reversed) — a relogin fixes the order to match this.
 // Laptop (eDP-1): 1-4 · Gigabyte (DP-3): 5-8 · Huawei (DP-2): 9-10.
-workspace "4-laptop"    { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
-workspace "3-firefox"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
-workspace "2-ayugram"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
 workspace "1-slack"     { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
-workspace "8-giga"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
-workspace "7-rider"     { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
-workspace "6-code"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "2-ayugram"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "3-firefox"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "4-laptop"    { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
 workspace "5-term"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
-workspace "10-obsidian" { open-on-output "Huawei Technologies Co., Inc. HUAWEI AD80HW              "; }
+workspace "6-code"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "7-rider"     { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "8-giga"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
 workspace "9-vivaldi"   { open-on-output "Huawei Technologies Co., Inc. HUAWEI AD80HW              "; }
+workspace "10-obsidian" { open-on-output "Huawei Technologies Co., Inc. HUAWEI AD80HW              "; }
 
 // ── Window rules ──────────────────────────────────────────────────────
 // Rounded corners everywhere, matching the 12px radius used across
