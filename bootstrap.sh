@@ -99,6 +99,10 @@ systemctl --user enable --now elephant 2>/dev/null || true
 elephant service enable 2>/dev/null || true
 # auto-rescan elephant when apps are installed/removed (so walker sees them)
 systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
+# niri spawns swaync directly; disable the redundant (failing) systemd unit,
+# and mask the nvidia-settings autostart that fails under niri.
+systemctl --user disable --now swaync.service 2>/dev/null || true
+systemctl --user mask app-nvidia-settings-user@autostart.service 2>/dev/null || true
 # tmux plugins (non-interactive)
 ~/.tmux/plugins/tpm/bin/install_plugins 2>/dev/null || true
 
@@ -127,6 +131,10 @@ bash "$DOTS/install-toolbox.sh" || warn "run install-toolbox.sh manually later"
 
 echo "  .NET SDK: run 'mise use -g dotnet@9' (or the version your solutions target)."
 echo "  Note: GUI-launched Rider won't inherit mise PATH — set its SDK path or DOTNET_ROOT."
+
+# ── 9. OS hardening (Round 4): nvidia suspend, journald, inotify, snapshots
+step "OS hardening (NVIDIA suspend VRAM, journald cap, inotify, snapper)"
+sudo bash "$DOTS/setup-round4.sh"
 
 echo
 ok "Bootstrap complete. REBOOT to land on the CachyOS kernel + greetd + zswap."

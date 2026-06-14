@@ -33,6 +33,7 @@ on re-run).
 | `setup-round2.sh` | 32G btrfs swapfile + zswap, power auto-switch udev rule, tuigreet polish, CachyOS kernel + NVIDIA akmod rebuild. |
 | `setup-round3.sh` | Apps: VS Code (MS repo), Vivaldi, OpenVPN3, Slack/Obsidian/AyuGram (Flatpak), lazygit/lazydocker (COPR), bat/ripgrep/eza/btop. |
 | `install-toolbox.sh` | JetBrains Toolbox (user-level) → install Rider from its GUI. |
+| `setup-round4.sh` | OS hardening: NVIDIA VRAM-preserve across suspend, journald 500M cap, inotify bump (Rider/VS Code/dotnet-watch), snapper + btrfs-assistant timeline snapshots (root only). |
 | `fix-igpu.sh` | `xe.force_probe=a788` — kernel 7.0+ dropped i915 for this Raptor Lake iGPU; without it the laptop panel + Huawei go dark. |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
 | `*/` | stow packages: niri, waybar, walker, ghostty, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, alacritty. |
@@ -75,6 +76,8 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **lazydocker** talks to **podman** via `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` (zshrc) + `systemctl --user enable --now podman.socket`.
 - **Rider + mise .NET**: GUI-launched Rider doesn't inherit mise's shell PATH — point Rider at the mise dotnet SDK path or export `DOTNET_ROOT` where the graphical session sees it. `mise use -g dotnet@9` (not `@latest`, which is currently a .NET 11 preview).
 - **`cd` is zoxide** (`--cmd cd`); `ls`/`ll`/`la`/`lt` are eza; `cat` is bat (raw `\cat` still works). fzf owns Ctrl-T/Alt-C, atuin owns Ctrl-R.
+- **Snapshot recovery**: if a kernel/driver update breaks boot, pick the **stock Fedora kernel** in GRUB (always present), then `sudo snapper rollback <N>` + reboot. `snapper list` / `btrfs-assistant` to browse. (grub-btrfs for boot-menu snapshot entries isn't packaged — COPR-only, optional.)
+- **NVIDIA suspend**: `NVreg_PreserveVideoMemoryAllocations=1` (in `/etc/modprobe.d/nvidia-power.conf`) is required for the nvidia-suspend/resume services to actually preserve the session; lives in the initramfs so `dracut -f` after changing it.
 
 ## TODO
 
