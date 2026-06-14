@@ -13,7 +13,9 @@ else
     mkdir -p "$DEST"
     curl -fsSL "$URL" -o /tmp/toolbox.tar.gz
     tar -xzf /tmp/toolbox.tar.gz -C /tmp
-    cp /tmp/jetbrains-toolbox-*/bin/jetbrains-toolbox "$DEST/"
+    # Copy the ENTIRE bin/ payload — the launcher needs its bundled jre/ + lib/
+    # alongside it (copying only the binary => "Failed to start JVM").
+    cp -r /tmp/jetbrains-toolbox-*/bin/. "$DEST/"
     echo "Installed to $DEST"
 fi
 echo "Launching Toolbox — in its window, install Rider. It self-registers a .desktop entry."
