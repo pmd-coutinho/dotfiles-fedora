@@ -85,6 +85,9 @@ export PATH
 # outside a mise-managed dir (e.g. terminal-launched Rider); `mise activate`
 # below still overrides it per-project.
 export DOTNET_ROOT="$HOME/.local/share/mise/dotnet-root"
+# Make OpenSSL clients (.NET HttpClient, curl) trust the ASP.NET dev HTTPS cert.
+# Must include the Fedora system bundle too, else other TLS verification breaks.
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/etc/pki/tls/certs"
 command -v mise    >/dev/null && eval "$(mise activate zsh)"
 command -v zoxide  >/dev/null && eval "$(zoxide init zsh --cmd cd)"   # cd = zoxide, cdi = interactive
 # fzf keybindings BEFORE atuin so atuin keeps Ctrl-R (fzf gets Ctrl-T / Alt-C)

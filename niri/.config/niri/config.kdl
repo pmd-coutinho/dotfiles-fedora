@@ -112,6 +112,20 @@ animations {
     slowdown 0.6
 }
 
+// ── Named workspaces (pinned to monitors) ─────────────────────────────
+// Declared top-to-bottom in the order they appear on each output.
+// Laptop (eDP-1): 1-4 · Gigabyte (DP-3): 5-8 · Huawei (DP-2): 9-10.
+workspace "1-slack"     { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "2-ayugram"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "3-firefox"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "4-laptop"    { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "5-term"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "6-code"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "7-rider"     { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "8-giga"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "9-vivaldi"   { open-on-output "Huawei Technologies Co., Inc. HUAWEI AD80HW              "; }
+workspace "10-obsidian" { open-on-output "Huawei Technologies Co., Inc. HUAWEI AD80HW              "; }
+
 // ── Window rules ──────────────────────────────────────────────────────
 // Rounded corners everywhere, matching the 12px radius used across
 // waybar/swaync/fuzzel.
@@ -125,6 +139,16 @@ window-rule {
     match app-id=r#"firefox$"# title="^Picture-in-Picture$"
     open-floating true
 }
+
+// ── App → workspace routing ───────────────────────────────────────────
+window-rule { match app-id=r#"^com\.slack\.Slack$"#;      open-on-workspace "1-slack"; }
+window-rule { match app-id=r#"^com\.ayugram\.desktop$"#;  open-on-workspace "2-ayugram"; }
+window-rule { match app-id=r#"^org\.mozilla\.firefox$"#;  open-on-workspace "3-firefox"; }
+window-rule { match app-id=r#"^com\.mitchellh\.ghostty$"#; open-on-workspace "5-term"; }
+window-rule { match app-id=r#"^code$"#;                   open-on-workspace "6-code"; }
+window-rule { match app-id=r#"^jetbrains-rider$"#;        open-on-workspace "7-rider"; }
+window-rule { match app-id=r#"^vivaldi-stable$"#;         open-on-workspace "9-vivaldi"; }
+window-rule { match app-id=r#"^obsidian$"#;               open-on-workspace "10-obsidian"; }
 
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
@@ -226,24 +250,28 @@ binds {
     Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
     Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
 
-    Mod+1 { focus-workspace 1; }
-    Mod+2 { focus-workspace 2; }
-    Mod+3 { focus-workspace 3; }
-    Mod+4 { focus-workspace 4; }
-    Mod+5 { focus-workspace 5; }
-    Mod+6 { focus-workspace 6; }
-    Mod+7 { focus-workspace 7; }
-    Mod+8 { focus-workspace 8; }
-    Mod+9 { focus-workspace 9; }
-    Mod+Ctrl+1 { move-column-to-workspace 1; }
-    Mod+Ctrl+2 { move-column-to-workspace 2; }
-    Mod+Ctrl+3 { move-column-to-workspace 3; }
-    Mod+Ctrl+4 { move-column-to-workspace 4; }
-    Mod+Ctrl+5 { move-column-to-workspace 5; }
-    Mod+Ctrl+6 { move-column-to-workspace 6; }
-    Mod+Ctrl+7 { move-column-to-workspace 7; }
-    Mod+Ctrl+8 { move-column-to-workspace 8; }
-    Mod+Ctrl+9 { move-column-to-workspace 9; }
+    // Named workspaces (pinned to monitors below). Mod+N focuses, Mod+Shift+N
+    // moves the focused window there. 0 = the 10th workspace.
+    Mod+1 { focus-workspace "1-slack"; }
+    Mod+2 { focus-workspace "2-ayugram"; }
+    Mod+3 { focus-workspace "3-firefox"; }
+    Mod+4 { focus-workspace "4-laptop"; }
+    Mod+5 { focus-workspace "5-term"; }
+    Mod+6 { focus-workspace "6-code"; }
+    Mod+7 { focus-workspace "7-rider"; }
+    Mod+8 { focus-workspace "8-giga"; }
+    Mod+9 { focus-workspace "9-vivaldi"; }
+    Mod+0 { focus-workspace "10-obsidian"; }
+    Mod+Shift+1 { move-window-to-workspace "1-slack"; }
+    Mod+Shift+2 { move-window-to-workspace "2-ayugram"; }
+    Mod+Shift+3 { move-window-to-workspace "3-firefox"; }
+    Mod+Shift+4 { move-window-to-workspace "4-laptop"; }
+    Mod+Shift+5 { move-window-to-workspace "5-term"; }
+    Mod+Shift+6 { move-window-to-workspace "6-code"; }
+    Mod+Shift+7 { move-window-to-workspace "7-rider"; }
+    Mod+Shift+8 { move-window-to-workspace "8-giga"; }
+    Mod+Shift+9 { move-window-to-workspace "9-vivaldi"; }
+    Mod+Shift+0 { move-window-to-workspace "10-obsidian"; }
 
     Mod+BracketLeft  { consume-or-expel-window-left; }
     Mod+BracketRight { consume-or-expel-window-right; }
