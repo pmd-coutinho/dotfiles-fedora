@@ -36,9 +36,11 @@ gpgkey=https://repo.vivaldi.com/archive/linux_signing_key.pub
 EOF
 
 step "OpenVPN3 + CLI tool COPRs"
-# OpenVPN3 Linux is shipped via the maintainer's COPR (the bare
-# packages.openvpn.net repo URLs 404). dsommers/openvpn3 has an F44 chroot.
-dnf -y copr enable dsommers/openvpn3
+# OpenVPN3 Linux via the maintainer's COPR. The STABLE dsommers/openvpn3 has
+# no Fedora 44 build yet (only 41-43); the maintainer's dev-snapshot channel
+# DOES build for F44, so use it. (packages.openvpn.net bare URLs 404.)
+dnf -y copr disable dsommers/openvpn3 2>/dev/null || true   # stale: no F44 build
+dnf -y copr enable dsommers/openvpn3-devsnapshots
 dnf -y copr enable atim/lazygit
 dnf -y copr enable atim/lazydocker
 
