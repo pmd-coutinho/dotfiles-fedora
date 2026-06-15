@@ -35,8 +35,10 @@ on re-run).
 | `install-toolbox.sh` | JetBrains Toolbox (user-level) → install Rider from its GUI. |
 | `setup-round4.sh` | OS hardening: NVIDIA VRAM-preserve across suspend, journald 500M cap, inotify bump (Rider/VS Code/dotnet-watch), snapper + btrfs-assistant timeline snapshots (root only). |
 | `fix-igpu.sh` | `xe.force_probe=a788` — kernel 7.0+ dropped i915 for this Raptor Lake iGPU; without it the laptop panel + Huawei go dark. |
+| `setup-editors.sh` | Catppuccin for VS Code + Rider, VS Code keyring fix (niri), Rider native-Wayland toolkit. |
+| `setup-round6.sh` | Workflow tooling: git+delta (Catppuccin) + aliases, dotnet-ef, Azure CLI, modern CLI (tldr/duf/procs/difftastic/just + dust/xh/watchexec binaries), neovim/LazyVim with C# (Roslyn) LSP. |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
-| `*/` | stow packages: niri, waybar, walker, ghostty, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, alacritty. |
+| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, vscode, lazygit, btop, bin, systemd, alacritty. |
 
 ## The stack
 
@@ -78,6 +80,10 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **`cd` is zoxide** (`--cmd cd`); `ls`/`ll`/`la`/`lt` are eza; `cat` is bat (raw `\cat` still works). fzf owns Ctrl-T/Alt-C, atuin owns Ctrl-R.
 - **Snapshot recovery**: if a kernel/driver update breaks boot, pick the **stock Fedora kernel** in GRUB (always present), then `sudo snapper rollback <N>` + reboot. `snapper list` / `btrfs-assistant` to browse. (grub-btrfs for boot-menu snapshot entries isn't packaged — COPR-only, optional.)
 - **NVIDIA suspend**: `NVreg_PreserveVideoMemoryAllocations=1` (in `/etc/modprobe.d/nvidia-power.conf`) is required for the nvidia-suspend/resume services to actually preserve the session; lives in the initramfs so `dracut -f` after changing it.
+- **git uses `delta`** (Catppuccin Mocha) as pager; `git dft` does a structural diff via difftastic. Identity stays the personal Gmail (`git/.gitconfig`); the old `~/.gitconfig` is backed up to `~/.gitconfig.pre-round6` on first `setup-round6.sh` run.
+- **nvim C# LSP** (the one fiddly bit): `nvim/` uses LazyVim + `roslyn.nvim` with the Mason `roslyn` server. If it won't attach in a `.cs` file, `:Mason` → install/check `roslyn`, or fall back to OmniSharp (`:LazyExtras` → enable `lang.omnisharp`, remove `lua/plugins/dotnet.lua`).
+- **`app-nvidia\x2dsettings\x2duser@autostart.service`** fails on login (nvidia-settings autostart under niri). Masked by the **escaped** unit name — the un-escaped `app-nvidia-settings-user@…` form never matched, which is why it kept showing up.
+- **chezmoi is unused** — stow is the dotfiles system. `~/.config/chezmoi/key.txt` is an **age key** kept intentionally; don't delete it without checking what it decrypts.
 
 ## TODO
 

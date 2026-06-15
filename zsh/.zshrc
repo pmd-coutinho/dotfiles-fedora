@@ -58,6 +58,7 @@ alias grep='grep --color=auto'
 alias ip='ip -color=auto'
 alias lg='lazygit'
 alias lzd='lazydocker'
+command -v nvim >/dev/null && alias v='nvim'
 
 # ── Tool env ──────────────────────────────────────────────────────────
 export BAT_THEME="Catppuccin Mocha"
@@ -77,8 +78,13 @@ export FZF_DEFAULT_OPTS=" \
 --color=selected-bg:#45475a --height=40% --layout=reverse --border=rounded"
 
 # ── PATH ──────────────────────────────────────────────────────────────
-path=(~/.local/bin $path)
+# ~/.dotnet/tools = global dotnet tools (dotnet-ef, etc.)
+path=(~/.local/bin ~/.dotnet/tools $path)
 export PATH
+
+# ── Editor ────────────────────────────────────────────────────────────
+# nvim when present (full LazyVim setup), nano as the safe fallback.
+if command -v nvim >/dev/null; then export EDITOR=nvim VISUAL=nvim; else export EDITOR=nano; fi
 
 # ── Tool hooks (order matters) ────────────────────────────────────────
 # .NET SDK provided by mise. Static fallback so DOTNET_ROOT exists even

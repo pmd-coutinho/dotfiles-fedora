@@ -1,0 +1,82 @@
+[user]
+	name = Pedro Coutinho
+	email = pmd.coutinho@gmail.com
+
+[core]
+	editor = nvim
+	pager = delta
+	# big working trees (NopCommerce) — let git use the fs monitor + cache
+	fsmonitor = true
+	untrackedCache = true
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[fetch]
+	prune = true
+
+[push]
+	autoSetupRemote = true
+	default = current
+
+[diff]
+	algorithm = histogram
+	colorMoved = default
+
+[merge]
+	conflictStyle = zdiff3
+
+[rerere]
+	enabled = true
+
+[branch]
+	sort = -committerdate
+
+[column]
+	ui = auto
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+	line-numbers = true
+	syntax-theme = Catppuccin Mocha
+	features = catppuccin-mocha
+
+[delta "catppuccin-mocha"]
+	minus-style                   = syntax "#443244"
+	minus-emph-style              = syntax "#56344a"
+	plus-style                    = syntax "#2c3b3a"
+	plus-emph-style               = syntax "#3a4f44"
+	line-numbers-minus-style      = "#f38ba8"
+	line-numbers-plus-style       = "#a6e3a1"
+	line-numbers-zero-style       = "#6c7086"
+	line-numbers-left-style       = "#313244"
+	line-numbers-right-style      = "#313244"
+	file-style                    = "#cba6f7" bold
+	file-decoration-style         = "#cba6f7" ul
+	hunk-header-style             = "#89b4fa" bold
+	hunk-header-decoration-style  = "#45475a" box
+	blame-palette                 = "#1e1e2e" "#181825" "#313244" "#45475a"
+
+[alias]
+	st = status
+	co = checkout
+	sw = switch
+	br = branch
+	ci = commit
+	cm = commit -m
+	amend = commit --amend --no-edit
+	unstage = restore --staged
+	last = log -1 HEAD --stat
+	df = diff
+	dc = diff --cached
+	lg = log --graph --abbrev-commit --decorate --all \
+		--format=format:'%C(bold blue)%h%C(reset) %C(dim white)%an%C(reset)%C(auto)%d%C(reset) %C(white)%s%C(reset) %C(dim white)(%ar)%C(reset)'
+	pf = push --force-with-lease
+	# structural (syntax-aware) diff on demand; plain `git diff` stays delta
+	dft = -c diff.external=difft diff

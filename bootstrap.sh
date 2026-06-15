@@ -75,8 +75,8 @@ mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
 step "Stowing dotfiles"
 cd "$DOTS"
 # back up any real files stow would collide with
-for pkg in alacritty atuin bin btop fuzzel ghostty gtk hyprlock lazygit niri satty \
-           starship swaync systemd tmux vscode walker waybar zsh; do
+for pkg in alacritty atuin bin btop fuzzel ghostty git gtk hyprlock lazygit niri nvim \
+           satty starship swaync systemd tmux vscode walker waybar zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
@@ -102,7 +102,7 @@ systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 # niri spawns swaync directly; disable the redundant (failing) systemd unit,
 # and mask the nvidia-settings autostart that fails under niri.
 systemctl --user disable --now swaync.service 2>/dev/null || true
-systemctl --user mask app-nvidia-settings-user@autostart.service 2>/dev/null || true
+systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
 # click a notification -> focus the app it came from
 systemctl --user enable --now niri-notify-click.service 2>/dev/null || true
@@ -134,6 +134,9 @@ bash "$DOTS/install-toolbox.sh" || warn "run install-toolbox.sh manually later"
 
 step "Editor theming (VS Code + Rider Catppuccin, VS Code keyring fix)"
 bash "$DOTS/setup-editors.sh" || warn "run setup-editors.sh manually later"
+
+step "Workflow tooling (git+delta, .NET tools, Azure CLI, modern CLI, neovim/LazyVim)"
+sudo bash "$DOTS/setup-round6.sh" || warn "run setup-round6.sh manually later"
 
 echo "  .NET SDK: run 'mise use -g dotnet@9' (or the version your solutions target)."
 echo "  Note: GUI-launched Rider won't inherit mise PATH — set its SDK path or DOTNET_ROOT."
