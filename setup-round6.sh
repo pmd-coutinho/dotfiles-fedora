@@ -21,21 +21,18 @@ dnf -y install git-delta tealdeer duf procs difftastic just neovim azure-cli \
   || warn "one or more dnf packages failed — check names/repos"
 
 # ── Modern CLI binaries not packaged: dust, xh, watchexec → ~/.local/bin ──
-# Resolve the latest GitHub release asset for linux x86_64 (prefer musl), same
-# pattern as the AyuGram fetch in setup-round3.sh. Pinned-by-latest; re-running
-# upgrades them.
-step "Fetching prebuilt binaries (dust, xh, watchexec) into ~/.local/bin"
+# Version-PINNED with sha256 verification (fail-closed: a mismatch skips the
+# install rather than running an unverified binary). To upgrade: bump the URL
+# and recompute the hash with `curl -fsSL <url> | sha256sum`.
+step "Fetching prebuilt binaries (dust, xh, watchexec) into ~/.local/bin (sha256-verified)"
 asuser mkdir -p "$UHOME/.local/bin"
-fetch_bin() {  # $1=repo  $2=binary-name  $3=asset-grep
-  local repo="$1" bin="$2" pat="$3" url tmp
-  url=$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" \
-    | python3 -c "import json,sys,re
-pat=re.compile(r'''$pat''')
-for a in json.load(sys.stdin)['assets']:
-    if pat.search(a['name']): print(a['browser_download_url']); break")
-  if [ -z "$url" ]; then warn "$bin: no matching asset found"; return; fi
+fetch_bin() {  # $1=binary-name  $2=url  $3=sha256
+  local bin="$1" url="$2" sum="$3" tmp
   tmp=$(mktemp -d)
-  curl -fsSL "$url" -o "$tmp/a"
+  if ! curl -fsSL "$url" -o "$tmp/a"; then warn "$bin: download failed"; rm -rf "$tmp"; return; fi
+  if ! echo "$sum  $tmp/a" | sha256sum -c --status; then
+    warn "$bin: SHA256 MISMATCH — refusing to install (expected $sum)"; rm -rf "$tmp"; return
+  fi
   case "$url" in
     *.tar.gz|*.tgz) tar -xzf "$tmp/a" -C "$tmp" ;;
     *.tar.xz)       tar -xJf "$tmp/a" -C "$tmp" ;;
@@ -44,13 +41,19 @@ for a in json.load(sys.stdin)['assets']:
   local found; found=$(find "$tmp" -type f -name "$bin" | head -1)
   if [ -n "$found" ]; then
     install -m755 "$found" "$UHOME/.local/bin/$bin"; chown "$RUSER:$RUSER" "$UHOME/.local/bin/$bin"
-    ok "  installed $bin"
+    ok "  installed $bin (verified)"
   else warn "$bin: binary not found in archive"; fi
   rm -rf "$tmp"
 }
-fetch_bin "bootandy/dust"        "dust"      "x86_64-unknown-linux-(musl|gnu)\.tar\.gz"
-fetch_bin "ducaale/xh"           "xh"        "x86_64-unknown-linux-musl\.tar\.gz"
-fetch_bin "watchexec/watchexec"  "watchexec" "x86_64-unknown-linux-(musl|gnu)\.tar\.xz"
+fetch_bin dust \
+  "https://github.com/bootandy/dust/releases/download/v1.2.4/dust-v1.2.4-x86_64-unknown-linux-gnu.tar.gz" \
+  "707cfdbfb9d2dc536f8c3853815bbe98a01012f2772463835edae06816551160"
+fetch_bin xh \
+  "https://github.com/ducaale/xh/releases/download/v0.25.3/xh-v0.25.3-x86_64-unknown-linux-musl.tar.gz" \
+  "fc738e616b327e7a10256e206c78073bfeed95d73af6ba9ced4c5eb20ac8d717"
+fetch_bin watchexec \
+  "https://github.com/watchexec/watchexec/releases/download/v2.5.1/watchexec-2.5.1-x86_64-unknown-linux-gnu.tar.xz" \
+  "cafc381f74e95f8e93e796ef590c7cbbf3409dda6d56cf3dee6109c10e5188ee"
 
 # ── tealdeer cache ────────────────────────────────────────────────────────
 step "Seeding tldr cache"
