@@ -102,9 +102,14 @@ window#waybar.empty #window {
 #network,
 #battery,
 #mpris,
+#custom-powerprofile,
 #custom-notification {
     padding: 0 11px;
     color: @subtext;
+}
+
+#custom-powerprofile {
+    color: @yellow;
 }
 
 #mpris {
@@ -156,8 +161,8 @@ window#waybar.empty #window {
     font-size: 14px;
 }
 
-/* dividers between right-island modules */
-#cpu, #pulseaudio, #battery {
+/* dividers grouping the right-island modules */
+#cpu, #pulseaudio, #custom-powerprofile, #custom-notification {
     border-left: 1px solid alpha(@surface0, 0.8);
 }
 

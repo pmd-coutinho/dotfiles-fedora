@@ -41,7 +41,7 @@ sudo dnf -y install \
   elephant-snippets elephant-todo elephant-windows elephant-1password \
   satty grim slurp wl-clipboard cliphist wlogout \
   papirus-icon-theme adw-gtk3-theme jetbrains-mono-fonts \
-  brightnessctl playerctl pavucontrol network-manager-applet blueman \
+  brightnessctl playerctl pavucontrol network-manager-applet blueman solaar \
   mate-polkit gnome-keyring tuned tuned-ppd \
   greetd tuigreet \
   kernel-cachyos kernel-cachyos-devel-matched

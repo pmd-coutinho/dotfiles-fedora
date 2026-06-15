@@ -46,7 +46,7 @@ dnf -y copr enable atim/lazydocker
 
 # ── Install ───────────────────────────────────────────────────────────
 step "Installing GUI apps + CLI tools"
-dnf -y install code vivaldi-stable bat ripgrep eza btop lazygit lazydocker
+dnf -y install code vivaldi-stable bat ripgrep eza btop lazygit lazydocker solaar
 dnf -y install openvpn3 || warn "openvpn3 install failed — check the OpenVPN repo URL/state"
 
 # ── USER-level: Flatpak + podman socket ───────────────────────────────
