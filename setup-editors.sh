@@ -58,6 +58,22 @@ if [ "$RIDER_OK" -eq 0 ]; then
     echo "  Settings -> Plugins -> Marketplace -> search 'Catppuccin' -> Install -> Restart"
     echo "  Then: Settings -> Appearance & Behavior -> Appearance -> Theme -> 'Catppuccin Mocha'"
     echo "  (accept the prompt to also switch the editor color scheme to match)"
+    echo "  NOTE: the Catppuccin plugin is stable-only; it won't install on EAP builds."
 fi
+
+# ── Rider: native Wayland (fixes mixed-DPI zoom under XWayland) ───────────
+# JBR defaults to XToolkit (XWayland) -> one global scale across all monitors,
+# which looks zoomed on the mixed-DPI setup (laptop 1.0 / 4K 1.5). The JBR in
+# 2025.2+ ships an experimental Wayland backend with proper per-monitor scaling.
+step "Rider: enable native Wayland toolkit"
+for VM in "$HOME"/.config/JetBrains/Rider*/rider64.vmoptions; do
+    [ -f "$VM" ] || continue
+    [ -n "$(tail -c1 "$VM")" ] && printf '\n' >> "$VM"
+    if ! grep -q 'awt.toolkit.name=WLToolkit' "$VM"; then
+        printf -- '-Dawt.toolkit.name=WLToolkit\n' >> "$VM"
+        ok "  WLToolkit added to $VM"
+    fi
+done
+echo "  If Wayland rendering glitches, remove that line (Help -> Edit Custom VM Options)."
 
 ok "Editors themed. Fully quit & reopen VS Code (and Rider) to apply."
