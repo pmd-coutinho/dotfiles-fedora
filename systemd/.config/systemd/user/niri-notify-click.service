@@ -1,0 +1,13 @@
+[Unit]
+Description=Focus a notification's originating app when its notification is clicked
+After=niri.service graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/niri-notify-click
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target
