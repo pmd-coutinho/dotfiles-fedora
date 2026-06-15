@@ -69,6 +69,15 @@ fi
 step "Enabling podman socket for lazydocker (as $RUSER)"
 asuser systemctl --user enable --now podman.socket 2>/dev/null || warn "enable podman.socket manually"
 
+step "Microsoft Dev Tunnels CLI (devtunnel → ~/.local/bin)"
+# Official installer dumps to ~/bin + edits .zshrc + apt-get; we just grab
+# the binary into ~/.local/bin (already on PATH). Run 'devtunnel user login' after.
+RHOME=$(getent passwd "$RUSER" | cut -d: -f6)
+asuser curl -fsSL -o "$RHOME/.local/bin/devtunnel" \
+  "https://tunnelsassetsprod.blob.core.windows.net/cli/linux-x64-devtunnel" \
+  && chmod +x "$RHOME/.local/bin/devtunnel" && echo "  devtunnel installed" \
+  || warn "devtunnel download failed"
+
 echo
 ok "Round 3 root setup done."
 echo "Next (run as your user, not root):"
