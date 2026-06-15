@@ -88,6 +88,10 @@ export DOTNET_ROOT="$HOME/.local/share/mise/dotnet-root"
 # Make OpenSSL clients (.NET HttpClient, curl) trust the ASP.NET dev HTTPS cert.
 # Must include the Fedora system bundle too, else other TLS verification breaks.
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/etc/pki/tls/certs"
+# Aspire/DCP overrides SSL_CERT_DIR per-resource with a dev-cert-only temp dir,
+# dropping public CA roots → external HTTPS (Azure Service Bus) fails UntrustedRoot.
+# DCP leaves SSL_CERT_FILE alone, so pin the system bundle to keep public roots.
+export SSL_CERT_FILE="/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
 command -v mise    >/dev/null && eval "$(mise activate zsh)"
 command -v zoxide  >/dev/null && eval "$(zoxide init zsh --cmd cd)"   # cd = zoxide, cdi = interactive
 # fzf keybindings BEFORE atuin so atuin keeps Ctrl-R (fzf gets Ctrl-T / Alt-C)

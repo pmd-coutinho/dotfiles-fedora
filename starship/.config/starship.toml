@@ -4,6 +4,11 @@
 palette = "catppuccin_mocha"
 add_newline = true
 
+# git status runs `git status` — on big repos (large .NET solutions) the
+# default 500ms isn't enough, so starship silently drops git_status. Bump it.
+command_timeout = 2000
+scan_timeout = 50
+
 format = """
 $directory$git_branch$git_status$nodejs$python$rust$golang$cmd_duration
 $character"""
@@ -21,6 +26,17 @@ format = "on [$symbol$branch]($style) "
 [git_status]
 style = "peach"
 format = '([\[$all_status$ahead_behind\]]($style) )'
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = ""
+untracked = "?${count}"
+stashed = "*${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
 
 [nodejs]
 symbol = " "
