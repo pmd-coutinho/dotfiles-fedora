@@ -104,7 +104,8 @@ window#waybar.empty #window {
 #mpris,
 #custom-powerprofile,
 #custom-notification {
-    padding: 0 11px;
+    padding: 0 10px;
+    margin-right: 8px;
     color: @subtext;
 }
 
