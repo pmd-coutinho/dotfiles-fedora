@@ -31,7 +31,7 @@ on re-run).
 | `bootstrap.sh` | **Start here.** Full ordered rebuild. |
 | `setup-root.sh` | NVIDIA app-profile (VRAM-leak fix), greetd + keyring PAM, gdm→greetd, base services. |
 | `setup-round2.sh` | 32G btrfs swapfile + zswap, power auto-switch udev rule, tuigreet polish, CachyOS kernel + NVIDIA akmod rebuild. |
-| `setup-round3.sh` | Apps: VS Code (MS repo), Vivaldi, OpenVPN3, Slack/Obsidian/AyuGram (Flatpak), lazygit/lazydocker (COPR), bat/ripgrep/eza/btop. |
+| `setup-round3.sh` | Apps: VS Code (MS repo), Vivaldi, OpenVPN3, Slack (native rpm — Flatpak sandbox breaks notification action routing), Obsidian/AyuGram (Flatpak), lazygit/lazydocker (COPR), bat/ripgrep/eza/btop. |
 | `install-toolbox.sh` | JetBrains Toolbox (user-level) → install Rider from its GUI. |
 | `setup-round4.sh` | OS hardening: NVIDIA VRAM-preserve across suspend, journald 500M cap, inotify bump (Rider/VS Code/dotnet-watch), snapper + btrfs-assistant timeline snapshots (root only). |
 | `fix-igpu.sh` | `xe.force_probe=a788` — kernel 7.0+ dropped i915 for this Raptor Lake iGPU; without it the laptop panel + Huawei go dark. |

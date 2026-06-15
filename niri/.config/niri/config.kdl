@@ -101,7 +101,7 @@ spawn-at-startup "walker" "--gapplication-service"
 spawn-at-startup "firefox"
 spawn-at-startup "vivaldi-stable"
 spawn-at-startup "ghostty"
-spawn-at-startup "flatpak" "run" "com.slack.Slack"
+spawn-at-startup "slack"
 spawn-at-startup "flatpak" "run" "com.ayugram.desktop"
 spawn-at-startup "flatpak" "run" "md.obsidian.Obsidian"
 
@@ -153,7 +153,7 @@ window-rule {
 // ── App → workspace routing ───────────────────────────────────────────
 // open-focused true → switch to the workspace when the app opens.
 // open-maximized true → open as a full-width (maximized) column.
-window-rule { match app-id=r#"^com\.slack\.Slack$"#;       open-on-workspace "1-slack";     open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^(com\.slack\.Slack|Slack)$"#; open-on-workspace "1-slack";     open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^com\.ayugram\.desktop$"#;   open-on-workspace "2-ayugram";   open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^org\.mozilla\.firefox$"#;   open-on-workspace "3-firefox";   open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^com\.mitchellh\.ghostty$"#; open-on-workspace "5-term";      open-focused true; open-maximized true; }

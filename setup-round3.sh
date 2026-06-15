@@ -49,11 +49,19 @@ step "Installing GUI apps + CLI tools"
 dnf -y install code vivaldi-stable bat ripgrep eza btop lazygit lazydocker solaar
 dnf -y install openvpn3 || warn "openvpn3 install failed — check the OpenVPN repo URL/state"
 
+# Slack: NATIVE rpm (not Flatpak). The Flatpak sandbox breaks notification
+# action routing (clicking a notification never navigates to the conversation).
+# Slack ships one universal el8 rpm that installs fine on Fedora and self-updates
+# in-app, so the pinned version just needs to be installable; bump if it 404s.
+SLACK_RPM="https://downloads.slack-edge.com/desktop-releases/linux/x64/4.50.136/slack-4.50.136-0.1.el8.x86_64.rpm"
+dnf -y install "$SLACK_RPM" || warn "Slack rpm install failed — check $SLACK_RPM"
+
 # ── USER-level: Flatpak + podman socket ───────────────────────────────
 step "Unfiltering Flathub + installing flatpak apps (as $RUSER)"
 flatpak remote-modify --no-filter flathub 2>/dev/null || true
 # Install each separately so one failure doesn't abort the rest.
-asuser flatpak install -y --noninteractive flathub com.slack.Slack    || warn "Slack flatpak failed"
+# Slack is installed natively above (rpm); drop any old Flatpak copy.
+asuser flatpak uninstall -y com.slack.Slack 2>/dev/null || true
 asuser flatpak install -y --noninteractive flathub md.obsidian.Obsidian || warn "Obsidian flatpak failed"
 # AyuGram is NOT on Flathub — install the prebuilt bundle from 0FL01's repo.
 step "AyuGram (prebuilt .flatpak from 0FL01/AyuGramDesktop-flatpak)"
