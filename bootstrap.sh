@@ -75,7 +75,7 @@ mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
 step "Stowing dotfiles"
 cd "$DOTS"
 # back up any real files stow would collide with
-for pkg in alacritty atuin btop fuzzel ghostty gtk hyprlock lazygit niri satty \
+for pkg in alacritty atuin bin btop fuzzel ghostty gtk hyprlock lazygit niri satty \
            starship swaync systemd tmux walker waybar zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
@@ -103,6 +103,7 @@ systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 # and mask the nvidia-settings autostart that fails under niri.
 systemctl --user disable --now swaync.service 2>/dev/null || true
 systemctl --user mask app-nvidia-settings-user@autostart.service 2>/dev/null || true
+systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
 # tmux plugins (non-interactive)
 ~/.tmux/plugins/tpm/bin/install_plugins 2>/dev/null || true
 

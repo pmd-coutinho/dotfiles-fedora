@@ -160,9 +160,9 @@ window-rule { match app-id=r#"^com\.mitchellh\.ghostty$"#; open-on-workspace "5-
 window-rule { match app-id=r#"^code$"#;                    open-on-workspace "6-code";      open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^jetbrains-rider$"#;         open-on-workspace "7-rider";     open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^vivaldi-stable$"#;          open-on-workspace "9-vivaldi";   open-focused true; open-maximized true; }
-// Vivaldi PRIVATE windows → workspace 8 (best-effort: matches the private
-// start-page title at open; can't be detected once you navigate away).
-window-rule { match app-id=r#"^vivaldi-stable$"# title=r#"(?i)private"#; open-on-workspace "8-giga"; open-focused true; open-maximized true; }
+// Vivaldi PRIVATE windows → workspace 8 is handled by the
+// niri-vivaldi-private-watch user service (open-on-workspace can't see the
+// "Private" title at open time). See bin/ + systemd/ stow packages.
 window-rule { match app-id=r#"^obsidian$"#;                open-on-workspace "10-obsidian"; open-focused true; open-maximized true; }
 
 binds {

@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+"""Move Vivaldi PRIVATE windows to the 8-giga workspace.
+
+open-on-workspace can't catch private windows: their title isn't "Private"
+yet at the instant niri places the window, and single-instance Vivaldi
+keeps the same app_id, so there's no open-time signal. Instead we watch
+niri's event stream and move a window the moment its title shows the
+private start page ("Private Window ...").
+"""
+import json
+import subprocess
+
+TARGET = "8-giga"
+MATCH = "Private Window"          # Vivaldi's private start-page title
+APP = "vivaldi-stable"
+moved = set()                     # window ids already moved (move once)
+
+
+def consider(w):
+    if not w:
+        return
+    wid = w.get("id")
+    if w.get("app_id") == APP and MATCH in (w.get("title") or ""):
+        if wid in moved:
+            return
+        moved.add(wid)
+        subprocess.run(
+            ["niri", "msg", "action", "move-window-to-workspace",
+             "--window-id", str(wid), TARGET],
+            check=False,
+        )
+
+
+proc = subprocess.Popen(
+    ["niri", "msg", "--json", "event-stream"],
+    stdout=subprocess.PIPE, text=True,
+)
+for line in proc.stdout:
+    line = line.strip()
+    if not line:
+        continue
+    try:
+        ev = json.loads(line)
+    except json.JSONDecodeError:
+        continue
+    if "WindowsChanged" in ev:                      # initial dump
+        for w in ev["WindowsChanged"].get("windows", []):
+            consider(w)
+    elif "WindowOpenedOrChanged" in ev:             # open / title change
+        consider(ev["WindowOpenedOrChanged"].get("window"))
+    elif "WindowClosed" in ev:                       # let ids be reused
+        moved.discard(ev["WindowClosed"].get("id"))
