@@ -104,6 +104,8 @@ systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 systemctl --user disable --now swaync.service 2>/dev/null || true
 systemctl --user mask app-nvidia-settings-user@autostart.service 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
+# click a notification -> focus the app it came from
+systemctl --user enable --now niri-notify-click.service 2>/dev/null || true
 # tmux plugins (non-interactive)
 ~/.tmux/plugins/tpm/bin/install_plugins 2>/dev/null || true
 
