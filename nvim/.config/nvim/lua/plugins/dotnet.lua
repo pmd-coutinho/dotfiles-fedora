@@ -1,30 +1,39 @@
 -- C# / .NET IDE layer.
 --
 -- Uses roslyn.nvim (the Microsoft Roslyn language server) — the modern
--- replacement for OmniSharp, and the right choice for .NET 8/10. The server
--- itself is installed via Mason as the `roslyn` package; roslyn.nvim
--- auto-detects that install.
+-- replacement for OmniSharp, and the right choice for .NET 8/10.
 --
--- If roslyn ever misbehaves (it's the one fiddly bit on Linux), the reliable
--- fallback is OmniSharp: delete this file and run `:LazyExtras` → enable
--- `lang.omnisharp`.
+-- IMPORTANT: the `roslyn` package roslyn.nvim expects is NOT in the default
+-- mason registry — it comes from the Crashdummyy custom registry. The default
+-- registry only has a *different* package called `roslyn-language-server`,
+-- which roslyn.nvim ignores. So we add the extra registry below; without it
+-- you get `Cannot find package "roslyn"`.
+--
+-- If it ever misbehaves, fall back to OmniSharp: delete this file and run
+-- `:LazyExtras` → enable `lang.omnisharp`.
 return {
+  -- Add the custom registry + ensure the .NET servers/tools are installed.
+  {
+    "mason-org/mason.nvim",
+    opts = function(_, opts)
+      opts.registries = opts.registries or { "github:mason-org/mason-registry" }
+      -- Crashdummyy registry packages `roslyn` + `rzls` (Razor).
+      table.insert(opts.registries, "github:Crashdummyy/mason-registry")
+      opts.ensure_installed = opts.ensure_installed or {}
+      vim.list_extend(opts.ensure_installed, {
+        "roslyn",      -- Microsoft.CodeAnalysis.LanguageServer (from Crashdummyy)
+        "netcoredbg",  -- debugger
+        "csharpier",   -- formatter
+      })
+    end,
+  },
+
   {
     "seblj/roslyn.nvim",
     ft = { "cs" },
     opts = {
-      -- let roslyn.nvim broadcast project/solution to all buffers
       filewatching = "roslyn",
     },
-  },
-
-  -- Ensure the Roslyn LSP + debugger + formatter are installed via Mason.
-  {
-    "mason-org/mason.nvim",
-    opts = function(_, opts)
-      opts.ensure_installed = opts.ensure_installed or {}
-      vim.list_extend(opts.ensure_installed, { "roslyn", "netcoredbg", "csharpier" })
-    end,
   },
 
   -- Treesitter parsers for the .NET ecosystem.
