@@ -3,7 +3,6 @@
   "positionX": "right",
   "positionY": "top",
   "notification-window-preferred-output": "eDP-1",
-  "control-center-preferred-output": "eDP-1",
   "layer": "overlay",
   "control-center-layer": "top",
   "control-center-margin-top": 6,
