@@ -84,6 +84,7 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **nvim C# LSP** (the one fiddly bit): `nvim/` uses LazyVim + `roslyn.nvim` with the Mason `roslyn` server. If it won't attach in a `.cs` file, `:Mason` → install/check `roslyn`, or fall back to OmniSharp (`:LazyExtras` → enable `lang.omnisharp`, remove `lua/plugins/dotnet.lua`).
 - **`app-nvidia\x2dsettings\x2duser@autostart.service`** fails on login (nvidia-settings autostart under niri). Masked by the **escaped** unit name — the un-escaped `app-nvidia-settings-user@…` form never matched, which is why it kept showing up.
 - **chezmoi is unused** — stow is the dotfiles system. `~/.config/chezmoi/key.txt` is an **age key** kept intentionally; don't delete it without checking what it decrypts.
+- **Click a notification → focus its app**: the `niri-notify-click.service` user unit (`bin/niri-notify-click`, a passive D-Bus monitor) maps each notification to its `desktop-entry` and focuses that app's niri window on click. Needed because some apps (e.g. Slack) don't act on their own notification action under Wayland.
 
 ## TODO
 
