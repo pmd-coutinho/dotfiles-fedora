@@ -38,7 +38,7 @@ on re-run).
 | `setup-editors.sh` | Catppuccin for VS Code + Rider, VS Code keyring fix (niri), Rider native-Wayland toolkit. |
 | `setup-round6.sh` | Workflow tooling: git+delta (Catppuccin) + aliases, dotnet-ef, Azure CLI, modern CLI (tldr/duf/procs/difftastic/just + dust/xh/watchexec binaries), neovim/LazyVim with C# (Roslyn) LSP. |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
-| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, vscode, lazygit, btop, bin, systemd, alacritty. |
+| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, lazygit, btop, bin, systemd, alacritty. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
 
 ## The stack
 
@@ -84,6 +84,7 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **nvim C# LSP** (the one fiddly bit): `nvim/` uses LazyVim + `roslyn.nvim` with the Mason `roslyn` server. If it won't attach in a `.cs` file, `:Mason` → install/check `roslyn`, or fall back to OmniSharp (`:LazyExtras` → enable `lang.omnisharp`, remove `lua/plugins/dotnet.lua`).
 - **`app-nvidia\x2dsettings\x2duser@autostart.service`** fails on login (nvidia-settings autostart under niri). Masked by the **escaped** unit name — the un-escaped `app-nvidia-settings-user@…` form never matched, which is why it kept showing up.
 - **chezmoi is unused** — stow is the dotfiles system. `~/.config/chezmoi/key.txt` is an **age key** kept intentionally; don't delete it without checking what it decrypts.
+- **Security — VS Code settings are NOT tracked**: VS Code rewrites `settings.json` with machine state (mssql connection profiles → server FQDNs, DB names, tokens). The repo is public, so that file is **gitignored**; only `settings.dist.json` (theme/UI, no connections) is tracked and seeded by `setup-editors.sh`. Never `git add -f` the live settings. (History was scrubbed once to remove previously-committed connection metadata.)
 - **Click a notification → focus its app**: the `niri-notify-click.service` user unit (`bin/niri-notify-click`, a passive D-Bus monitor) maps each notification to its `desktop-entry` and focuses that app's niri window on click. Needed because some apps (e.g. Slack) don't act on their own notification action under Wayland.
 
 ## TODO

@@ -14,7 +14,19 @@ if command -v code >/dev/null; then
     step "VS Code: Catppuccin extensions"
     code --install-extension Catppuccin.catppuccin-vsc \
          --install-extension Catppuccin.catppuccin-vsc-icons --force
-    # settings.json is symlinked from the dotfiles 'vscode' package (stow vscode).
+
+    # settings.json is NOT tracked (VS Code rewrites it with machine state —
+    # mssql connection profiles/tokens — which must not enter this public repo).
+    # Seed it from the template only if it doesn't exist yet; otherwise leave the
+    # user's live settings (and connections) untouched.
+    DEST="$HOME/.config/Code/User/settings.json"
+    if [ ! -e "$DEST" ]; then
+        mkdir -p "$(dirname "$DEST")"
+        cp "$(dirname "$0")/vscode/.config/Code/User/settings.dist.json" "$DEST"
+        ok "  seeded settings.json from template"
+    else
+        ok "  settings.json exists — left as-is (keeps your connections)"
+    fi
 
     # ── VS Code keyring fix ──────────────────────────────────────────────
     # niri sets XDG_CURRENT_DESKTOP=niri, which Electron can't map to a keyring

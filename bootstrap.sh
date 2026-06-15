@@ -75,8 +75,10 @@ mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
 step "Stowing dotfiles"
 cd "$DOTS"
 # back up any real files stow would collide with
+# NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
+# setup-editors.sh (the live file holds machine state and must not be tracked).
 for pkg in alacritty atuin bin btop fuzzel ghostty git gtk hyprlock lazygit niri nvim \
-           satty starship swaync systemd tmux vscode walker waybar zsh; do
+           satty starship swaync systemd tmux walker waybar zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
