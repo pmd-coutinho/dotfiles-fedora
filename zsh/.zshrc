@@ -64,6 +64,8 @@ command -v nvim >/dev/null && alias v='nvim'
 export BAT_THEME="Catppuccin Mocha"
 # lazydocker → podman's docker-compatible socket
 export DOCKER_HOST="unix://${XDG_RUNTIME_DIR}/podman/podman.sock"
+# ssh-agent.service (systemd user) — KeePassXC loads keys into it on unlock
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
 # zoxide must init before atuin/starship/syntax-highlighting for our setup;
 # its doctor flags that ordering but cd works fine — silence the nag.
 export _ZO_DOCTOR=0
