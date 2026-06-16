@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# kp-walker — KeePassXC lookup via Walker (--dmenu / --password) for niri/Wayland.
+# Prompts for the master password, lists entries, then copies/types the chosen field.
+#
+# Env overrides:
+#   KP_DB       path to the .kdbx        (default: ~/vault/passwords.kdbx)
+#   KP_KEYFILE  optional key file path   (default: none)
+set -euo pipefail
+
+DB="${KP_DB:-$HOME/vault/Passwords.kdbx}"
+KEYFILE="${KP_KEYFILE:-}"
+
+if [[ ! -f "$DB" ]]; then
+  notify-send "kp-walker" "Database not found: $DB" 2>/dev/null || true
+  exit 1
+fi
+
+# CLI args shared by every keepassxc-cli call
+cli=("$DB")
+[[ -n "$KEYFILE" ]] && cli+=(--key-file "$KEYFILE")
+
+# Helper: run keepassxc-cli feeding the master password on stdin
+kp() { printf '%s\n' "$PW" | keepassxc-cli "$@" 2>/dev/null; }
+
+# 1. Master password (masked input)
+PW="$(walker --password --placeholder "Unlock $(basename "$DB")")" || exit 0
+[[ -z "$PW" ]] && exit 0
+
+# 2. List entries recursively as full paths, drop group lines (trailing /)
+mapfile -t entries < <(kp ls -R -f "${cli[@]}" | grep -v '/$' || true)
+if [[ ${#entries[@]} -eq 0 ]]; then
+  notify-send "kp-walker" "No entries (wrong password or empty DB?)" 2>/dev/null || true
+  exit 1
+fi
+
+# 3. Pick an entry
+sel="$(printf '%s\n' "${entries[@]}" | walker --dmenu --placeholder "Entry")" || exit 0
+[[ -z "$sel" ]] && exit 0
+
+# 4. Pick an action
+action="$(printf '%s\n' \
+  "Password → copy" \
+  "Username → copy" \
+  "TOTP → copy" \
+  "Password → type" \
+  "Username → type" \
+  | walker --dmenu --placeholder "Action for: $sel")" || exit 0
+[[ -z "$action" ]] && exit 0
+
+# Copy stdin to the clipboard, then auto-clear after 45s in a detached process
+# (setsid -f survives this script exiting under niri's spawn-sh). We avoid
+# wl-copy -o because a running clipboard manager consumes the single paste.
+copy_clear() {
+  wl-copy
+  setsid -f sh -c 'sleep 45 && wl-copy --clear' >/dev/null 2>&1 || true
+}
+
+case "$action" in
+  "Password → copy") kp show -s -a Password "${cli[@]}" "$sel" | tr -d '\n' | copy_clear ;;
+  "Username → copy") kp show -a UserName "${cli[@]}" "$sel" | tr -d '\n' | copy_clear ;;
+  "TOTP → copy")     kp show -t "${cli[@]}" "$sel" | tr -d '\n' | copy_clear ;;
+  "Password → type") val="$(kp show -s -a Password "${cli[@]}" "$sel" | tr -d '\n')"; wtype -- "$val" ;;
+  "Username → type") val="$(kp show -a UserName "${cli[@]}" "$sel" | tr -d '\n')"; wtype -- "$val" ;;
+esac

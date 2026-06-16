@@ -1,0 +1,12 @@
+[Unit]
+Description=Sync KeePassXC vault to Google Drive (rclone bisync)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# First run ever must be done manually with --resync:
+#   rclone bisync %h/vault gdrive:vault --resync
+# After that, this keeps the two sides in sync. --resilient auto-recovers
+# from interrupted runs; --max-delete guards against mass-deletion mistakes.
+ExecStart=/usr/bin/rclone bisync %h/vault gdrive:vault --resilient --max-delete 5 --create-empty-src-dirs

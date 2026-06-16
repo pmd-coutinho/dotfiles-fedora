@@ -1,0 +1,8 @@
+[Unit]
+Description=Sync vault when passwords.kdbx changes
+
+[Path]
+PathChanged=%h/vault/Passwords.kdbx
+
+[Install]
+WantedBy=default.target
