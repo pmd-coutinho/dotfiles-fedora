@@ -24,8 +24,10 @@ This repo is **public**. Audit summary and the security-relevant design choices.
   an argument — so it never appears in `/proc/<pid>/cmdline`.
 - **Copy** actions use `wl-copy --sensitive` (sets the password-manager hint so
   compliant clipboard-history managers skip storing it) and auto-clear the live
-  clipboard after 45s. If your history manager ignores the hint, prefer the
-  *type* actions for passwords.
+  clipboard after 45s. **Verified (2026-06-18)**: elephant-clipboard (the walker
+  `Mod+Shift+S` history) honors the hint — a `--sensitive` copy does not land in
+  history, while normal copies do. So passwords copied via kp-walker stay out of
+  clipboard history.
 
 ## Vault sync (`rclone-vault-sync.service`)
 
@@ -41,17 +43,18 @@ trips the >50%-changed guard), so the safety comes from:
   keep the newer as winner and preserve the older as `…​.kdbx.conflict1`; never a
   silent loss.
 - **`--recover` / `--resilient`** — auto-recover from interrupted runs.
+- **`--check-access`** (enabled) — `RCLONE_TEST` sentinel files live on both
+  sides; if a side reads empty (unmounted/auth-expired remote), bisync aborts
+  rather than propagating "delete everything".
 
 After changing the flags: `systemctl --user daemon-reload` (no `--resync`
-needed for these). Backup dirs are auto-created on first use.
+needed for backup-dir/conflict flags). Backup dirs are auto-created on first use.
 
-### Optional further hardening: `--check-access`
-
-Guards against a side reading empty (unmounted/auth-expired remote) being read
-as "delete everything". One-time setup, then add `--check-access` to ExecStart:
+If the `RCLONE_TEST` sentinels are ever lost, re-establish them:
 
 ```bash
 touch ~/vault/RCLONE_TEST
 rclone copyto ~/vault/RCLONE_TEST gdrive:vault/RCLONE_TEST
-# then add --check-access to the ExecStart line and daemon-reload
+rclone bisync ~/vault gdrive:vault --check-access --resync --resync-mode path1 \
+  --backup-dir1 ~/vault-backup --backup-dir2 gdrive:vault-backup
 ```

@@ -23,11 +23,13 @@ Type=oneshot
 #                     preserve the older as Passwords.kdbx.conflict1 — never a
 #                     silent loss of edits.
 #   --recover / --resilient  auto-recover from interrupted/less-serious errors.
-# Optional further hardening (needs one-time setup, see docs/SECURITY.md): add
-# --check-access + RCLONE_TEST sentinel files on both sides to abort if a side
-# reads empty (protects against the remote returning nothing -> mass delete).
+#   --check-access    RCLONE_TEST sentinel files exist on both sides; if a side
+#                     reads empty (unmounted/auth-expired remote), bisync aborts
+#                     instead of treating it as "delete everything". Re-create
+#                     with: touch ~/vault/RCLONE_TEST && rclone copyto \
+#                     ~/vault/RCLONE_TEST gdrive:vault/RCLONE_TEST  (+ a --resync).
 ExecStart=/usr/bin/rclone bisync %h/vault gdrive:vault \
-  --resilient --recover --force \
+  --resilient --recover --force --check-access \
   --conflict-resolve newer --conflict-loser num --conflict-suffix conflict \
   --backup-dir1 %h/vault-backup --backup-dir2 gdrive:vault-backup \
   --create-empty-src-dirs
