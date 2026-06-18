@@ -76,6 +76,28 @@ zd() {
     fi
 }
 
+# zdl — fzf picker over Zellij sessions. Enter attaches (resurrecting dead
+# ones); Ctrl-X deletes the highlighted session (killing it first if running)
+# and refreshes the list, so you can prune several without leaving. Deletion
+# works even from inside Zellij; only attaching is blocked when nested.
+zdl() {
+    command -v fzf >/dev/null || { print -u2 "zdl: fzf not found"; return 1; }
+    local sel
+    sel=$(
+        zellij ls -n 2>/dev/null |
+        fzf --no-sort \
+            --header='enter: attach   ctrl-x: delete   esc: cancel' \
+            --bind 'ctrl-x:execute-silent(zellij delete-session -f {1})+reload(zellij ls -n 2>/dev/null)'
+    ) || return
+    [[ -n $sel ]] || return
+    local name=${sel%% *}
+    if [[ -n $ZELLIJ ]]; then
+        print -u2 "zdl: inside Zellij — not attaching to '$name' (would nest)"
+        return 1
+    fi
+    zellij attach -f "$name"
+}
+
 # ── Tool env ──────────────────────────────────────────────────────────
 export BAT_THEME="Catppuccin Mocha"
 # lazydocker → podman's docker-compatible socket
