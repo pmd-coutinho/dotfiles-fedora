@@ -177,6 +177,7 @@ binds {
     Mod+E hotkey-overlay-title="Emoji / symbol picker" { spawn "walker" "-m" "symbols"; }
     Mod+Slash hotkey-overlay-title="File search" { spawn "walker" "-m" "files"; }
     Mod+P hotkey-overlay-title="KeePassXC lookup (copy/type password, user, TOTP)" { spawn-sh "~/.local/bin/kp-walker"; }
+    Mod+Shift+D hotkey-overlay-title="Dictation: toggle (speak PT/EN -> types English)" { spawn-sh "~/.local/share/dictation/dictate.sh"; }
 
     Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 
