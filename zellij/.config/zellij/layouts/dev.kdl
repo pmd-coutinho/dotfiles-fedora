@@ -1,0 +1,30 @@
+// dev.kdl — agent workspace layout.
+//   tab "claude": auto-runs Claude Code
+//   tab "shell":  plain zsh
+//
+// Launch from a project root (both tabs inherit that directory):
+//     zellij -s <ticket> --layout dev
+//
+// `claude` resolves via the mise PATH inherited from the zsh you launch
+// zellij from. When claude exits, Zellij keeps the pane so you can re-run it.
+
+layout {
+    // A custom layout replaces the default UI, so re-add the tab-bar (top) and
+    // status-bar (bottom, with the live keymap hints) to every tab.
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    tab name="claude" focus=true {
+        pane command="claude"
+    }
+    tab name="shell" {
+        pane
+    }
+}
