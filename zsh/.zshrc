@@ -98,6 +98,68 @@ zdl() {
     zellij attach -f "$name"
 }
 
+# Roots that `zp` scans for projects (immediate subdirs become projects).
+ZELLIJ_PROJECT_DIRS=(~/dev)
+
+# zp — project → ticket sessionizer. Two stages: pick a project (subdir of
+# $ZELLIJ_PROJECT_DIRS), then pick one of its existing `<project>:<ticket>`
+# sessions or create a new ticket. Sessions are named `<project>:<ticket>` so
+# the flat Zellij namespace reads as project→session. New sessions use
+# ~/.config/zellij/layouts/<project>.kdl if it exists, else the `dev` layout.
+zp() {
+    command -v fzf >/dev/null || { print -u2 "zp: fzf not found"; return 1; }
+    [[ -z $ZELLIJ ]] || { print -u2 "zp: run from outside Zellij (can't attach while nested)"; return 1; }
+    local proj_path
+    proj_path=$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_PROJECT_DIRS 2>/dev/null |
+                fzf --prompt='project > ') || return
+    [[ -n $proj_path ]] || return
+    local proj=${proj_path:t}
+
+    local -a all
+    all=(${(f)"$(zellij ls -s 2>/dev/null)"})
+    local new='＋ new ticket…'
+    local pick
+    pick=$(print -l -- "$new" ${(M)all:#${proj}:*} | fzf --prompt="${proj} > ") || return
+    [[ -n $pick ]] || return
+
+    local session
+    if [[ $pick == $new ]]; then
+        local ticket
+        read "ticket?ticket (e.g. OT-12935): "
+        [[ -n $ticket ]] || { print -u2 "zp: no ticket given"; return 1; }
+        session="${proj}:${ticket}"
+    else
+        session=$pick
+    fi
+
+    local layout=dev
+    [[ -f ~/.config/zellij/layouts/${proj}.kdl ]] && layout=$proj
+
+    builtin cd -- "$proj_path" || return
+    if print -l -- $all | grep -qxF -- "$session"; then
+        zellij attach -f "$session"
+    else
+        zellij -s "$session" -n "$layout"
+    fi
+}
+
+# zs — flat fzf navigator over ALL sessions (names are `project:ticket`, so
+# fuzzy-type a project to filter to its tickets, or a ticket to jump straight).
+# Bound to Ctrl-f. Use from a plain terminal; inside Zellij use `Ctrl-o w`.
+zs() {
+    command -v fzf >/dev/null || { print -u2 "zs: fzf not found"; return 1; }
+    [[ -z $ZELLIJ ]] || { print -u2 "zs: already inside Zellij — use Ctrl-o w to switch"; return 1; }
+    local sel
+    sel=$(zellij ls -n 2>/dev/null |
+          fzf --no-sort --prompt='session > ' --header='enter: attach   esc: cancel') || return
+    [[ -n $sel ]] || return
+    zellij attach -f "${sel%% *}"
+}
+# Ctrl-f at the prompt → zs (saves any half-typed line, restores it after).
+_zs_widget() { zle push-line; BUFFER='zs'; zle accept-line; }
+zle -N _zs_widget
+bindkey '^F' _zs_widget
+
 # ── Tool env ──────────────────────────────────────────────────────────
 export BAT_THEME="Catppuccin Mocha"
 # lazydocker → podman's docker-compatible socket

@@ -209,6 +209,28 @@ Use **`-n`** (`--new-session-with-layout`), not `--layout`: combined with `-s`,
 `--layout` tries to add tabs to an *existing* session and errors with "session
 not found". `-n` always creates a new session.
 
+### Project → ticket → tabs (zp / zs)
+
+Zellij sessions are a flat namespace, so the **project→session→tabs** hierarchy
+is encoded in the session name: **`<project>:<ticket>`** (e.g.
+`nxg-csharp-nopcommerce:OT-12935`). `/` is rejected by Zellij; `:` is the
+delimiter.
+
+| Cmd | Job |
+|---|---|
+| **`zp`** | Sessionizer: fzf a project (subdir of `$ZELLIJ_PROJECT_DIRS`, default `~/dev`), then pick one of its `<project>:*` sessions or **＋ new ticket**. Creates `<project>:<ticket>` with the project's layout, else `dev`. |
+| **`zs`** (Ctrl-f) | Flat fzf navigator over *all* sessions. Type a project to filter to its tickets, or a ticket to jump straight. Run from a plain terminal. |
+| `zd` | Quick attach-or-create for the current dir (no ticket). |
+| `zdl` | fzf picker; Ctrl-X deletes the highlighted session. |
+
+`zp`/`zs`/`zd` attach from *outside* Zellij; **inside** a session use Zellij's
+native `Ctrl-o w` (session-manager) to switch without detaching.
+
+**Per-project layouts:** drop `~/.config/zellij/layouts/<project>.kdl` and `zp`
+uses it for that project's new sessions (e.g. a repo that wants `claude + shell
++ sql`); everything else falls back to `dev`. This is the "organize by project,
+not just by feature" piece.
+
 ---
 
 ## Other tools already in the stack
