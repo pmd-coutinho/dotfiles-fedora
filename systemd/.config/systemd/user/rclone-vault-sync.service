@@ -2,6 +2,8 @@
 Description=Sync KeePassXC vault to Google Drive (rclone bisync)
 After=network-online.target
 Wants=network-online.target
+# Fire a desktop notification if a sync run fails (so it can't break silently)
+OnFailure=notify-failure@%n.service
 
 [Service]
 Type=oneshot

@@ -1,0 +1,8 @@
+[Unit]
+Description=Desktop notification when %i fails
+
+[Service]
+Type=oneshot
+# %I is the unescaped name of the failed unit (passed via OnFailure=...@%n.service).
+# Note: systemd does not run ExecStart in a shell, so no command substitution here.
+ExecStart=/usr/bin/notify-send --urgency=critical --icon=dialog-error "⚠ %I failed" "Background service failed. Inspect with: journalctl --user -u %I -e"
