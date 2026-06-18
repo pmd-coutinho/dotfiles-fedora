@@ -4,7 +4,10 @@
 # Idempotent: safe to re-run to repair or upgrade the venv.
 set -euo pipefail
 
-DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+# Target the stowed (home) location, NOT readlink -f: this script is a stow
+# symlink into ~/dotfiles, and the venv must live next to it in $HOME where
+# dictate.sh/server.py expect it (~/.local/share/dictation/venv).
+DIR="$HOME/.local/share/dictation"
 VENV="$DIR/venv"
 
 echo "==> Creating venv at $VENV"

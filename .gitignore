@@ -2,3 +2,6 @@ tmux/.config/tmux/plugins/
 
 # VS Code rewrites this with machine state (mssql connections/tokens) — never track it
 vscode/.config/Code/User/settings.json
+
+# Dictation venv is machine-built by setup.sh (faster-whisper + CUDA wheels + model cache)
+dictation/.local/share/dictation/venv/

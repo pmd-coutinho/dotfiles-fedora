@@ -41,7 +41,8 @@ sudo dnf -y install \
   elephant-snippets elephant-todo elephant-windows elephant-1password \
   satty grim slurp wl-clipboard cliphist wlogout \
   papirus-icon-theme adw-gtk3-theme jetbrains-mono-fonts \
-  brightnessctl playerctl pavucontrol network-manager-applet blueman solaar \
+  brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
+  wtype ffmpeg \
   mate-polkit gnome-keyring tuned tuned-ppd \
   greetd tuigreet \
   kernel-cachyos kernel-cachyos-devel-matched
@@ -77,7 +78,7 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin bin btop fuzzel ghostty git gtk hyprlock lazygit niri nvim \
+for pkg in alacritty atuin bin btop dictation fuzzel ghostty git gtk hyprlock lazygit niri nvim \
            satty starship swaync systemd tmux walker waybar zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
@@ -93,6 +94,12 @@ gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrainsMono Ner
 step "mise tools (claude / opencode / codex)"
 command -v mise >/dev/null || curl -fsSL https://mise.run | sh
 ~/.local/bin/mise install 2>/dev/null || mise install 2>/dev/null || true
+
+# ── 5b. Voice dictation (faster-whisper venv) ────────────────────────────
+step "Voice dictation venv (faster-whisper + CUDA wheels)"
+# Builds ~/.local/share/dictation/venv. The large-v3 model (~3GB) downloads
+# lazily on first dictation, not here. See docs/DICTATION.md.
+bash ~/.local/share/dictation/setup.sh || warn "run ~/.local/share/dictation/setup.sh manually later"
 
 # ── 6. Services ──────────────────────────────────────────────────────────
 step "Enabling services"

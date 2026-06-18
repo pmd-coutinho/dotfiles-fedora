@@ -19,7 +19,7 @@ reboot                                  # lands on CachyOS kernel + greetd + zsw
 
 `bootstrap.sh` is idempotent and orchestrates the whole build:
 COPRs/RPMFusion → packages → fonts/TPM/fzf-tab/wallpaper → `stow` → gsettings →
-mise → services → then calls the system scripts (`setup-root.sh`,
+mise → dictation venv → services → then calls the system scripts (`setup-root.sh`,
 `setup-round2.sh`, `fix-igpu.sh`) for the `/etc`, swap, power, and kernel bits.
 The redundant `dnf` lines across scripts are intentional and harmless (no-ops
 on re-run).
@@ -38,7 +38,8 @@ on re-run).
 | `setup-editors.sh` | Catppuccin for VS Code + Rider, VS Code keyring fix (niri), Rider native-Wayland toolkit. |
 | `setup-round6.sh` | Workflow tooling: git+delta (Catppuccin) + aliases, dotnet-ef, Azure CLI, modern CLI (tldr/duf/procs/difftastic/just + dust/xh/watchexec binaries), neovim/LazyVim with C# (Roslyn) LSP. See [`docs/CLI-WORKFLOW.md`](docs/CLI-WORKFLOW.md) for how to use it all. |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
-| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, lazygit, btop, bin, systemd, alacritty. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
+| `docs/DICTATION.md` | **GPU voice dictation** (offline faster-whisper): `Mod+Shift+D` speak→English, `Mod+Alt+D` verbatim. Stow pkg `dictation` + `setup.sh` venv. |
+| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, lazygit, btop, bin, systemd, alacritty, dictation. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
 
 ## The stack
 
