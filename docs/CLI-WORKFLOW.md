@@ -190,6 +190,18 @@ zellij setup --check    # validate config.kdl
 Run an agent per session and detach (`Ctrl-o d`) instead of stacking panes in
 one tmux window — `zellij ls` is then your single overview.
 
+**Preconfigured `dev` layout** (`zellij/.config/zellij/layouts/dev.kdl`) —
+tab 1 auto-runs Claude Code, tab 2 is a plain zsh:
+
+```bash
+cd <project>
+zellij -s ot-12935 -n dev     # named session, two tabs, claude already running
+```
+
+Use **`-n`** (`--new-session-with-layout`), not `--layout`: combined with `-s`,
+`--layout` tries to add tabs to an *existing* session and errors with "session
+not found". `-n` always creates a new session.
+
 ---
 
 ## Other tools already in the stack
