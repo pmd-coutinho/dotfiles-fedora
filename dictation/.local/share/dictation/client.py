@@ -14,7 +14,13 @@ SOCK = os.path.join(RUNDIR, "sock")
 
 def main():
     arg = sys.argv[1] if len(sys.argv) > 1 else ""
-    msg = "PING" if arg == "--ping" else arg
+    task = sys.argv[2] if len(sys.argv) > 2 else ""
+    if arg == "--ping":
+        msg = "PING"
+    elif task:
+        msg = f"{task}\t{arg}"   # "<task>\t<path>"
+    else:
+        msg = arg
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(120)

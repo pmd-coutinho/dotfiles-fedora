@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 # Push-to-toggle dictation for niri/Wayland.
 #   1st press -> start recording the mic
-#   2nd press -> stop, transcribe+translate (PT/auto -> English) on the GPU,
-#                and type the result into the focused window via wtype.
+#   2nd press -> stop, run Whisper on the GPU, and type the result via wtype.
+#
+# Mode (1st arg, default "translate"; remembered for the matching stop press):
+#   translate   -> speak PT/EN, always types English
+#   transcribe  -> types verbatim in the spoken language (e.g. Portuguese)
 set -uo pipefail
+
+MODE="${1:-translate}"
+case "$MODE" in translate|transcribe) ;; *) MODE="translate" ;; esac
 
 DIR="$HOME/.local/share/dictation"
 VENV="$DIR/venv"
@@ -13,6 +19,7 @@ RUNDIR="${XDG_RUNTIME_DIR:-/tmp}/dictate"
 mkdir -p "$RUNDIR"
 WAV="$RUNDIR/rec.wav"
 RECPID="$RUNDIR/rec.pid"
+MODEFILE="$RUNDIR/mode"
 
 # faster-whisper's ctranslate2 needs the pip-installed cuBLAS/cuDNN libs on the path.
 # nvidia is a namespace package, so glob every nvidia/*/lib dir under site-packages.
@@ -46,9 +53,10 @@ if is_recording; then
   kill -INT "$(cat "$RECPID")" 2>/dev/null || true
   rm -f "$RECPID"
   sleep 0.3   # let ffmpeg finalize the wav header
-  notify "Transcribing…" 2000
+  MODE="$(cat "$MODEFILE" 2>/dev/null || echo translate)"
+  notify "Transcribing… ($MODE)" 2000
   ensure_server || exit 1
-  TEXT="$("$PY" "$DIR/client.py" "$WAV" 2>/dev/null || true)"
+  TEXT="$("$PY" "$DIR/client.py" "$WAV" "$MODE" 2>/dev/null || true)"
   TEXT="${TEXT#"${TEXT%%[![:space:]]*}"}"   # ltrim
   TEXT="${TEXT%"${TEXT##*[![:space:]]}"}"   # rtrim
   if [ -z "$TEXT" ]; then
@@ -69,7 +77,8 @@ else
     SRC="$(pactl get-default-source 2>/dev/null)"
   fi
   [ -z "$SRC" ] && SRC="default"
-  notify "Listening (${SRC:0:38})… press again to stop" 1500
+  echo "$MODE" >"$MODEFILE"   # remember mode for the stop press
+  notify "Listening · $MODE (${SRC:0:30})… press again to stop" 1500
   # -thread_queue_size helps with bluetooth/usb mics; explicit source avoids ffmpeg's
   # "default" resolving to something other than the PipeWire default.
   setsid ffmpeg -y -hide_banner -loglevel error -thread_queue_size 512 \

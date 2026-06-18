@@ -48,10 +48,12 @@ def load_model():
         return m
 
 
-def transcribe(model, path):
+def transcribe(model, path, task):
+    if task not in ("translate", "transcribe"):
+        task = TASK
     segments, _info = model.transcribe(
         path,
-        task=TASK,
+        task=task,
         language=LANG,
         beam_size=5,
         vad_filter=True,
@@ -87,7 +89,12 @@ def main():
             if not req:
                 conn.sendall(b"")
                 continue
-            text = transcribe(model, req)
+            # Request is either "<path>" or "<task>\t<path>" (task: translate|transcribe).
+            if "\t" in req:
+                task, path = req.split("\t", 1)
+            else:
+                task, path = TASK, req
+            text = transcribe(model, path.strip(), task.strip())
             conn.sendall(text.encode())
         except Exception:
             log(traceback.format_exc())
