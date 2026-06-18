@@ -195,8 +195,15 @@ tab 1 auto-runs Claude Code, tab 2 is a plain zsh:
 
 ```bash
 cd <project>
-zellij -s ot-12935 -n dev     # named session, two tabs, claude already running
+zd                            # attach-or-create, session named after the dir
+zd ot-12935                   # ...or name it explicitly
+zellij -s ot-12935 -n dev     # the raw form zd wraps
 ```
+
+**`zd`** (zsh function) is the day-to-day entry point: it attaches to the
+session named after the current dir (resurrecting it if dead), or creates a new
+one with the `dev` layout — so re-running it in a repo drops you back where you
+left off instead of spawning duplicates. Refuses to nest if already inside Zellij.
 
 Use **`-n`** (`--new-session-with-layout`), not `--layout`: combined with `-s`,
 `--layout` tries to add tabs to an *existing* session and errors with "session

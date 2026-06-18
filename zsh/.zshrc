@@ -60,6 +60,22 @@ alias lg='lazygit'
 alias lzd='lazydocker'
 command -v nvim >/dev/null && alias v='nvim'
 
+# zd [name] — Zellij attach-or-create. Attaches to the session named after the
+# current dir (or $1), resurrecting it if dead; creates new ones with the `dev`
+# layout (Claude Code + shell tabs). Avoids re-creating every time.
+zd() {
+    if [[ -n $ZELLIJ ]]; then
+        print -u2 "zd: already inside Zellij session '${ZELLIJ_SESSION_NAME:-?}'"
+        return 1
+    fi
+    local name="${1:-${PWD:t}}"
+    if zellij ls -s 2>/dev/null | grep -qxF -- "$name"; then
+        zellij attach -f "$name"   # -f re-runs commands if resurrecting a dead session
+    else
+        zellij -s "$name" -n dev
+    fi
+}
+
 # ── Tool env ──────────────────────────────────────────────────────────
 export BAT_THEME="Catppuccin Mocha"
 # lazydocker → podman's docker-compatible socket
