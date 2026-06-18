@@ -11,15 +11,13 @@
 // zellij from. When claude exits, Zellij keeps the pane so you can re-run it.
 
 layout {
-    // A custom layout replaces the default UI, so re-add the tab-bar (top) and
-    // status-bar (bottom, with the live keymap hints) to every tab.
+    // A custom layout replaces the default UI, so re-add a bar. Use the sleek
+    // single-line compact-bar (tabs + current mode) to match config.kdl's
+    // default_layout "compact" and the Catppuccin look of the rest of the rig.
     default_tab_template {
-        pane size=1 borderless=true {
-            plugin location="zellij:tab-bar"
-        }
         children
-        pane size=2 borderless=true {
-            plugin location="zellij:status-bar"
+        pane size=1 borderless=true {
+            plugin location="zellij:compact-bar"
         }
     }
 

@@ -6,9 +6,16 @@
 // is the reason to run this over more tmux. Don't remap it into tmux muscle
 // memory or you lose the on-screen hints.
 
+// Zellij's built-in catppuccin-mocha IS the official Catppuccin palette —
+// same hexes as the FZF colors in .zshrc, so it matches the rest of the rig.
 theme "catppuccin-mocha"
 
 default_shell "zsh"
+
+// Sleek single-line bottom bar (vs the default chunky two-line status bar)
+// for any session started without an explicit layout. The `dev` layout uses
+// the same compact-bar so everything looks consistent.
+default_layout "compact"
 
 // Wayland clipboard — same choice as tmux.conf's `copy-pipe-and-cancel wl-copy`.
 copy_command "wl-copy"
