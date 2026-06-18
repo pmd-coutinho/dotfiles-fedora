@@ -156,6 +156,42 @@ language servers; `:LazyExtras` to toggle language packs.
 
 ---
 
+## zellij — terminal multiplexer (AI-agent sessions)
+
+Batteries-included alternative to tmux with an on-screen keymap, so you stop
+losing track of parallel sessions (e.g. one Claude Code / opencode agent per
+ticket). Config is a stow package (`zellij/.config/zellij/config.kdl`):
+Catppuccin Mocha, `wl-copy` clipboard, `zsh`, and **session serialization** —
+sessions survive detach, crash, and reboot.
+
+Keybinds are left at Zellij **defaults** on purpose; the bottom status bar shows
+them live. `Ctrl-<key>` enters a mode, then a letter acts:
+
+| Key | Mode / action |
+|---|---|
+| `Ctrl-p` then `n` / `d` / `x` | pane: new / split-down / close |
+| `Ctrl-t` then `n` / `h` `l` | tab: new / prev / next |
+| `Ctrl-o` then `d` | session: **detach** (leaves it running) |
+| `Ctrl-s` then `e` | scrollback: edit buffer in nvim |
+| `Ctrl-h/j/k/l` | move focus between panes |
+| `Ctrl-q` | quit (kills the session) |
+
+Session management (the part that fixes "lost track"):
+
+```bash
+zellij                  # start a new session (auto-named)
+zellij -s ot-12935      # start a named session (use the ticket)
+zellij ls               # list running + serialized sessions
+zellij a                # attach to the last/only session
+zellij a ot-12935       # attach to a named one
+zellij setup --check    # validate config.kdl
+```
+
+Run an agent per session and detach (`Ctrl-o d`) instead of stacking panes in
+one tmux window — `zellij ls` is then your single overview.
+
+---
+
 ## Other tools already in the stack
 
 `bat` (cat), `eza` (ls/ll/la/lt), `fd` (find), `rg` (ripgrep/grep), `fzf`

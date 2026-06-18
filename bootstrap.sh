@@ -20,7 +20,7 @@ sudo dnf -y install \
   "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || true
 for c in scottames/ghostty atim/starship solopasha/hyprland \
-         errornointernet/walker bieszczaders/kernel-cachyos; do
+         errornointernet/walker bieszczaders/kernel-cachyos varlad/zellij; do
     sudo dnf -y copr enable "$c"
 done
 
@@ -32,7 +32,7 @@ sudo dnf -y install \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
   bat ripgrep eza btop \
-  starship atuin zoxide stow tmux \
+  starship atuin zoxide stow tmux zellij \
   SwayNotificationCenter swaybg swayidle hyprlock \
   walker elephant elephant-calc elephant-files elephant-clipboard \
   elephant-symbols elephant-unicode elephant-websearch elephant-runner \
@@ -79,7 +79,7 @@ cd "$DOTS"
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
 for pkg in alacritty atuin bin btop dictation fuzzel ghostty git gtk hyprlock lazygit niri nvim \
-           satty starship swaync systemd tmux walker waybar zsh; do
+           satty starship swaync systemd tmux walker waybar zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 

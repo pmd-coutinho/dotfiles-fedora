@@ -1,0 +1,32 @@
+// Zellij — Catppuccin Mocha, Wayland clipboard, zsh.
+// Managed via ~/dotfiles (GNU Stow): stow package `zellij`.
+//
+// Keybinds are intentionally left at Zellij defaults — the discoverable
+// status-bar keymap (Ctrl-p panes, Ctrl-t tabs, Ctrl-o session, Ctrl-q quit)
+// is the reason to run this over more tmux. Don't remap it into tmux muscle
+// memory or you lose the on-screen hints.
+
+theme "catppuccin-mocha"
+
+default_shell "zsh"
+
+// Wayland clipboard — same choice as tmux.conf's `copy-pipe-and-cancel wl-copy`.
+copy_command "wl-copy"
+copy_clipboard "system"
+copy_on_select true
+
+mouse_mode true
+pane_frames true
+scrollback_editor "/usr/bin/nvim"
+
+// Persist sessions across detach/exit so they survive a crash or reboot
+// (this is the "stop losing track of sessions" bit). Resurrect with
+// `zellij attach` or pick from `zellij ls`.
+session_serialization true
+
+ui {
+    pane_frames {
+        rounded_corners true
+        hide_session_name false
+    }
+}
