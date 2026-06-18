@@ -9,8 +9,25 @@ OnFailure=notify-failure@%n.service
 Type=oneshot
 # First run ever (or after a break) must be done manually with --resync:
 #   rclone bisync %h/vault gdrive:vault --resync
-# After that, this keeps the two sides in sync. --resilient auto-recovers from
-# interrupted runs. --force is REQUIRED here: the vault is a single file, so any
-# KeePassXC save looks like "100% of files changed" and trips bisync's
-# all-files-changed safety abort; --force lets the legitimate change through.
-ExecStart=/usr/bin/rclone bisync %h/vault gdrive:vault --resilient --force --create-empty-src-dirs
+# After that, this keeps the two sides in sync.
+#
+# --force is REQUIRED here: the vault is a single file, so any KeePassXC save
+# looks like "100% of files changed" and trips bisync's all-files-changed safety
+# abort. --force bypasses that guard — which on its own is risky for a password
+# DB (a corrupt/empty side would be propagated). The flags below make it safe:
+#   --backup-dir1/2   before any file is deleted or overwritten on a side, the
+#                     OLD version is moved to vault-backup/ on that same side, so
+#                     a bad sync is always recoverable (last-known-good kept).
+#   --conflict-resolve newer + --conflict-loser num  if BOTH sides changed
+#                     (edited on two machines), keep the newer as the winner and
+#                     preserve the older as Passwords.kdbx.conflict1 — never a
+#                     silent loss of edits.
+#   --recover / --resilient  auto-recover from interrupted/less-serious errors.
+# Optional further hardening (needs one-time setup, see docs/SECURITY.md): add
+# --check-access + RCLONE_TEST sentinel files on both sides to abort if a side
+# reads empty (protects against the remote returning nothing -> mass delete).
+ExecStart=/usr/bin/rclone bisync %h/vault gdrive:vault \
+  --resilient --recover --force \
+  --conflict-resolve newer --conflict-loser num --conflict-suffix conflict \
+  --backup-dir1 %h/vault-backup --backup-dir2 gdrive:vault-backup \
+  --create-empty-src-dirs

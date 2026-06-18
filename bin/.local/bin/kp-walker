@@ -50,15 +50,20 @@ action="$(printf '%s\n' \
 # Copy stdin to the clipboard, then auto-clear after 45s in a detached process
 # (setsid -f survives this script exiting under niri's spawn-sh). We avoid
 # wl-copy -o because a running clipboard manager consumes the single paste.
+# --sensitive sets the password-manager hint so compliant clipboard-history
+# managers skip storing the secret (the live clipboard still works to paste).
 copy_clear() {
-  wl-copy
+  wl-copy --sensitive
   setsid -f sh -c 'sleep 45 && wl-copy --clear' >/dev/null 2>&1 || true
 }
 
+# For the "type" actions, pipe the secret to wtype via stdin ('-') instead of
+# passing it as an argv ("wtype -- $val") — argv is world-readable in
+# /proc/<pid>/cmdline while wtype runs. stdin keeps it out of the process table.
 case "$action" in
   "Password → copy") kp show -s -a Password "${cli[@]}" "$sel" | tr -d '\n' | copy_clear ;;
   "Username → copy") kp show -a UserName "${cli[@]}" "$sel" | tr -d '\n' | copy_clear ;;
   "TOTP → copy")     kp show -t "${cli[@]}" "$sel" | tr -d '\n' | copy_clear ;;
-  "Password → type") val="$(kp show -s -a Password "${cli[@]}" "$sel" | tr -d '\n')"; wtype -- "$val" ;;
-  "Username → type") val="$(kp show -a UserName "${cli[@]}" "$sel" | tr -d '\n')"; wtype -- "$val" ;;
+  "Password → type") kp show -s -a Password "${cli[@]}" "$sel" | tr -d '\n' | wtype - ;;
+  "Username → type") kp show -a UserName "${cli[@]}" "$sel" | tr -d '\n' | wtype - ;;
 esac

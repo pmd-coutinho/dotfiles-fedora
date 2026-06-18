@@ -5,3 +5,24 @@ vscode/.config/Code/User/settings.json
 
 # Dictation venv is machine-built by setup.sh (faster-whisper + CUDA wheels + model cache)
 dictation/.local/share/dictation/venv/
+
+# --- Never commit secrets (this repo is PUBLIC) ------------------------------
+# Defensive: none of these belong in a stow package, but guard against an
+# accidental `git add -A` ever pulling a credential file into history.
+**/id_rsa
+**/id_ed25519
+**/id_ecdsa
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.kdbx
+**/*.ovpn
+**/rclone.conf
+**/.netrc
+**/.pgpass
+**/.ssh/
+**/.gnupg/
+**/*.age
+secrets/
+*.secret
