@@ -6,6 +6,10 @@ vscode/.config/Code/User/settings.json
 # Dictation venv is machine-built by setup.sh (faster-whisper + CUDA wheels + model cache)
 dictation/.local/share/dictation/venv/
 
+# Zellij's config UI ("Save to disk") rewrites config.kdl as a full dump and
+# leaves a .bak — never track those; the lean hand-written config.kdl is canonical.
+zellij/.config/zellij/*.bak
+
 # --- Never commit secrets (this repo is PUBLIC) ------------------------------
 # Defensive: none of these belong in a stow package, but guard against an
 # accidental `git add -A` ever pulling a credential file into history.

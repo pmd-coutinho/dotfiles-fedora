@@ -12,28 +12,18 @@ theme "catppuccin-mocha"
 
 default_shell "zsh"
 
-// Sleek single-line bottom bar (vs the default chunky two-line status bar)
-// for any session started without an explicit layout. The `dev` layout uses
-// the same compact-bar so everything looks consistent.
-default_layout "compact"
-
 // Wayland clipboard — same choice as tmux.conf's `copy-pipe-and-cancel wl-copy`.
 copy_command "wl-copy"
 copy_clipboard "system"
 copy_on_select true
 
 mouse_mode true
-pane_frames true
+// No pane frames — cleaner look. Panes are still distinguishable by position;
+// the focused pane is highlighted. Toggle on at runtime with the pane-mode `z`.
+pane_frames false
 scrollback_editor "/usr/bin/nvim"
 
 // Persist sessions across detach/exit so they survive a crash or reboot
 // (this is the "stop losing track of sessions" bit). Resurrect with
 // `zellij attach` or pick from `zellij ls`.
 session_serialization true
-
-ui {
-    pane_frames {
-        rounded_corners true
-        hide_session_name false
-    }
-}
