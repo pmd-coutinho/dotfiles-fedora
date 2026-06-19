@@ -16,6 +16,9 @@ setopt INTERACTIVE_COMMENTS   # allow # comments in interactive shell
 setopt NO_BEEP
 
 # ── Completion ────────────────────────────────────────────────────────
+# User completion functions (e.g. _zellij). Must be on fpath BEFORE compinit.
+# Regenerate after a zellij upgrade: zellij setup --generate-completion zsh > ~/.local/share/zsh/completions/_zellij
+fpath=(~/.local/share/zsh/completions $fpath)
 autoload -Uz compinit
 compinit
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # case-insensitive
@@ -101,15 +104,32 @@ if command -v abbr >/dev/null; then
     ABBR_QUIET=0
 fi
 
+# zellij-switch plugin — lets the session helpers below switch the CURRENT
+# client to another session (creating it with a layout+cwd if absent) from
+# INSIDE Zellij, where `zellij attach` would illegally nest. Pinned by URL;
+# perms are pre-granted in ~/.cache/zellij/permissions.kdl. NOTE: built against
+# zellij-tile 0.40 while we run zellij 0.42 — works today, recheck on upgrade.
+ZELLIJ_SWITCH_PLUGIN="https://github.com/mostafaqanbaryan/zellij-switch/releases/download/0.2.1/zellij-switch.wasm"
+
+# _zswitch <session> [layout] [cwd] — switch in place via the plugin. layout/cwd
+# are only honored when the target session doesn't exist yet (creation).
+_zswitch() {
+    local args="--session $1"
+    [[ -n $2 ]] && args+=" --layout $2"
+    [[ -n $3 ]] && args+=" --cwd $3"
+    zellij pipe --plugin "$ZELLIJ_SWITCH_PLUGIN" -- "$args"
+}
+
 # zd [name] — Zellij attach-or-create. Attaches to the session named after the
 # current dir (or $1), resurrecting it if dead; creates new ones with the `dev`
-# layout (Claude Code + shell tabs). Avoids re-creating every time.
+# layout (Claude Code + shell tabs). Avoids re-creating every time. Inside
+# Zellij it switches the current client instead of nesting.
 zd() {
-    if [[ -n $ZELLIJ ]]; then
-        print -u2 "zd: already inside Zellij session '${ZELLIJ_SESSION_NAME:-?}'"
-        return 1
-    fi
     local name="${1:-${PWD:t}}"
+    if [[ -n $ZELLIJ ]]; then
+        _zswitch "$name" dev "$PWD"
+        return
+    fi
     if zellij ls -s 2>/dev/null | grep -qxF -- "$name"; then
         zellij attach -f "$name"   # -f re-runs commands if resurrecting a dead session
     else
@@ -119,8 +139,8 @@ zd() {
 
 # zdl — fzf picker over Zellij sessions. Enter attaches (resurrecting dead
 # ones); Ctrl-X deletes the highlighted session (killing it first if running)
-# and refreshes the list, so you can prune several without leaving. Deletion
-# works even from inside Zellij; only attaching is blocked when nested.
+# and refreshes the list, so you can prune several without leaving. Works from
+# inside Zellij too: Enter switches the current client (via _zswitch).
 zdl() {
     command -v fzf >/dev/null || { print -u2 "zdl: fzf not found"; return 1; }
     local sel
@@ -133,8 +153,8 @@ zdl() {
     [[ -n $sel ]] || return
     local name=${sel%% *}
     if [[ -n $ZELLIJ ]]; then
-        print -u2 "zdl: inside Zellij — not attaching to '$name' (would nest)"
-        return 1
+        _zswitch "$name"   # existing session — just switch the current client
+        return
     fi
     zellij attach -f "$name"
 }
@@ -149,7 +169,6 @@ ZELLIJ_PROJECT_DIRS=(~/dev)
 # ~/.config/zellij/layouts/<project>.kdl if it exists, else the `dev` layout.
 zp() {
     command -v fzf >/dev/null || { print -u2 "zp: fzf not found"; return 1; }
-    [[ -z $ZELLIJ ]] || { print -u2 "zp: run from outside Zellij (can't attach while nested)"; return 1; }
     local proj_path
     proj_path=$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_PROJECT_DIRS 2>/dev/null |
                 fzf --prompt='project > ') || return
@@ -176,6 +195,10 @@ zp() {
     local layout=dev
     [[ -f ~/.config/zellij/layouts/${proj}.kdl ]] && layout=$proj
 
+    if [[ -n $ZELLIJ ]]; then
+        _zswitch "$session" "$layout" "$proj_path"   # switch in place; cwd/layout used only if new
+        return
+    fi
     builtin cd -- "$proj_path" || return
     if print -l -- $all | grep -qxF -- "$session"; then
         zellij attach -f "$session"
@@ -186,15 +209,19 @@ zp() {
 
 # zs — flat fzf navigator over ALL sessions (names are `project:ticket`, so
 # fuzzy-type a project to filter to its tickets, or a ticket to jump straight).
-# Bound to Ctrl-f. Use from a plain terminal; inside Zellij use `Ctrl-o w`.
+# Bound to Ctrl-f. Works inside Zellij too (switches in place via _zswitch).
 zs() {
     command -v fzf >/dev/null || { print -u2 "zs: fzf not found"; return 1; }
-    [[ -z $ZELLIJ ]] || { print -u2 "zs: already inside Zellij — use Ctrl-o w to switch"; return 1; }
     local sel
     sel=$(zellij ls -n 2>/dev/null |
-          fzf --no-sort --prompt='session > ' --header='enter: attach   esc: cancel') || return
+          fzf --no-sort --prompt='session > ' --header='enter: switch   esc: cancel') || return
     [[ -n $sel ]] || return
-    zellij attach -f "${sel%% *}"
+    local name=${sel%% *}
+    if [[ -n $ZELLIJ ]]; then
+        _zswitch "$name"
+        return
+    fi
+    zellij attach -f "$name"
 }
 # Ctrl-f at the prompt → zs (saves any half-typed line, restores it after).
 _zs_widget() { zle push-line; BUFFER='zs'; zle accept-line; }
