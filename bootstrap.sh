@@ -21,7 +21,7 @@ sudo dnf -y install \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || true
 for c in scottames/ghostty atim/starship solopasha/hyprland \
          errornointernet/walker errornointernet/packages bieszczaders/kernel-cachyos \
-         varlad/zellij shassard/lazyjj; do
+         varlad/zellij; do
     sudo dnf -y copr enable "$c"
 done
 
@@ -32,8 +32,8 @@ sudo dnf -y install \
   akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
-  bat ripgrep eza btop ShellCheck gettext \
-  yazi jujutsu lazyjj \
+  bat ripgrep eza btop ShellCheck gettext unzip \
+  yazi jujutsu \
   starship atuin zoxide stow tmux zellij \
   SwayNotificationCenter swaybg swayidle hyprlock \
   walker elephant elephant-calc elephant-files elephant-clipboard \
@@ -74,6 +74,17 @@ mkdir -p ~/.local/share/zsh
 # gh CLI extensions (gh-dash PR/issue dashboard)
 if command -v gh >/dev/null; then
     gh extension list 2>/dev/null | grep -q gh-dash || gh extension install dlvhdr/gh-dash || true
+fi
+
+# jjui (jj TUI) — no Fedora-44 COPR, so install the prebuilt release binary
+if ! command -v jjui >/dev/null; then
+    JJUI_VER=0.10.6
+    jtmp=$(mktemp -d)
+    if curl -sL -o "$jtmp/jjui.zip" "https://github.com/idursun/jjui/releases/download/v${JJUI_VER}/jjui-${JJUI_VER}-linux-amd64.zip" \
+        && unzip -oq "$jtmp/jjui.zip" -d "$jtmp"; then
+        install -m755 "$jtmp"/jjui-*-linux-amd64 ~/.local/bin/jjui
+    fi
+    rm -rf "$jtmp"
 fi
 
 step "Wallpaper"

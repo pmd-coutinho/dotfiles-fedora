@@ -1,5 +1,5 @@
 # jujutsu (jj) — global config. Sandbox lives in ~/dotfiles (colocated: shares
-# the real .git, so git keeps working). Try: `jj log`, `jj st`, or `lazyjj`.
+# the real .git, so git keeps working). Try: `jj log`, `jj st`, or `jjui`.
 # NOTE: this identity is the personal/dotfiles one; for work repos set a per-repo
 # email with `jj config set --repo user.email <work-email>`.
 [user]
