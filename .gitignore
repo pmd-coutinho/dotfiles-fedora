@@ -15,6 +15,8 @@ yazi/.config/yazi/flavors/
 
 # jj sandbox: colocated jj metadata in this repo (try jj without touching git history)
 .jj/
+# jj stores per-repo state under the (stowed) ~/.config/jj/repos — machine-specific
+jj/.config/jj/repos/
 
 # --- Never commit secrets (this repo is PUBLIC) ------------------------------
 # Defensive: none of these belong in a stow package, but guard against an

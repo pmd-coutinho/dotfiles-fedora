@@ -111,8 +111,8 @@ git -C "$DOTS" config core.hooksPath hooks
 
 step "yazi Catppuccin flavor + jj colocated sandbox"
 # flavor lands in ~/.config/yazi/flavors (gitignored); ya pkg (new) / ya pack (old)
-command -v ya >/dev/null && { ya pkg add yazi-rs/flavors:catppuccin-mocha 2>/dev/null \
-    || ya pack -a yazi-rs/flavors:catppuccin-mocha 2>/dev/null || true; }
+command -v ya >/dev/null && { ya pkg install 2>/dev/null \
+    || ya pkg add yazi-rs/flavors:catppuccin-mocha 2>/dev/null || true; }
 # colocate jj in the dotfiles repo so you can trial jj without affecting git
 command -v jj >/dev/null && [ ! -d "$DOTS/.jj" ] && ( cd "$DOTS" && jj git init --colocate ) || true
 
