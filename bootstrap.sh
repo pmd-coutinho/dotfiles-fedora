@@ -44,6 +44,7 @@ sudo dnf -y install \
   satty grim slurp wl-clipboard cliphist wlogout \
   papirus-icon-theme adw-gtk3-theme jetbrains-mono-fonts \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
+  cups printer-driver-brlaser \
   wtype ffmpeg \
   mate-polkit gnome-keyring tuned tuned-ppd \
   greetd tuigreet \
@@ -115,6 +116,22 @@ command -v ya >/dev/null && { ya pkg install 2>/dev/null \
     || ya pkg add yazi-rs/flavors:catppuccin-mocha 2>/dev/null || true; }
 # colocate jj in the dotfiles repo so you can trial jj without affecting git
 command -v jj >/dev/null && [ ! -d "$DOTS/.jj" ] && ( cd "$DOTS" && jj git init --colocate ) || true
+
+step "Network printer (Brother DCP-1612W / DCP-1610W series via brlaser)"
+# Host-based printer (no standard PDL) → brlaser renders on the host. Uses the
+# stable mDNS hostname (DHCP-proof). Only added if missing. Adjust the hostname
+# if you re-point to a different printer.
+if command -v lpadmin >/dev/null && ! lpstat -p Brother_DCP1612W >/dev/null 2>&1; then
+    ppd=$(lpinfo -m 2>/dev/null | awk 'tolower($0) ~ /brlaser/ && /1610/ {print $1; exit}')
+    if [ -n "$ppd" ]; then
+        sudo lpadmin -p Brother_DCP1612W -v ipp://BRNFC017C866FB3.local/ipp/print -m "$ppd" \
+            -D "Brother DCP-1612W" -L Network -E \
+            && sudo cupsaccept Brother_DCP1612W && sudo cupsenable Brother_DCP1612W \
+            && sudo lpadmin -d Brother_DCP1612W && ok "  added Brother_DCP1612W"
+    else
+        warn "brlaser PPD not found (printer-driver-brlaser installed?)"
+    fi
+fi
 
 # ── 4. GTK / appearance ──────────────────────────────────────────────────
 step "GTK + appearance gsettings"
