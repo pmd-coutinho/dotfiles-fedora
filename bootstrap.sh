@@ -31,7 +31,7 @@ sudo dnf -y install \
   akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
-  bat ripgrep eza btop \
+  bat ripgrep eza btop ShellCheck \
   starship atuin zoxide stow tmux zellij \
   SwayNotificationCenter swaybg swayidle hyprlock \
   walker elephant elephant-calc elephant-files elephant-clipboard \
@@ -84,6 +84,9 @@ for pkg in alacritty atuin bin btop dictation fuzzel ghostty git gtk hyprlock la
            satty starship swaync systemd tmux walker waybar zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
+
+# Tracked git hooks: pre-commit validates shell/zsh/zellij configs before commit
+git -C "$DOTS" config core.hooksPath hooks
 
 # ── 4. GTK / appearance ──────────────────────────────────────────────────
 step "GTK + appearance gsettings"

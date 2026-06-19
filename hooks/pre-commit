@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Pre-commit validation for the dotfiles repo.
+# Enabled via `git config core.hooksPath hooks` (set by bootstrap.sh).
+# Bypass once with:  git commit --no-verify
+set -uo pipefail
+
+fail=0
+files=$(git diff --cached --name-only --diff-filter=ACM)
+
+# 1. shellcheck staged shell scripts (errors block; install: dnf install ShellCheck)
+if command -v shellcheck >/dev/null 2>&1; then
+    while IFS= read -r f; do
+        [[ $f == *.sh ]] && [[ -f $f ]] || continue
+        shellcheck -S error "$f" || { echo "pre-commit: shellcheck errors in $f" >&2; fail=1; }
+    done <<< "$files"
+else
+    echo "pre-commit: shellcheck not installed — skipping shell lint (dnf install ShellCheck)" >&2
+fi
+
+# 2. zsh -n syntax check on staged zsh files (blocking)
+if command -v zsh >/dev/null 2>&1; then
+    while IFS= read -r f; do
+        [[ $f == *.zshrc || $f == *.zsh ]] && [[ -f $f ]] || continue
+        zsh -n "$f" 2>/dev/null || { echo "pre-commit: zsh syntax error in $f" >&2; fail=1; }
+    done <<< "$files"
+fi
+
+# 3. zellij config validation when config.kdl is staged (blocking)
+if grep -q 'zellij/.config/zellij/config.kdl' <<< "$files" && command -v zellij >/dev/null 2>&1; then
+    zellij setup --check >/dev/null 2>&1 || { echo "pre-commit: 'zellij setup --check' failed" >&2; fail=1; }
+fi
+
+if (( fail )); then
+    echo "pre-commit: validation failed — fix the above, or bypass with 'git commit --no-verify'" >&2
+    exit 1
+fi
+exit 0
