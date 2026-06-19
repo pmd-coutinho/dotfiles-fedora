@@ -1,0 +1,25 @@
+# gh-dash — GitHub PR/issue TUI dashboard.
+# Install: gh extension install dlvhdr/gh-dash   (run: gh dash)
+# Note: GitHub only — covers repos you access on GitHub (e.g. dotfiles + any
+# work repos hosted there). Azure DevOps work isn't shown here.
+prSections:
+  - title: Mine
+    filters: is:open author:@me
+  - title: Review requested
+    filters: is:open review-requested:@me
+  - title: Involved
+    filters: is:open involves:@me -author:@me -review-requested:@me
+
+issuesSections:
+  - title: Assigned
+    filters: is:open assignee:@me
+  - title: Created
+    filters: is:open author:@me
+
+defaults:
+  preview:
+    open: true
+    width: 60
+  refetchIntervalMinutes: 30
+  prsLimit: 30
+  issuesLimit: 30

@@ -69,6 +69,11 @@ mkdir -p ~/.local/share/zsh
 # zsh-abbr needs its zsh-job-queue submodule
 [ -d ~/.local/share/zsh/zsh-abbr ] || git clone -q --depth 1 --recurse-submodules https://github.com/olets/zsh-abbr ~/.local/share/zsh/zsh-abbr
 
+# gh CLI extensions (gh-dash PR/issue dashboard)
+if command -v gh >/dev/null; then
+    gh extension list 2>/dev/null | grep -q gh-dash || gh extension install dlvhdr/gh-dash || true
+fi
+
 step "Wallpaper"
 mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
 [ -f ~/Pictures/wallpapers/cat-waves.png ] || curl -fsSL -o ~/Pictures/wallpapers/cat-waves.png \
@@ -83,7 +88,7 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin bin btop dictation fuzzel ghostty git gtk hyprlock lazygit niri nvim \
+for pkg in alacritty atuin bin btop dictation fuzzel gh-dash ghostty git gtk hyprlock lazygit niri nvim \
            satty starship swaync systemd tmux walker waybar zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
