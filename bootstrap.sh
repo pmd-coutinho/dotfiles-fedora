@@ -20,7 +20,8 @@ sudo dnf -y install \
   "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || true
 for c in scottames/ghostty atim/starship solopasha/hyprland \
-         errornointernet/walker bieszczaders/kernel-cachyos varlad/zellij; do
+         errornointernet/walker errornointernet/packages bieszczaders/kernel-cachyos \
+         varlad/zellij shassard/lazyjj; do
     sudo dnf -y copr enable "$c"
 done
 
@@ -32,6 +33,7 @@ sudo dnf -y install \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
   bat ripgrep eza btop ShellCheck gettext \
+  yazi jujutsu lazyjj \
   starship atuin zoxide stow tmux zellij \
   SwayNotificationCenter swaybg swayidle hyprlock \
   walker elephant elephant-calc elephant-files elephant-clipboard \
@@ -88,13 +90,20 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin bin btop dictation fuzzel gh-dash ghostty git gtk hyprlock lazygit niri nvim \
-           satty starship swaync systemd tmux walker waybar zellij zsh; do
+for pkg in alacritty atuin bin btop dictation fuzzel gh-dash ghostty git gtk hyprlock jj lazygit niri nvim \
+           satty starship swaync systemd tmux walker waybar yazi zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
 # Tracked git hooks: pre-commit validates shell/zsh/zellij configs before commit
 git -C "$DOTS" config core.hooksPath hooks
+
+step "yazi Catppuccin flavor + jj colocated sandbox"
+# flavor lands in ~/.config/yazi/flavors (gitignored); ya pkg (new) / ya pack (old)
+command -v ya >/dev/null && { ya pkg add yazi-rs/flavors:catppuccin-mocha 2>/dev/null \
+    || ya pack -a yazi-rs/flavors:catppuccin-mocha 2>/dev/null || true; }
+# colocate jj in the dotfiles repo so you can trial jj without affecting git
+command -v jj >/dev/null && [ ! -d "$DOTS/.jj" ] && ( cd "$DOTS" && jj git init --colocate ) || true
 
 # ── 4. GTK / appearance ──────────────────────────────────────────────────
 step "GTK + appearance gsettings"

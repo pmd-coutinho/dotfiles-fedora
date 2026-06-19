@@ -10,6 +10,12 @@ dictation/.local/share/dictation/venv/
 # leaves a .bak — never track those; the lean hand-written config.kdl is canonical.
 zellij/.config/zellij/*.bak
 
+# yazi flavors are fetched by `ya pkg add`, not tracked
+yazi/.config/yazi/flavors/
+
+# jj sandbox: colocated jj metadata in this repo (try jj without touching git history)
+.jj/
+
 # --- Never commit secrets (this repo is PUBLIC) ------------------------------
 # Defensive: none of these belong in a stow package, but guard against an
 # accidental `git add -A` ever pulling a credential file into history.

@@ -201,6 +201,17 @@ _zs_widget() { zle push-line; BUFFER='zs'; zle accept-line; }
 zle -N _zs_widget
 bindkey '^F' _zs_widget
 
+# yazi: `y` opens the file manager and cds to the dir you quit in.
+if command -v yazi >/dev/null; then
+    y() {
+        local tmp cwd; tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+        yazi "$@" --cwd-file="$tmp"
+        cwd="$(command cat -- "$tmp" 2>/dev/null)"   # `command` bypasses the bat alias
+        [[ -n $cwd && $cwd != "$PWD" ]] && builtin cd -- "$cwd"
+        rm -f -- "$tmp"
+    }
+fi
+
 # ── Tool env ──────────────────────────────────────────────────────────
 export BAT_THEME="Catppuccin Mocha"
 # lazydocker → podman's docker-compatible socket
