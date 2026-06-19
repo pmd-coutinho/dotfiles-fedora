@@ -1,0 +1,32 @@
+# Satty — screenshot annotation, Catppuccin Mocha
+[general]
+fullscreen = true
+corner-roundness = 12
+initial-tool = "brush"
+copy-command = "wl-copy"
+annotation-size-factor = 2
+# strftime patterns expand; ~ is the home dir
+output-filename = "~/Pictures/Screenshots/satty-%Y%m%d-%H%M%S.png"
+early-exit = true
+# Enter = copy to clipboard AND save to the file above
+actions-on-enter = ["save-to-clipboard", "save-to-file"]
+save-after-copy = false
+default-hide-toolbars = false
+primary-highlighter = "block"
+disable-notifications = false
+
+[font]
+family = "CaskaydiaCove Nerd Font"
+
+# Annotation color swatches (Catppuccin Mocha)
+[color-palette]
+palette = [
+    "#${ctp_mauve}",
+    "#${ctp_red}",
+    "#${ctp_peach}",
+    "#${ctp_yellow}",
+    "#${ctp_green}",
+    "#${ctp_blue}",
+    "#${ctp_text}",
+    "#${ctp_crust}",
+]

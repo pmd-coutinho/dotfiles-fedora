@@ -1,0 +1,347 @@
+// niri config — Catppuccin Mocha desktop
+// Wiki: https://niri-wm.github.io/niri/Configuration:-Introduction
+
+input {
+    keyboard {
+        xkb {
+        }
+        numlock
+    }
+
+    touchpad {
+        tap
+        natural-scroll
+    }
+
+    mouse {
+    }
+
+    // Focus follows mouse only for windows already fully on screen.
+    focus-follows-mouse max-scroll-amount="0%"
+}
+
+// ── Monitors ──────────────────────────────────────────────────────────
+// Matched by "manufacturer model serial" (niri msg outputs), not by
+// connector name — the NVIDIA/Intel drivers assign different connector
+// names, so names like DP-3 are not stable across driver changes.
+// Note: the Huawei's EDID serial is literally 13 spaces — keep them.
+// Layout: Huawei top-left, laptop directly below it, Gigabyte on the
+// right (top-aligned with the Huawei).
+
+// Huawei AD80HW — top-left
+output "Huawei Technologies Co., Inc. HUAWEI AD80HW              " {
+    mode "1920x1080@60"
+    position x=0 y=0
+}
+
+// Laptop panel — main, directly below the Huawei
+output "Chimei Innolux Corporation 0x1621 Unknown" {
+    mode "1920x1200@144"
+    position x=0 y=1080
+}
+
+// Gigabyte M28U — right. 4K@144 works via DSC on the NVIDIA driver.
+output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763" {
+    mode "3840x2160@144"
+    scale 1.5
+    position x=1920 y=0
+}
+
+// ── Layout ────────────────────────────────────────────────────────────
+layout {
+    gaps 8
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    default-column-width { proportion 0.5; }
+
+    focus-ring {
+        width 3
+        active-color "#${ctp_mauve}"
+        inactive-color "#${ctp_surface1}"
+        urgent-color "#${ctp_red}"
+    }
+
+    border {
+        off
+    }
+
+    shadow {
+        on
+        softness 24
+        spread 4
+        offset x=0 y=6
+        color "#${ctp_crust}aa"
+    }
+
+    struts {
+    }
+}
+
+prefer-no-csd
+
+// ── Startup ───────────────────────────────────────────────────────────
+// xwayland-satellite is managed by niri itself (>= 25.08), no spawn needed.
+spawn-at-startup "waybar"
+spawn-at-startup "swaync"
+spawn-sh-at-startup "swaybg -i ~/Pictures/wallpapers/cat-waves.png -m fill"
+spawn-sh-at-startup "swayidle -w timeout 600 'pgrep -x hyprlock || hyprlock' timeout 900 'niri msg action power-off-monitors' before-sleep 'pgrep -x hyprlock || hyprlock'"
+spawn-at-startup "/usr/libexec/mate-polkit/polkit-mate-authentication-agent-1"
+spawn-at-startup "nm-applet"
+spawn-at-startup "blueman-applet"
+// walker launcher daemon (elephant backend runs as a user service)
+spawn-at-startup "walker" "--gapplication-service"
+
+// Auto-start apps (window rules route + maximize each on its workspace).
+spawn-at-startup "firefox"
+spawn-at-startup "vivaldi-stable"
+spawn-at-startup "ghostty"
+spawn-at-startup "slack"
+spawn-at-startup "flatpak" "run" "com.ayugram.desktop"
+spawn-at-startup "flatpak" "run" "md.obsidian.Obsidian"
+
+environment {
+    QT_QPA_PLATFORM "wayland"
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+}
+
+hotkey-overlay {
+}
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+animations {
+    // Below 1.0 = faster than default.
+    slowdown 0.6
+}
+
+// ── Named workspaces (pinned to monitors) ─────────────────────────────
+// Declaration order = display order on a fresh niri start (top→bottom,
+// left→right on the bar). NOTE: adding these while niri is already running
+// prepends them (reversed) — a relogin fixes the order to match this.
+// Laptop (eDP-1): 1-4 · Gigabyte (DP-3): 5-8 · Huawei (DP-2): 9-10.
+workspace "1-slack"     { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "2-ayugram"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "3-firefox"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "4-laptop"    { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "5-term"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "6-code"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "7-rider"     { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "8-giga"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
+workspace "9-vivaldi"   { open-on-output "Huawei Technologies Co., Inc. HUAWEI AD80HW              "; }
+workspace "10-obsidian" { open-on-output "Huawei Technologies Co., Inc. HUAWEI AD80HW              "; }
+
+// ── Window rules ──────────────────────────────────────────────────────
+// Rounded corners everywhere, matching the 12px radius used across
+// waybar/swaync/fuzzel.
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+// Firefox picture-in-picture floats.
+window-rule {
+    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    open-floating true
+}
+
+// ── App → workspace routing ───────────────────────────────────────────
+// open-focused true → switch to the workspace when the app opens.
+// open-maximized true → open as a full-width (maximized) column.
+window-rule { match app-id=r#"(?i)^(com\.slack\.slack|slack)$"#; open-on-workspace "1-slack";     open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^com\.ayugram\.desktop$"#;   open-on-workspace "2-ayugram";   open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^org\.mozilla\.firefox$"#;   open-on-workspace "3-firefox";   open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^com\.mitchellh\.ghostty$"#; open-on-workspace "5-term";      open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^code$"#;                    open-on-workspace "6-code";      open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^jetbrains-rider$"#;         open-on-workspace "7-rider";     open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^vivaldi-stable$"#;          open-on-workspace "9-vivaldi";   open-focused true; open-maximized true; }
+// Vivaldi PRIVATE windows → workspace 8 is handled by the
+// niri-vivaldi-private-watch user service (open-on-workspace can't see the
+// "Private" title at open time). See bin/ + systemd/ stow packages.
+window-rule { match app-id=r#"^obsidian$"#;                open-on-workspace "10-obsidian"; open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^org\.keepassxc\.KeePassXC$"#; open-on-workspace "8-giga";    open-focused true; open-maximized true; }
+
+binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    Mod+T hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
+    Mod+D hotkey-overlay-title="Run an Application: walker" { spawn "walker"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
+    Mod+Shift+N hotkey-overlay-title="Notification Center: swaync" { spawn "swaync-client" "-t"; }
+    Mod+Shift+S hotkey-overlay-title="Clipboard History (text + images)" { spawn "walker" "-m" "clipboard"; }
+    Mod+E hotkey-overlay-title="Emoji / symbol picker" { spawn "walker" "-m" "symbols"; }
+    Mod+Slash hotkey-overlay-title="File search" { spawn "walker" "-m" "files"; }
+    Mod+P hotkey-overlay-title="KeePassXC lookup (copy/type password, user, TOTP)" { spawn-sh "~/.local/bin/kp-walker"; }
+    Mod+Shift+D hotkey-overlay-title="Dictation: toggle, translate (speak PT/EN -> types English)" { spawn-sh "~/.local/share/dictation/dictate.sh translate"; }
+    Mod+Alt+D hotkey-overlay-title="Dictation: toggle, verbatim (types the spoken language, e.g. Portuguese)" { spawn-sh "~/.local/share/dictation/dictate.sh transcribe"; }
+
+    Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
+
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+
+    XF86AudioPlay        allow-when-locked=true { spawn-sh "playerctl play-pause"; }
+    XF86AudioStop        allow-when-locked=true { spawn-sh "playerctl stop"; }
+    XF86AudioPrev        allow-when-locked=true { spawn-sh "playerctl previous"; }
+    XF86AudioNext        allow-when-locked=true { spawn-sh "playerctl next"; }
+
+    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "+10%"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "10%-"; }
+
+    Mod+O repeat=false { toggle-overview; }
+
+    Mod+Q repeat=false { close-window; }
+
+    Mod+Left  { focus-column-left; }
+    Mod+Down  { focus-window-down; }
+    Mod+Up    { focus-window-up; }
+    Mod+Right { focus-column-right; }
+    Mod+H     { focus-column-left; }
+    Mod+J     { focus-window-down; }
+    Mod+K     { focus-window-up; }
+    Mod+L     { focus-column-right; }
+
+    Mod+Ctrl+Left  { move-column-left; }
+    Mod+Ctrl+Down  { move-window-down; }
+    Mod+Ctrl+Up    { move-window-up; }
+    Mod+Ctrl+Right { move-column-right; }
+    Mod+Ctrl+H     { move-column-left; }
+    Mod+Ctrl+J     { move-window-down; }
+    Mod+Ctrl+K     { move-window-up; }
+    Mod+Ctrl+L     { move-column-right; }
+
+    Mod+Home { focus-column-first; }
+    Mod+End  { focus-column-last; }
+    Mod+Ctrl+Home { move-column-to-first; }
+    Mod+Ctrl+End  { move-column-to-last; }
+
+    Mod+Shift+Left  { focus-monitor-left; }
+    Mod+Shift+Down  { focus-monitor-down; }
+    Mod+Shift+Up    { focus-monitor-up; }
+    Mod+Shift+Right { focus-monitor-right; }
+    Mod+Shift+H     { focus-monitor-left; }
+    Mod+Shift+J     { focus-monitor-down; }
+    Mod+Shift+K     { focus-monitor-up; }
+    Mod+Shift+L     { focus-monitor-right; }
+
+    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
+    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
+    Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
+    Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
+
+    Mod+Page_Down      { focus-workspace-down; }
+    Mod+Page_Up        { focus-workspace-up; }
+    Mod+U              { focus-workspace-down; }
+    Mod+I              { focus-workspace-up; }
+    Mod+Tab            { focus-workspace-down; }   // next workspace
+    Mod+Shift+Tab      { focus-workspace-up; }     // previous workspace
+    Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
+    Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
+    Mod+Ctrl+U         { move-column-to-workspace-down; }
+    Mod+Ctrl+I         { move-column-to-workspace-up; }
+
+    Mod+Shift+Page_Down { move-workspace-down; }
+    Mod+Shift+Page_Up   { move-workspace-up; }
+    Mod+Shift+U         { move-workspace-down; }
+    Mod+Shift+I         { move-workspace-up; }
+
+    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
+    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
+
+    Mod+WheelScrollRight      { focus-column-right; }
+    Mod+WheelScrollLeft       { focus-column-left; }
+    Mod+Ctrl+WheelScrollRight { move-column-right; }
+    Mod+Ctrl+WheelScrollLeft  { move-column-left; }
+
+    Mod+Shift+WheelScrollDown      { focus-column-right; }
+    Mod+Shift+WheelScrollUp        { focus-column-left; }
+    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
+    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
+
+    // Named workspaces (pinned to monitors below). Mod+N focuses, Mod+Shift+N
+    // moves the focused window there. 0 = the 10th workspace.
+    Mod+1 { focus-workspace "1-slack"; }
+    Mod+2 { focus-workspace "2-ayugram"; }
+    Mod+3 { focus-workspace "3-firefox"; }
+    Mod+4 { focus-workspace "4-laptop"; }
+    Mod+5 { focus-workspace "5-term"; }
+    Mod+6 { focus-workspace "6-code"; }
+    Mod+7 { focus-workspace "7-rider"; }
+    Mod+8 { focus-workspace "8-giga"; }
+    Mod+9 { focus-workspace "9-vivaldi"; }
+    Mod+0 { focus-workspace "10-obsidian"; }
+    Mod+Shift+1 { move-window-to-workspace "1-slack"; }
+    Mod+Shift+2 { move-window-to-workspace "2-ayugram"; }
+    Mod+Shift+3 { move-window-to-workspace "3-firefox"; }
+    Mod+Shift+4 { move-window-to-workspace "4-laptop"; }
+    Mod+Shift+5 { move-window-to-workspace "5-term"; }
+    Mod+Shift+6 { move-window-to-workspace "6-code"; }
+    Mod+Shift+7 { move-window-to-workspace "7-rider"; }
+    Mod+Shift+8 { move-window-to-workspace "8-giga"; }
+    Mod+Shift+9 { move-window-to-workspace "9-vivaldi"; }
+    Mod+Shift+0 { move-window-to-workspace "10-obsidian"; }
+
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+    Mod+Comma  { consume-window-into-column; }
+    Mod+Period { expel-window-from-column; }
+
+    Mod+R { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-column-width-back; }
+    Mod+Ctrl+Shift+R { switch-preset-window-height; }
+    Mod+Ctrl+R { reset-window-height; }
+
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+M { maximize-window-to-edges; }
+    Mod+Ctrl+F { expand-column-to-available-width; }
+
+    Mod+C { center-column; }
+    Mod+Ctrl+C { center-visible-columns; }
+
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+
+    Mod+V       { toggle-window-floating; }
+    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+
+    Mod+W { toggle-column-tabbed-display; }
+
+    // Screenshot + annotate with satty. satty's config.toml handles
+    // save dir, copy-to-clipboard, and filename.
+    Print hotkey-overlay-title="Screenshot region → annotate (satty)" { spawn-sh "grim -g \"$(slurp -d)\" - | satty -f -"; }
+    Shift+Print hotkey-overlay-title="Screenshot whole desktop → annotate (satty)" { spawn-sh "grim - | satty -f -"; }
+    // Quick grabs without annotation (niri native: select + copy)
+    Mod+Print hotkey-overlay-title="Quick screenshot (region → clipboard)" { screenshot; }
+    Alt+Print hotkey-overlay-title="Quick screenshot (window)" { screenshot-window; }
+    Ctrl+Print hotkey-overlay-title="Quick screenshot (screen)" { screenshot-screen; }
+
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+
+    Mod+Shift+E { quit; }
+    Ctrl+Alt+Delete { quit; }
+
+    Mod+Shift+P { power-off-monitors; }
+}
+
+// ── Render on the NVIDIA dGPU ─────────────────────────────────────────
+// pci-0000:01:00.0 = RTX 4080 Max-Q (by-path is stable across boots,
+// unlike /dev/dri/cardN numbering).
+debug {
+    render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+}

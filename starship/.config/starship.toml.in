@@ -1,0 +1,118 @@
+# starship — Catppuccin Mocha
+"$schema" = 'https://starship.rs/config-schema.json'
+
+palette = "catppuccin_mocha"
+add_newline = true
+
+# git status runs `git status` — on big repos (large .NET solutions) the
+# default 500ms isn't enough, so starship silently drops git_status. Bump it.
+command_timeout = 2000
+scan_timeout = 50
+
+format = """
+$directory$git_branch$git_status$dotnet$nodejs$python$rust$golang$docker_context$azure$cmd_duration
+$character"""
+
+[directory]
+style = "bold mauve"
+truncation_length = 4
+truncate_to_repo = true
+
+[git_branch]
+symbol = " "
+style = "bold lavender"
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+style = "peach"
+format = '([\[$all_status$ahead_behind\]]($style) )'
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = ""
+untracked = "?${count}"
+stashed = "*${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[nodejs]
+symbol = " "
+style = "green"
+format = "[$symbol($version )]($style)"
+
+[python]
+symbol = " "
+style = "yellow"
+format = '[$symbol($version )(\($virtualenv\) )]($style)'
+
+[rust]
+symbol = " "
+style = "red"
+format = "[$symbol($version )]($style)"
+
+[golang]
+symbol = " "
+style = "sapphire"
+format = "[$symbol($version )]($style)"
+
+[dotnet]
+symbol = " "
+style = "blue"
+format = "[$symbol($version )(🎯 $tfm )]($style)"
+detect_files = ["*.csproj", "*.sln", "*.slnx", "global.json", "Directory.Build.props"]
+heuristic = true
+
+[docker_context]
+symbol = " "
+style = "sapphire"
+# only shows when a non-default context is active (e.g. a remote/podman ctx)
+format = "[$symbol$context]($style) "
+only_with_files = true
+
+[azure]
+disabled = false
+symbol = "󰠅 "
+style = "blue"
+# show just the subscription name (set after `az login`); keep it compact
+format = "[$symbol($subscription)]($style) "
+
+[cmd_duration]
+min_time = 2000
+style = "overlay1"
+format = "took [$duration]($style)"
+
+[character]
+success_symbol = "[❯](bold mauve)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
+
+[palettes.catppuccin_mocha]
+rosewater = "#${ctp_rosewater}"
+flamingo = "#${ctp_flamingo}"
+pink = "#${ctp_pink}"
+mauve = "#${ctp_mauve}"
+red = "#${ctp_red}"
+maroon = "#${ctp_maroon}"
+peach = "#${ctp_peach}"
+yellow = "#${ctp_yellow}"
+green = "#${ctp_green}"
+teal = "#${ctp_teal}"
+sky = "#${ctp_sky}"
+sapphire = "#${ctp_sapphire}"
+blue = "#${ctp_blue}"
+lavender = "#${ctp_lavender}"
+text = "#${ctp_text}"
+subtext1 = "#${ctp_subtext1}"
+subtext0 = "#${ctp_subtext0}"
+overlay2 = "#${ctp_overlay2}"
+overlay1 = "#${ctp_overlay1}"
+overlay0 = "#${ctp_overlay0}"
+surface2 = "#${ctp_surface2}"
+surface1 = "#${ctp_surface1}"
+surface0 = "#${ctp_surface0}"
+base = "#${ctp_base}"
+mantle = "#${ctp_mantle}"
+crust = "#${ctp_crust}"
