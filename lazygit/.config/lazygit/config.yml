@@ -23,3 +23,17 @@ gui:
       - "#f9e2af"
   authorColors:
     "*": "#cba6f7"
+
+# Diffs: delta as the pager for review (reads [delta] theme from ~/.gitconfig);
+# difftastic on `U` for a structural (AST) diff of the selected file — far less
+# noise on big C# refactors. (difft can't be a pager, so it's a custom command.)
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+customCommands:
+  - key: "U"
+    context: "files"
+    description: "Difftastic (structural) diff of selected file"
+    command: "git -c diff.external=difft diff -- {{.SelectedFile.Name}} | less -R"
+    output: terminal
