@@ -113,11 +113,31 @@ ZELLIJ_SWITCH_PLUGIN="https://github.com/mostafaqanbaryan/zellij-switch/releases
 
 # _zswitch <session> [layout] [cwd] — switch in place via the plugin. layout/cwd
 # are only honored when the target session doesn't exist yet (creation).
+#
+# Gotcha: the plugin calls close_self() right after switch_session_with_layout().
+# For an existing session the switch is instant and lands before teardown; for a
+# NEW session zellij spins it up async, so close_self() aborts the client move —
+# the session gets created but we don't follow it in. So: if it's new, fire the
+# create, wait for it to register, then switch again (now an instant existing-
+# session switch).
 _zswitch() {
-    local args="--session $1"
-    [[ -n $2 ]] && args+=" --layout $2"
-    [[ -n $3 ]] && args+=" --cwd $3"
-    zellij pipe --plugin "$ZELLIJ_SWITCH_PLUGIN" -- "$args"
+    local session=$1 layout=$2 cwd=$3
+    local args="--session $session"
+    [[ -n $layout ]] && args+=" --layout $layout"
+    [[ -n $cwd ]] && args+=" --cwd $cwd"
+
+    if zellij ls -s 2>/dev/null | grep -qxF -- "$session"; then
+        zellij pipe --plugin "$ZELLIJ_SWITCH_PLUGIN" -- "$args"
+        return
+    fi
+
+    zellij pipe --plugin "$ZELLIJ_SWITCH_PLUGIN" -- "$args"   # creates the session
+    local i
+    for i in {1..30}; do
+        zellij ls -s 2>/dev/null | grep -qxF -- "$session" && break
+        sleep 0.1
+    done
+    zellij pipe --plugin "$ZELLIJ_SWITCH_PLUGIN" -- "--session $session"   # now follow it in
 }
 
 # zd [name] — Zellij attach-or-create. Attaches to the session named after the
