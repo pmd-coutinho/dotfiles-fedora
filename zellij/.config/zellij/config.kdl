@@ -27,3 +27,45 @@ scrollback_editor "/usr/bin/nvim"
 // (this is the "stop losing track of sessions" bit). Resurrect with
 // `zellij attach` or pick from `zellij ls`.
 session_serialization true
+
+// ── zellij-autolock ───────────────────────────────────────────────────
+// Auto-switch to Locked mode when the focused pane runs a full-screen TUI
+// (nvim/fzf/lazygit/less/man) so their keys pass straight through; unlock when
+// the command exits. Plugin is fetched + cached from its pinned release URL on
+// first use. Manual override: Alt-z disables autolock (stay unlocked),
+// Alt-Shift-z re-enables it. FIRST LAUNCH prompts to grant plugin perms — press y.
+plugins {
+    autolock location="https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm" {
+        is_enabled true
+        triggers "nvim|vim|fzf|lazygit|less|man"
+        reaction_seconds "0.3"
+        print_to_log false
+    }
+}
+load_plugins {
+    autolock
+}
+keybinds {
+    normal {
+        // Re-assess the lock state right after a command is launched.
+        bind "Enter" {
+            WriteChars "\u{000D}"
+            MessagePlugin "autolock"
+        }
+    }
+    locked {
+        bind "Alt z" {
+            MessagePlugin "autolock" {
+                payload "disable"
+            }
+            SwitchToMode "Normal"
+        }
+    }
+    shared {
+        bind "Alt Shift z" {
+            MessagePlugin "autolock" {
+                payload "enable"
+            }
+        }
+    }
+}
