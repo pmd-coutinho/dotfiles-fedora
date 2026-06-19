@@ -31,7 +31,7 @@ sudo dnf -y install \
   akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
-  bat ripgrep eza btop ShellCheck \
+  bat ripgrep eza btop ShellCheck gettext \
   starship atuin zoxide stow tmux zellij \
   SwayNotificationCenter swaybg swayidle hyprlock \
   walker elephant elephant-calc elephant-files elephant-clipboard \
@@ -75,6 +75,9 @@ mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
   "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/main/waves/cat-waves.png" || true
 
 # ── 3. Dotfiles via stow ─────────────────────────────────────────────────
+step "Rendering theme templates from the Catppuccin palette"
+bash "$DOTS/palette/render.sh"
+
 step "Stowing dotfiles"
 cd "$DOTS"
 # back up any real files stow would collide with

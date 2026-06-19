@@ -30,6 +30,11 @@ if grep -q 'zellij/.config/zellij/config.kdl' <<< "$files" && command -v zellij 
     zellij setup --check >/dev/null 2>&1 || { echo "pre-commit: 'zellij setup --check' failed" >&2; fail=1; }
 fi
 
+# 4. Catppuccin palette: rendered theme targets must match their *.in templates
+if [[ -x palette/render.sh ]] && command -v envsubst >/dev/null 2>&1; then
+    palette/render.sh --check || { echo "pre-commit: run palette/render.sh and stage the result" >&2; fail=1; }
+fi
+
 if (( fail )); then
     echo "pre-commit: validation failed — fix the above, or bypass with 'git commit --no-verify'" >&2
     exit 1

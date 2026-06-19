@@ -1,0 +1,57 @@
+# Alacritty — kept as fallback terminal, themed to match (Catppuccin Mocha)
+
+[font]
+size = 14.0
+
+[font.normal]
+family = "CaskaydiaCove Nerd Font"
+
+[window]
+padding = { x = 8, y = 8 }
+
+[colors.primary]
+background = "#${ctp_base}"
+foreground = "#${ctp_text}"
+dim_foreground = "#${ctp_overlay1}"
+bright_foreground = "#${ctp_text}"
+
+[colors.cursor]
+text = "#${ctp_base}"
+cursor = "#${ctp_rosewater}"
+
+[colors.search.matches]
+foreground = "#${ctp_base}"
+background = "#${ctp_subtext0}"
+
+[colors.search.focused_match]
+foreground = "#${ctp_base}"
+background = "#${ctp_green}"
+
+[colors.selection]
+text = "#${ctp_base}"
+background = "#${ctp_rosewater}"
+
+[colors.normal]
+black = "#${ctp_surface1}"
+red = "#${ctp_red}"
+green = "#${ctp_green}"
+yellow = "#${ctp_yellow}"
+blue = "#${ctp_blue}"
+magenta = "#${ctp_pink}"
+cyan = "#${ctp_teal}"
+white = "#${ctp_subtext1}"
+
+[colors.bright]
+black = "#${ctp_surface2}"
+red = "#${ctp_red}"
+green = "#${ctp_green}"
+yellow = "#${ctp_yellow}"
+blue = "#${ctp_blue}"
+magenta = "#${ctp_pink}"
+cyan = "#${ctp_teal}"
+white = "#${ctp_subtext0}"
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"
