@@ -9,6 +9,10 @@ invert = false
 
 search_mode = "fuzzy"
 filter_mode = "global"
-filter_mode_shell_up_key_binding = "global"
+# Up-arrow filters by current directory (Ctrl-R stays global) — directory-scoped
+# recall is what you usually want when retyping a command for this project.
+filter_mode_shell_up_key_binding = "directory"
 
-enter_accept = true
+# Selecting a history entry puts it on the prompt to edit/confirm, instead of
+# running it immediately — safer for destructive commands.
+enter_accept = false

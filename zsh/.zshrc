@@ -27,6 +27,14 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 [[ -r ~/.local/share/zsh/fzf-tab/fzf-tab.plugin.zsh ]] && \
     source ~/.local/share/zsh/fzf-tab/fzf-tab.plugin.zsh
 
+# fzf-tab previews: dirs via eza, files via bat, git refs via git log.
+zstyle ':fzf-tab:complete:cd:*' fzf-preview \
+    'eza -1 --color=always --icons --group-directories-first -- $realpath'
+zstyle ':fzf-tab:complete:*:*' fzf-preview \
+    '[[ -d $realpath ]] && eza -1 --color=always --icons --group-directories-first -- $realpath || bat --color=always --style=plain -- $realpath 2>/dev/null'
+zstyle ':fzf-tab:complete:(git-checkout|git-switch):*' fzf-preview \
+    'git log --oneline --color=always -20 $word 2>/dev/null'
+
 # ── Plugins (dnf packages) ────────────────────────────────────────────
 [[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
     source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
