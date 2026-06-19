@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workflow Improvements</title>
+<style>
+  :root{
+    --base:#1e1e2e;--mantle:#181825;--crust:#11111b;--surface0:#313244;--surface1:#45475a;
+    --text:#cdd6f4;--subtext:#a6adc8;--overlay:#6c7086;
+    --mauve:#cba6f7;--blue:#89b4fa;--green:#a6e3a1;--yellow:#f9e2af;--peach:#fab387;
+    --red:#f38ba8;--teal:#94e2d5;--sky:#89dceb;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--base);color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55;font-size:16px}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 20px 80px}
+  h1{font-size:1.9rem;margin:0 0 4px;color:#fff;letter-spacing:-.02em}
+  .sub{color:var(--subtext);margin:0 0 22px;font-size:.95rem}
+  .note{background:rgba(203,166,247,.1);border:1px solid rgba(203,166,247,.35);border-radius:10px;
+    padding:12px 16px;margin:0 0 24px;font-size:.92rem;color:var(--subtext)}
+  .note b{color:var(--mauve)}
+  h2{font-size:1.25rem;margin:38px 0 10px;color:var(--mauve);
+    border-bottom:1px solid var(--surface0);padding-bottom:6px}
+  h2 .em{font-size:1.1em;margin-right:8px}
+  code{background:var(--crust);color:var(--peach);padding:1px 6px;border-radius:5px;
+    font-family:"Cascadia Code",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;word-break:break-word}
+  a{color:var(--sky);text-decoration:none;border-bottom:1px dotted var(--overlay)}
+  a:hover{border-bottom-style:solid}
+  .tldr{background:var(--mantle);border:1px solid var(--surface0);border-radius:12px;padding:18px 20px}
+  .tldr ol{margin:8px 0 0;padding-left:22px}
+  .tldr li{margin:7px 0}
+  .pill{display:inline-block;font-size:.7rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.04em;padding:2px 8px;border-radius:20px;vertical-align:middle;margin-left:6px}
+  .p-do{background:rgba(166,227,161,.15);color:var(--green);border:1px solid rgba(166,227,161,.4)}
+  .p-trial{background:rgba(249,226,175,.13);color:var(--yellow);border:1px solid rgba(249,226,175,.4)}
+  .p-skip{background:rgba(243,139,168,.13);color:var(--red);border:1px solid rgba(243,139,168,.4)}
+  .card{background:var(--mantle);border:1px solid var(--surface0);border-left:3px solid var(--blue);
+    border-radius:10px;padding:14px 18px;margin:12px 0}
+  .card.rider{border-left-color:var(--mauve)}
+  .card.tier2{border-left-color:var(--peach)}
+  .card.tier3{border-left-color:var(--yellow)}
+  .card.hyg{border-left-color:var(--teal)}
+  .card h3{margin:0 0 6px;font-size:1.05rem;color:#fff}
+  .card h3 .me{color:var(--overlay);font-weight:400;font-size:.85rem}
+  .card p{margin:6px 0}
+  .card .why{color:var(--subtext);font-size:.92rem}
+  .meta{font-size:.82rem;color:var(--overlay);margin-top:8px}
+  .meta b{color:var(--subtext);font-weight:600}
+  .mine{color:var(--green);font-size:.9rem;margin-top:6px}
+  .mine::before{content:"⚙ I can wire this in: ";color:var(--green);font-weight:700}
+  ul.tight{margin:6px 0;padding-left:20px}
+  ul.tight li{margin:4px 0}
+  .foot{color:var(--overlay);font-size:.82rem;margin-top:40px;border-top:1px solid var(--surface0);padding-top:14px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 0;font-size:.8rem;color:var(--subtext)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Workflow Improvements</h1>
+  <p class="sub">Audit of <code>~/dotfiles</code> + June 2026 research, ranked for <b>your</b> stack: Fedora 44 / niri · <b>Rider as daily driver</b> · zsh · zellij · .NET 10 / NopCommerce · multiple terminal coding-agents. Opinionated for lean, reproducible, keyboard-first.</p>
+
+  <div class="note"><b>Recalibrated for Rider 2026.1.</b> The nvim/C# tier is dropped (Rider already does it). The value is in (a) the editor-agnostic terminal layer and (b) Rider-on-Linux tuning. <b>Note:</b> 2026.1 makes native Wayland the <i>default</i> — so on niri you're probably on it now, with the popup/window-position bugs that implies. The fix is to <b>pin the toolkit</b>, not change versions.</p>
+
+  <div class="tldr">
+    <strong style="color:var(--mauve)">TL;DR — if you do five things</strong>
+    <ol>
+      <li><b>Pin Rider's UI toolkit</b> (2026.1 leaves it on <code>auto</code> → native Wayland on niri). Force the proven path with <code>-Dawt.toolkit.name=XToolkit</code> + <code>_JAVA_AWT_WM_NONREPARENTING=1</code>, <i>or</i> keep <code>WLToolkit</code> if native Wayland behaves for you. Just don't leave it on auto.</li>
+      <li><b>Tune Rider for NopCommerce scale</b> — raise <code>-Xmx</code> (4–8 GB) and exclude analyzers from solution-wide analysis. Biggest perf win.</li>
+      <li><b>Pin Rider's toolset to the mise SDK explicitly</b> — stops the silent fallback to <code>/usr/bin/dotnet</code>.</li>
+      <li><b>zsh-abbr</b> — abbreviations expand in place, so atuin/Ctrl-R records the real command, not the alias. (Editor-agnostic, pure win.)</li>
+      <li><b>De-duplicate your Catppuccin hexes</b> — palette copy-pasted across 8+ files; collapse to one source.</li>
+    </ol>
+    <div class="legend">
+      <span><span class="pill p-do">do</span> high value, low risk</span>
+      <span><span class="pill p-trial">trial</span> sandbox / EAP first</span>
+      <span><span class="pill p-skip">skip</span> not for you</span>
+    </div>
+  </div>
+
+  <h2><span class="em">🟣</span>Rider on Linux — the stable wins</h2>
+
+  <div class="card rider">
+    <h3>Pin your toolkit on 2026.1 (niri) <span class="pill p-do">do</span> <span class="me">stability</span></h3>
+    <p class="why">2026.1's launcher passes <code>-Dawt.toolkit.name=auto</code> and probes for Wayland — so on niri you're likely on <b>native Wayland</b> now. It's sharper on HiDPI but JetBrains documents popup/window-position/decoration bugs that hit niri's WM-controlled model hardest. Decide and pin in <code>Help → Edit Custom VM Options</code>:<br>
+    • <b>Glitches?</b> Force <code>-Dawt.toolkit.name=XToolkit</code> (the proven XWayland path) <i>and</i> export <code>_JAVA_AWT_WM_NONREPARENTING=1</code> for the gray-window fix.<br>
+    • <b>Native works fine?</b> Pin <code>-Dawt.toolkit.name=WLToolkit</code> so it can't silently flip, and turn off synced UI/scale settings (they override your display config and re-introduce blur).</p>
+    <p class="meta"><b>Source:</b> <a href="https://blog.jetbrains.com/platform/2026/02/wayland-by-default-in-2026-1-eap/">2026.1 Wayland</a> · <a href="https://babarowski.com/blog/bspwm-intellij-fix/">non-reparenting fix</a> · <a href="https://pliszko.com/blog/post/2025-08-18-how-to-fix-jetbrains-ide-scaling-on-wayland">scaling</a></p>
+    <p class="mine">track <code>rider.vmoptions</code> (with your chosen toolkit) in a rider stow package; add the env var if you go XToolkit</p>
+  </div>
+
+  <div class="card rider">
+    <h3>Heap + solution-wide-analysis tuning <span class="pill p-do">do</span> <span class="me">performance</span></h3>
+    <p class="why">The biggest day-to-day difference on a NopCommerce-scale solution. <code>Help → Edit Custom VM Options</code>: set <code>-Xmx</code> to 4–8 GB. <code>Settings → Editor → Inspection Settings</code>: exclude Roslyn analyzers from solution-wide analysis (JetBrains explicitly recommends this for large solutions), and scope/skip generated + <code>obj</code> output. Watch the separate backend process — that's where the RAM goes.</p>
+    <p class="meta"><b>Source:</b> <a href="https://www.jetbrains.com/help/rider/Increasing_Memory_Heap.html">heap</a> · <a href="https://www.jetbrains.com/help/rider/Code_Analysis__Solution-Wide_Analysis.html">SWA</a> · 2026.2 EAP rebatched Roslyn comms for <b>2–3× faster branch switching</b> (relevant to your worktree cadence — but EAP)</p>
+    <p class="mine">track a <code>rider.vmoptions</code> in dotfiles</p>
+  </div>
+
+  <div class="card rider">
+    <h3>Pin the toolset to your mise SDK <span class="pill p-do">do</span> <span class="me">mise</span></h3>
+    <p class="why">Known sharp edge: Rider often prioritizes <code>/usr/bin/dotnet</code> over the mise-injected env even when MSBuild sees the right SDK. In <code>Settings → Build, Execution, Deployment → Toolset and Build</code>, set the .NET CLI path <b>explicitly</b> to the resolved mise install (and choose custom runtime, not auto). Re-point it after every mise SDK bump (or symlink a stable <code>current</code> path mise updates).</p>
+    <p class="meta"><b>Source:</b> <a href="https://www.jetbrains.com/help/rider/Settings_Toolset_and_Build.html">Toolset docs</a> · <a href="https://rider-support.jetbrains.com/hc/en-us/community/posts/35957545233298">Rider+mise report</a></p>
+  </div>
+
+  <div class="card rider">
+    <h3>Reproducible Rider config (Stow-friendly) <span class="pill p-do">do</span> <span class="me">dotfiles</span></h3>
+    <p class="why">Rider config isn't plain text, so go export-based, not symlink-based. <code>File → Manage IDE Settings → Export Settings</code> → commit the <code>settings.zip</code>. Additionally Stow the keymap XML from <code>~/.config/JetBrains/Rider*/keymaps/</code> (single safe file) and track <code>*.sln.DotSettings</code> + <code>.idea/*</code> <b>except</b> <code>workspace.xml</code> (machine state — never track). Prefer this over account-based Settings Sync, which isn't a VCS artifact you control.</p>
+    <p class="meta"><b>Source:</b> <a href="https://www.jetbrains.com/help/rider/Sharing_Your_IDE_Settings.html">Sharing IDE settings</a></p>
+    <p class="mine">add a <code>rider</code> stow package (keymap + vmoptions) + commit an exported settings.zip + .gitignore <code>workspace.xml</code></p>
+  </div>
+
+  <div class="card rider">
+    <h3>Podman + Aspire + Testcontainers <span class="pill p-do">do</span> <span class="me">.NET dev</span></h3>
+    <p class="why">Point Rider's Docker plugin at the rootless podman socket. For the integration tests you currently filter out: set <code>TESTCONTAINERS_RYUK_DISABLED=true</code> (rootless podman breaks the Ryuk reaper — the #1 failure). For Aspire, debug via the dedicated <b>Aspire run configuration</b> (attach only works through it). 2026.2 EAP adds AppHost gutter run/stop + better dev-cert validation — relevant to your existing cert workarounds.</p>
+    <p class="meta"><b>Source:</b> <a href="https://www.jetbrains.com/help/rider/Podman.html">Rider+Podman</a> · <a href="https://rider-support.jetbrains.com/hc/en-us/community/posts/19365451498258-Debugging-Aspire-applications-in-Rider">Aspire debug</a></p>
+    <p class="mine">add <code>TESTCONTAINERS_RYUK_DISABLED</code> to a <code>just</code> integration-test recipe</p>
+  </div>
+
+  <div class="card rider">
+    <h3>Worktrees + AI: keep what you have <span class="pill p-do">do</span> <span class="me">workflow</span></h3>
+    <p class="why">You're on 2026.1, so first-class Git worktrees are <b>available now</b> (<code>Git → New Worktree</code>) — matches your per-ticket/per-agent flow. Caveats: each opens a separate project window ≈ <b>double the RAM</b> on a solution this size (budget heap or close idle ones), and set the start point to <code>main</code> (your gotcha #33). On AI: JetBrains' ACP "bring your own agent" is beta and <b>Claude Code wasn't in the launch list</b> — so keep running Claude Code in zellij (no conflict with Rider). Use Rider's inline AI (Next Edit Suggestions) for in-editor help only if you want it.</p>
+    <p class="meta"><b>Source:</b> <a href="https://www.jetbrains.com/help/rider/Use-Git-worktrees.html">Rider worktrees</a> · <a href="https://blog.jetbrains.com/ai/2025/12/bring-your-own-ai-agent-to-jetbrains-ides/">ACP beta</a></p>
+  </div>
+
+  <h2><span class="em">🟢</span>Terminal layer — editor-agnostic (still fully applies)</h2>
+
+  <div class="card">
+    <h3>zsh-abbr <span class="pill p-do">do</span> <span class="me">zsh</span></h3>
+    <p class="why">Abbreviations expand to the real command before running, so history/atuin store <code>git checkout</code>, not <code>gco</code> — clean Ctrl-R reuse across your ~50 environments. Use abbrs for things you want to see expand; keep true aliases only for flag-bundles (<code>ls→eza …</code>).</p>
+    <p class="meta"><b>Source:</b> <a href="https://github.com/olets/zsh-abbr">olets/zsh-abbr</a></p>
+    <p class="mine">add a sourced <code>abbreviations.zsh</code> + convert the alias list</p>
+  </div>
+
+  <div class="card">
+    <h3>lazygit dual-diff (delta + difftastic) <span class="pill p-do">do</span> <span class="me">git</span></h3>
+    <p class="why">Even with Rider's Git UI, terminal lazygit is great for quick staging. Delta as the pager for review; difftastic as external diff for structural AST diffs (big C# refactors). difft can't be a pager — wire it behind <code>git dft</code>, leaving plain <code>git diff</code> on delta.</p>
+    <p class="meta"><b>Source:</b> <a href="https://github.com/jesseduffield/lazygit/blob/master/docs/Custom_Pagers.md">lazygit pagers</a> · <a href="https://difftastic.wilfred.me.uk/git.html">difft git</a></p>
+    <p class="mine">lazygit config + external-diff binding</p>
+  </div>
+
+  <div class="card">
+    <h3>zellij: autolock + zjstatus + per-project layout <span class="pill p-do">do</span> <span class="me">zellij</span></h3>
+    <p class="why"><b>zellij-autolock</b> passes keys straight through when a pane runs fzf/lazygit (and nvim if you ever use it) — smoother modal pickers. <b>zjstatus</b> = themeable status bar showing session/branch/per-pane command, so you can tell which tab holds which agent. And scaffold a real per-NopCommerce KDL (your <code>zp</code> already prefers <code>layouts/&lt;project&gt;.kdl</code>): tabs for shell, <code>dotnet watch</code>, lazygit, and N agent tabs.</p>
+    <p class="meta"><b>Source:</b> <a href="https://github.com/fresh2dev/zellij-autolock">autolock</a> · <a href="https://github.com/zellij-org/awesome-zellij">zjstatus / awesome-zellij</a></p>
+    <p class="mine">all three: plugin blocks in <code>config.kdl</code> + <code>layouts/nxg-csharp-nopcommerce.kdl</code></p>
+  </div>
+
+  <div class="card">
+    <h3>watchexec + just test loops <span class="pill p-do">do</span> <span class="me">.NET loop</span></h3>
+    <p class="why">Codify terminal test loops as <code>just</code> recipes driven by <code>watchexec</code> (gitignore-aware, debounced): <code>watchexec -e cs -i '**/obj/**' -- dotnet test --filter 'FullyQualifiedName~{Class}'</code>. Complements Rider's runner for fast headless feedback; reproducible across envs. Watch quirk: avoid project folders containing a <code>.</code> (breaks hot-reload on Linux).</p>
+    <p class="meta"><b>Source:</b> <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch">dotnet watch</a> · <a href="https://github.com/dotnet/sdk/issues/44010">sdk#44010</a></p>
+  </div>
+
+  <div class="card">
+    <h3>fzf-tab + atuin tuning <span class="pill p-do">do</span> <span class="me">zsh</span></h3>
+    <p class="why"><code>eza --tree</code>/<code>bat</code> previews in fzf-tab; branch preview on <code>git checkout **&lt;TAB&gt;</code>. atuin <code>enter_accept=false</code> (selection edits, doesn't auto-run) + dir/session-scoped default search.</p>
+    <p class="meta"><b>Source:</b> <a href="https://wicksipedia.com/blog/modern-zsh-setup/">modern zsh</a></p>
+    <p class="mine">zstyle previews + atuin config</p>
+  </div>
+
+  <h2><span class="em">🟡</span>Trial in a sandbox</h2>
+
+  <div class="card tier3">
+    <h3>Claude Squad / workmux (worktree-per-agent) <span class="pill p-trial">trial</span> <span class="me">AI agents</span></h3>
+    <p class="why">Terminal TUI managing multiple agents, each in an isolated git worktree — the clean version of your hand-managed zellij agent tabs, and it pairs with Rider's new worktree support (open the agent's worktree as a Rider project). workmux is the lighter, stay-in-zellij option. Category churns hard — these two are the maintained, terminal-first picks; avoid Electron dashboards (break Wayland ergonomics).</p>
+    <p class="meta"><b>Source:</b> <a href="https://github.com/smtg-ai/claude-squad">claude-squad</a> · <a href="https://github.com/raine/workmux">workmux</a></p>
+  </div>
+
+  <div class="card tier3">
+    <h3>jujutsu (jj), colocated <span class="pill p-trial">trial</span> <span class="me">git</span></h3>
+    <p class="why">2026 VCS trend; colocated = same <code>.git</code>, team keeps using git. Great for OT-* + agent-worktree juggling (no staging dance, conflicts don't block). Trial on a throwaway repo — Rider/lazygit/delta are git-centric and don't speak jj natively.</p>
+    <p class="meta"><b>Source:</b> <a href="https://www.stavros.io/posts/switch-to-jujutsu-already-a-tutorial/">jj tutorial</a></p>
+  </div>
+
+  <h2><span class="em">🧹</span>Dotfiles hygiene (from the repo audit)</h2>
+
+  <div class="card hyg">
+    <h3>Collapse duplicated Catppuccin hexes <span class="pill p-do">do</span></h3>
+    <p class="why">The Mocha palette is copy-pasted across waybar CSS, btop, alacritty, fzf opts, etc. — a palette change means editing 8+ files. Generate per-tool snippets from one source (a small render step in bootstrap), or at least centralize the canonical list.</p>
+    <p class="mine">palette source + render step</p>
+  </div>
+
+  <div class="card hyg">
+    <h3>Resolve overlapping tools — incl. the nvim config <span class="pill p-do">do</span></h3>
+    <p class="why">tmux+zellij and alacritty+ghostty are both stowed; and now that Rider is the daily driver, your <b>LazyVim+Roslyn nvim config is the same "aspirational/legacy?" smell</b>. Decide per tool: intentional fallback (document in README) or legacy (drop from stow + bootstrap). Cuts maintenance and confusion.</p>
+    <p class="mine">prune or document in <code>bootstrap.sh</code> + README</p>
+  </div>
+
+  <div class="card hyg">
+    <h3>Config-validation pre-commit hook <span class="pill p-do">do</span></h3>
+    <p class="why">You hand-edit shell + KDL + TOML constantly (Zellij's UI already clobbered <code>config.kdl</code> once). A pre-commit running <code>shellcheck</code> on <code>*.sh</code>, <code>zsh -n</code> on <code>.zshrc</code>, and <code>zellij setup --check</code> catches breakage before it lands.</p>
+    <p class="mine">tracked <code>hooks/pre-commit</code> + bootstrap symlink</p>
+  </div>
+
+  <h2><span class="em">⚪</span>Deferred — only if you move to nvim</h2>
+  <div class="card">
+    <p class="why" style="margin:2px 0">Rider already provides the test runner, debugger, EF tools, and Razor support these would add — so they're <b>not</b> wins today. Park them: <b>seblyng/roslyn.nvim</b> (Razor via co-hosting), LazyVim <b>lang.csharp</b> extra, <b>easy-dotnet.nvim</b> (Rider-like runner + netcoredbg). Revisit only if/when nvim becomes a real editor for you — otherwise the LazyVim config is just maintenance surface (see hygiene above).</p>
+  </div>
+
+  <h2><span class="em">🔴</span>Skip / be skeptical</h2>
+  <div class="card"><h3>Leaving Rider's toolkit on <code>auto</code> <span class="pill p-skip">skip</span></h3><p class="why">On 2026.1/niri, auto silently lands you on native Wayland with its popup/positioning bugs. Pin one toolkit explicitly (see the Rider section) so behavior is deterministic and reproducible.</p></div>
+  <div class="card"><h3>Nushell / fish · zinit · Electron agent GUIs <span class="pill p-skip">skip</span></h3><p class="why">Full rewrites of a lean zsh that already starts fast; GUI agent dashboards break your Wayland/keyboard-first ergonomics. Stay terminal-native.</p></div>
+
+  <h2><span class="em">🧰</span>Worth a look (gap-fillers)</h2>
+  <ul class="tight">
+    <li><b>yazi</b> — Rust TUI file manager, image previews in ghostty, <code>cd</code>-on-quit into zoxide.</li>
+    <li><b>gh dash</b> — keyboard-driven TUI for your OT-* PRs/reviews; fits the Copilot-PR-review loop.</li>
+    <li><b>jaq</b> (faster jq) · <b>sd</b> (saner sed; <code>fd -x sd …</code> for <code>Nxg</code>-suffix sweeps) · <b>cliphist</b> behind fuzzel.</li>
+  </ul>
+
+  <h2><span class="em">📋</span>Suggested order</h2>
+  <ol class="tight">
+    <li><b>This week (Rider):</b> pin the UI toolkit (XToolkit+env var, or WLToolkit) · <code>-Xmx</code> + SWA exclusions · pin mise toolset. Stable, instant payoff.</li>
+    <li><b>This week (terminal):</b> zsh-abbr · lazygit dual-diff · zellij-autolock + zjstatus · start color de-dup. All Stow-able.</li>
+    <li><b>Next:</b> reproducible Rider config (rider stow package + exported settings) · per-NopCommerce layout · watchexec/just loops · podman Ryuk-disable · pre-commit hook.</li>
+    <li><b>Trial (sandbox):</b> Claude Squad / workmux · jj colocated on one non-critical repo.</li>
+  </ol>
+
+  <p class="foot">Sources linked inline. Stability flags retained: native Wayland and the ACP agent integration are both genuinely useful but EAP/beta — keep them off the daily driver until they settle on niri.</p>
+</div>
+</body>
+</html>
