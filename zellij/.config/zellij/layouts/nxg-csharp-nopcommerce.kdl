@@ -1,0 +1,52 @@
+// nxg-csharp-nopcommerce.kdl — per-project layout, auto-selected by `zp` for
+// this repo (zp prefers layouts/<project>.kdl, else falls back to dev).
+//   claude : Claude Code agent
+//   shell  : plain zsh
+//   dotnet : plain zsh for `dotnet watch` / `just` / test loops
+//   git    : lazygit
+// All tabs inherit the repo root `zp` cd's into.
+//
+// NOTE: the default_tab_template (zjstatus + status-bar) is duplicated from
+// dev.kdl — Zellij has no cross-file layout include. Keep the two in sync.
+
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {
+                format_left  "#[fg=#cba6f7,bold] {session} {tabs}"
+                format_right "{command_git}#[fg=#89b4fa,bold] {datetime}"
+                format_space ""
+                border_enabled "false"
+
+                tab_normal "#[fg=#6c7086] {name} "
+                tab_active "#[fg=#1e1e2e,bg=#cba6f7,bold] {name} "
+
+                command_git_command    "git rev-parse --abbrev-ref HEAD"
+                command_git_format     "#[fg=#a6e3a1] {stdout} "
+                command_git_interval   "5"
+                command_git_rendermode "static"
+
+                datetime          "#[fg=#89b4fa,bold]{format}"
+                datetime_format   "%a %d %b %H:%M"
+                datetime_timezone "Europe/Lisbon"
+            }
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    tab name="claude" focus=true {
+        pane command="claude"
+    }
+    tab name="shell" {
+        pane
+    }
+    tab name="dotnet" {
+        pane
+    }
+    tab name="git" {
+        pane command="lazygit"
+    }
+}
