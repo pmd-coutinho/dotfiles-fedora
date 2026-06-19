@@ -78,15 +78,6 @@ mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
 step "Rendering theme templates from the Catppuccin palette"
 bash "$DOTS/palette/render.sh"
 
-step "Rider vmoptions (heap + Wayland toolkit) for every installed Rider channel"
-# Symlinked (not stowed) because the JetBrains config dir is version-numbered;
-# this re-points on every Rider upgrade and covers all installed channels.
-for d in "$HOME"/.config/JetBrains/Rider*/; do
-    [ -d "$d" ] || continue
-    ln -sfn "$DOTS/rider/rider64.vmoptions" "$d/rider64.vmoptions"
-    ok "  linked ${d}rider64.vmoptions"
-done
-
 step "Stowing dotfiles"
 cd "$DOTS"
 # back up any real files stow would collide with
