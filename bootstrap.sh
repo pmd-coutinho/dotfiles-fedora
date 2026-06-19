@@ -124,8 +124,11 @@ step "Network printer (Brother DCP-1612W / DCP-1610W series via brlaser)"
 if command -v lpadmin >/dev/null && ! lpstat -p Brother_DCP1612W >/dev/null 2>&1; then
     ppd=$(lpinfo -m 2>/dev/null | awk 'tolower($0) ~ /brlaser/ && /1610/ {print $1; exit}')
     if [ -n "$ppd" ]; then
-        sudo lpadmin -p Brother_DCP1612W -v ipp://BRNFC017C866FB3.local/ipp/print -m "$ppd" \
-            -D "Brother DCP-1612W" -L Network -E \
+        # raw socket (port 9100), NOT ipp:// — the printer's IPP service rejects
+        # the raw brlaser stream and auto-disables the queue. error-policy
+        # retry-job so a transient failure doesn't disable the whole printer.
+        sudo lpadmin -p Brother_DCP1612W -v socket://BRNFC017C866FB3.local:9100 -m "$ppd" \
+            -D "Brother DCP-1612W" -L Network -E -o printer-error-policy=retry-job \
             && sudo cupsaccept Brother_DCP1612W && sudo cupsenable Brother_DCP1612W \
             && sudo lpadmin -d Brother_DCP1612W && ok "  added Brother_DCP1612W"
     else
