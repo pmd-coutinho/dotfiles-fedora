@@ -66,6 +66,8 @@ step "tmux TPM + zsh fzf-tab"
 [ -d ~/.tmux/plugins/tpm ] || git clone -q --depth 1 https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 mkdir -p ~/.local/share/zsh
 [ -d ~/.local/share/zsh/fzf-tab ] || git clone -q --depth 1 https://github.com/Aloxaf/fzf-tab ~/.local/share/zsh/fzf-tab
+# zsh-abbr needs its zsh-job-queue submodule
+[ -d ~/.local/share/zsh/zsh-abbr ] || git clone -q --depth 1 --recurse-submodules https://github.com/olets/zsh-abbr ~/.local/share/zsh/zsh-abbr
 
 step "Wallpaper"
 mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots

@@ -32,6 +32,11 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
     source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6c7086'  # mocha overlay0
 
+# zsh-abbr: abbreviations that expand in place (git clone in ~/.local/share/zsh).
+# Source before syntax-highlighting; abbr definitions live in the Aliases section.
+[[ -r ~/.local/share/zsh/zsh-abbr/zsh-abbr.zsh ]] && \
+    source ~/.local/share/zsh/zsh-abbr/zsh-abbr.zsh
+
 # ── Keybinds ──────────────────────────────────────────────────────────
 bindkey -e                            # emacs mode
 bindkey '^[[1;5C' forward-word        # ctrl+right
@@ -59,6 +64,34 @@ alias ip='ip -color=auto'
 alias lg='lazygit'
 alias lzd='lazydocker'
 command -v nvim >/dev/null && alias v='nvim'
+
+# zsh-abbr session abbreviations — expand in place on SPACE, so atuin/history
+# record the REAL command (not the abbr). Declarative (not a state file); grow
+# with `abbr add k=v`, then paste the line here. Guarded so a fresh box (before
+# bootstrap clones zsh-abbr) doesn't error.
+if command -v abbr >/dev/null; then
+    ABBR_QUIET=1                      # don't echo "Added …" for each line below
+    abbr -S g='git'
+    abbr -S gst='git status'
+    abbr -S gco='git checkout'
+    abbr -S gsw='git switch'
+    abbr -S ga='git add'
+    abbr -S gc='git commit'
+    abbr -S gd='git diff'
+    abbr -S gp='git push'
+    abbr -S gpf='git push --force-with-lease'
+    abbr -S gl='git pull'
+    abbr -S glo='git log --oneline -20'
+    abbr -S d='dotnet'
+    abbr -S dr='dotnet run'
+    abbr -S dt='dotnet test'
+    abbr -S db='dotnet build'
+    abbr -S dw='dotnet watch'
+    abbr -S def='dotnet ef'
+    abbr -S pc='podman compose'
+    abbr -S j='just'
+    ABBR_QUIET=0
+fi
 
 # zd [name] — Zellij attach-or-create. Attaches to the session named after the
 # current dir (or $1), resurrecting it if dead; creates new ones with the `dev`
