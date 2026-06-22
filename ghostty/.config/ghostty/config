@@ -10,12 +10,6 @@ window-decoration = false
 cursor-style = bar
 mouse-hide-while-typing = true
 
-# Under zellij (mouse_mode true) the app grabs the mouse, so clicks on links
-# go to zellij instead of ghostty. Forcing shift-capture off makes Shift the
-# universal override: Shift+Click reaches ghostty and opens links / selects
-# text, while plain mouse still drives zellij scroll + pane focus.
-mouse-shift-capture = false
-
 command = /usr/bin/zsh
 
 # Match niri/GTK dark
