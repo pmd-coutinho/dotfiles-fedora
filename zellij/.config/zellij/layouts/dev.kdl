@@ -12,11 +12,11 @@
 
 layout {
     // Custom layout replaces the default UI. Top = zjstatus (session, tabs, git
-    // branch, clock); bottom = Zellij's status-bar (keeps the live keymap hints).
-    // Plugins fetch + cache from their pinned URLs on first use.
+    // branch, clock); bottom = a second zjstatus with curated keymap hints + a
+    // live {mode} indicator. Plugins fetch + cache from their pinned URLs first use.
     default_tab_template {
         pane size=1 borderless=true {
-            plugin location="https://github.com/dj95/zjstatus/releases/download/v0.21.0/zjstatus.wasm" {
+            plugin location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {
                 format_left  "#[fg=#cba6f7,bold] {session} {tabs}"
                 format_right "{command_git}#[fg=#89b4fa,bold] {datetime}"
                 format_space ""
@@ -36,19 +36,40 @@ layout {
             }
         }
         children
-        // Same status-bar keymap ribbon as before, just without the second
-        // "Tip:" line. size=1 makes status-bar drop its second line, and
-        // `classic "true"` keeps the classic ribbon at size=1 (without it,
-        // status-bar would switch to its modern one-line UI — a different look).
+        // Bottom bar: a second zjstatus instance (same plugin/style as the top)
+        // showing a CURATED set of the most-used Ctrl-mode keys + a live {mode}
+        // indicator on the right. We use zjstatus over the built-in status-bar
+        // because status-bar can't choose which keys to show and its ribbon
+        // looked cluttered. Trade-off: the hint text is static (the core mode
+        // keys never change); {mode} stays live (turns red LOCKED under autolock).
         pane size=1 borderless=true {
-            plugin location="zellij:status-bar" {
-                classic "true"
+            plugin location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {
+                format_left  "#[fg=#6c7086,bold] Ctrl + #[fg=#cba6f7,bold]p#[fg=#bac2de] pane  #[fg=#cba6f7,bold]t#[fg=#bac2de] tab  #[fg=#cba6f7,bold]n#[fg=#bac2de] resize  #[fg=#cba6f7,bold]o#[fg=#bac2de] session #[fg=#6c7086](#[fg=#cba6f7,bold]g#[fg=#bac2de] proj #[fg=#6c7086]·#[fg=#cba6f7,bold]s#[fg=#bac2de] sess#[fg=#6c7086])  #[fg=#cba6f7,bold]g#[fg=#bac2de] lock  #[fg=#cba6f7,bold]q#[fg=#bac2de] quit"
+                format_right "{mode}"
+                format_space ""
+                border_enabled "false"
+
+                mode_normal       "#[fg=#1e1e2e,bg=#a6e3a1,bold] NORMAL "
+                mode_locked       "#[fg=#1e1e2e,bg=#f38ba8,bold] LOCKED "
+                mode_pane         "#[fg=#1e1e2e,bg=#89b4fa,bold] PANE "
+                mode_tab          "#[fg=#1e1e2e,bg=#cba6f7,bold] TAB "
+                mode_resize       "#[fg=#1e1e2e,bg=#fab387,bold] RESIZE "
+                mode_move         "#[fg=#1e1e2e,bg=#89b4fa,bold] MOVE "
+                mode_scroll       "#[fg=#1e1e2e,bg=#94e2d5,bold] SCROLL "
+                mode_search       "#[fg=#1e1e2e,bg=#94e2d5,bold] SEARCH "
+                mode_enter_search "#[fg=#1e1e2e,bg=#94e2d5,bold] SEARCH "
+                mode_session      "#[fg=#1e1e2e,bg=#cba6f7,bold] SESSION "
+                mode_tmux         "#[fg=#1e1e2e,bg=#fab387,bold] TMUX "
+                mode_rename_tab   "#[fg=#1e1e2e,bg=#f9e2af,bold] RENAME "
+                mode_rename_pane  "#[fg=#1e1e2e,bg=#f9e2af,bold] RENAME "
             }
         }
     }
 
     tab name="claude" focus=true {
-        pane command="claude"
+        pane command="claude" {
+            args "--dangerously-skip-permissions"
+        }
     }
     tab name="shell" {
         pane
