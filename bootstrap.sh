@@ -21,7 +21,7 @@ sudo dnf -y install \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || true
 for c in scottames/ghostty atim/starship solopasha/hyprland \
          errornointernet/walker errornointernet/packages bieszczaders/kernel-cachyos \
-         varlad/zellij; do
+         ifas/zellij; do   # ifas tracks latest (0.44.3); varlad's COPR stalled at 0.42.2
     sudo dnf -y copr enable "$c"
 done
 
