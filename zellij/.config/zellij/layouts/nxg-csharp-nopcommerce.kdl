@@ -32,8 +32,14 @@ layout {
             }
         }
         children
-        pane size=2 borderless=true {
-            plugin location="zellij:status-bar"
+        // Same status-bar keymap ribbon as before, just without the second
+        // "Tip:" line. size=1 makes status-bar drop its second line, and
+        // `classic "true"` keeps the classic ribbon at size=1 (without it,
+        // status-bar would switch to its modern one-line UI — a different look).
+        pane size=1 borderless=true {
+            plugin location="zellij:status-bar" {
+                classic "true"
+            }
         }
     }
 

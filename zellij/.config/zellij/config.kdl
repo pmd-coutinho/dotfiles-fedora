@@ -4,11 +4,138 @@
 // Keybinds are intentionally left at Zellij defaults — the discoverable
 // status-bar keymap (Ctrl-p panes, Ctrl-t tabs, Ctrl-o session, Ctrl-q quit)
 // is the reason to run this over more tmux. Don't remap it into tmux muscle
-// memory or you lose the on-screen hints.
+// memory or you lose the on-screen hints. The only additions are two session-
+// mode launchers (Ctrl-o g / Ctrl-o s) — see the `session` block below.
 
-// Zellij's built-in catppuccin-mocha IS the official Catppuccin palette —
-// same hexes as the FZF colors in .zshrc, so it matches the rest of the rig.
-theme "catppuccin-mocha"
+// catppuccin-mocha-mauve: zellij's built-in catppuccin-mocha verbatim (same
+// official Catppuccin hexes as the FZF colors in .zshrc) with ONE change — the
+// status-bar's active-mode block (`ribbon_selected`) goes from green to mauve
+// (#cba6f7 on #1e1e2e), so the bottom bar's highlight echoes the top zjstatus
+// bar's active tab. Defined inline because zellij can't extend a built-in theme.
+theme "catppuccin-mocha-mauve"
+
+themes {
+    catppuccin-mocha-mauve {
+        text_unselected {
+            base 205 214 244
+            background 24 24 37
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 166 227 161
+            emphasis_3 245 194 231
+        }
+        text_selected {
+            base 205 214 244
+            background 88 91 112
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 166 227 161
+            emphasis_3 245 194 231
+        }
+        ribbon_selected {
+            // CHANGED: green (166 227 161) → mauve #cba6f7 on #1e1e2e, to match
+            // the top bar's active tab `#[fg=#1e1e2e,bg=#cba6f7]`.
+            base 30 30 46
+            background 203 166 247
+            emphasis_0 243 139 168
+            emphasis_1 250 179 135
+            emphasis_2 245 194 231
+            emphasis_3 137 180 250
+        }
+        ribbon_unselected {
+            base 24 24 37
+            background 205 214 244
+            emphasis_0 243 139 168
+            emphasis_1 205 214 244
+            emphasis_2 137 180 250
+            emphasis_3 245 194 231
+        }
+        table_title {
+            base 166 227 161
+            background 0
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 166 227 161
+            emphasis_3 245 194 231
+        }
+        table_cell_selected {
+            base 205 214 244
+            background 88 91 112
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 166 227 161
+            emphasis_3 245 194 231
+        }
+        table_cell_unselected {
+            base 205 214 244
+            background 24 24 37
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 166 227 161
+            emphasis_3 245 194 231
+        }
+        list_selected {
+            base 205 214 244
+            background 88 91 112
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 166 227 161
+            emphasis_3 245 194 231
+        }
+        list_unselected {
+            base 205 214 244
+            background 24 24 37
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 166 227 161
+            emphasis_3 245 194 231
+        }
+        frame_selected {
+            base 166 227 161
+            background 0
+            emphasis_0 250 179 135
+            emphasis_1 137 220 235
+            emphasis_2 245 194 231
+            emphasis_3 0
+        }
+        frame_highlight {
+            base 250 179 135
+            background 0
+            emphasis_0 250 179 135
+            emphasis_1 250 179 135
+            emphasis_2 250 179 135
+            emphasis_3 250 179 135
+        }
+        exit_code_success {
+            base 166 227 161
+            background 0
+            emphasis_0 137 220 235
+            emphasis_1 24 24 37
+            emphasis_2 245 194 231
+            emphasis_3 137 180 250
+        }
+        exit_code_error {
+            base 243 139 168
+            background 0
+            emphasis_0 249 226 175
+            emphasis_1 0
+            emphasis_2 0
+            emphasis_3 0
+        }
+        multiplayer_user_colors {
+            player_1 245 194 231
+            player_2 137 180 250
+            player_3 0
+            player_4 249 226 175
+            player_5 137 220 235
+            player_6 0
+            player_7 243 139 168
+            player_8 0
+            player_9 0
+            player_10 0
+        }
+    }
+}
 
 default_shell "zsh"
 
@@ -21,6 +148,10 @@ mouse_mode true
 // No pane frames — cleaner look. Panes are still distinguishable by position;
 // the focused pane is highlighted. Toggle on at runtime with the pane-mode `z`.
 pane_frames false
+
+// Flatten the status-bar: drop the powerline arrow separators so the bottom bar
+// reads as flat blocks like the top zjstatus bar (which draws none).
+simplified_ui true
 scrollback_editor "/usr/bin/nvim"
 
 // Persist sessions across detach/exit so they survive a crash or reboot
@@ -66,6 +197,26 @@ keybinds {
             MessagePlugin "autolock" {
                 payload "enable"
             }
+        }
+    }
+    // Launch the zsh sessionizers in a floating pane from ANY pane — including a
+    // Claude/TUI tab where there's no shell prompt to type them at. Ctrl-o is
+    // already "session" mode, so these read as session ops and steal no global
+    // keys. `zsh -i` so ~/.zshrc is sourced and the zp/zdl functions exist.
+    session {
+        bind "g" {   // Ctrl-o g → zp (project → ticket sessionizer)
+            Run "zsh" "-i" "-c" "zp" {
+                floating true
+                close_on_exit true
+            }
+            SwitchToMode "Normal"
+        }
+        bind "s" {   // Ctrl-o s → zdl (session picker: attach / delete)
+            Run "zsh" "-i" "-c" "zdl" {
+                floating true
+                close_on_exit true
+            }
+            SwitchToMode "Normal"
         }
     }
 }
