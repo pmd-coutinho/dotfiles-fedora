@@ -5,7 +5,15 @@
 // NOT shown via the built-in status-bar (it can't pick which keys to show and
 // looked cluttered). Instead both layouts render a curated zjstatus bottom bar
 // with the most-used Ctrl-mode keys + a live {mode} indicator. The only keybind
-// additions are two session-mode launchers (Ctrl-o g / Ctrl-o s) below.
+// additions are the autolock rebinds + two session-mode launchers (Ctrl-o g /
+// Ctrl-o s) below.
+//
+// ⚠ WRITTEN IN ZELLIJ 0.44 KEYBIND SYNTAX — keep it this way:
+//   lowercase mode names ("normal", not "Normal"), block-form MessagePlugin
+//   with a `name`, WriteChars "\r" (not "\u{000D}"), and close_on_exit on Run
+//   panes. Pre-0.41 syntax makes Zellij auto-migrate and OVERWRITE this file on
+//   startup, dumping the previous copy to config.kdl.bak.N. Current syntax means
+//   there is nothing to migrate, so Zellij leaves the file alone.
 
 // Zellij's built-in catppuccin-mocha IS the official Catppuccin palette —
 // same hexes as the FZF colors in .zshrc, so it matches the rest of the rig.
@@ -46,26 +54,38 @@ plugins {
 load_plugins {
     autolock
 }
+
+// Keybinds ride on Zellij's built-in defaults (no clear-defaults) — only the
+// three additions below are layered on top.
 keybinds {
     normal {
         // Re-assess the lock state right after a command is launched.
-        bind "Enter" {
-            WriteChars "\u{000D}"
-            MessagePlugin "autolock"
+        bind "enter" {
+            WriteChars "\r"
+            MessagePlugin "autolock" {
+                name "autolock"
+                floating false
+            }
         }
     }
     locked {
+        // Manual unlock + tell autolock to stay out of the way (Ctrl-g unlock
+        // is still inherited from the defaults).
         bind "Alt z" {
             MessagePlugin "autolock" {
+                name "autolock"
                 payload "disable"
+                floating false
             }
-            SwitchToMode "Normal"
+            SwitchToMode "normal"
         }
     }
     shared {
         bind "Alt Shift z" {
             MessagePlugin "autolock" {
+                name "autolock"
                 payload "enable"
+                floating false
             }
         }
     }
@@ -73,20 +93,23 @@ keybinds {
     // Claude/TUI tab where there's no shell prompt to type them at. Ctrl-o is
     // already "session" mode, so these read as session ops and steal no global
     // keys. `zsh -i` so ~/.zshrc is sourced and the zp/zdl functions exist.
+    // close_on_exit true closes the floating pane when zp/zdl returns — do NOT
+    // use hold_on_close, which Zellij's command-pane parser silently ignores
+    // (that bug left the pane open after picking a session).
     session {
         bind "g" {   // Ctrl-o g → zp (project → ticket sessionizer)
             Run "zsh" "-i" "-c" "zp" {
                 floating true
                 close_on_exit true
             }
-            SwitchToMode "Normal"
+            SwitchToMode "normal"
         }
         bind "s" {   // Ctrl-o s → zdl (session picker: attach / delete)
             Run "zsh" "-i" "-c" "zdl" {
                 floating true
                 close_on_exit true
             }
-            SwitchToMode "Normal"
+            SwitchToMode "normal"
         }
     }
 }
