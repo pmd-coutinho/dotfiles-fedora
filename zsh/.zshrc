@@ -161,18 +161,65 @@ zdl() {
 
 # Roots that `zp` scans for projects (immediate subdirs become projects).
 ZELLIJ_PROJECT_DIRS=(~/dev)
+# Container roots whose immediate subdirs are *leaf workspaces* (each its own
+# cwd+session), not multi-ticket projects — e.g. a worktrees dir, or a folder
+# holding several unrelated sub-projects. `zp` lists their children directly and
+# skips the ticket sub-prompt. The containers themselves are hidden from the
+# project list.
+ZELLIJ_CONTAINER_DIRS=(~/dev/exporation ~/dev/worktrees)
 
 # zp — project → ticket sessionizer. Two stages: pick a project (subdir of
 # $ZELLIJ_PROJECT_DIRS), then pick one of its existing `<project>:<ticket>`
 # sessions or create a new ticket. Sessions are named `<project>:<ticket>` so
 # the flat Zellij namespace reads as project→session. New sessions use
 # ~/.config/zellij/layouts/<project>.kdl if it exists, else the `dev` layout.
+#
+# Children of $ZELLIJ_CONTAINER_DIRS also appear in the picker as leaf
+# workspaces: picking one attaches-or-creates a single session cwd'd into that
+# dir (no ticket prompt). A git worktree is named after its parent repo
+# (`<project>:<worktree>`); anything else after its container (`<container>:<dir>`).
 zp() {
     command -v fzf >/dev/null || { print -u2 "zp: fzf not found"; return 1; }
+    local -a containers candidates
+    containers=(${ZELLIJ_CONTAINER_DIRS[@]:A})
+    # projects (children of PROJECT_DIRS, minus the containers themselves)…
+    candidates=(${(f)"$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_PROJECT_DIRS 2>/dev/null)"})
+    candidates=(${candidates:A})
+    candidates=(${candidates:|containers})
+    # …plus leaf workspaces (children of CONTAINER_DIRS)
+    candidates+=(${(f)"$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_CONTAINER_DIRS 2>/dev/null)"})
+    candidates=(${candidates:A})   # normalize (strip fd's trailing slash, resolve)
     local proj_path
-    proj_path=$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_PROJECT_DIRS 2>/dev/null |
-                fzf --prompt='project > ') || return
+    proj_path=$(print -l -- $candidates | fzf --prompt='project > ') || return
     [[ -n $proj_path ]] || return
+
+    # Leaf workspace? (its parent dir is a container) → attach-or-create directly.
+    local parent=${proj_path:A:h}
+    if (( ${containers[(Ie)$parent]} )); then
+        local suffix=${proj_path:t} prefix common detected
+        common=$(git -C "$proj_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+        detected=${${common:h}:t}
+        if [[ -n $common && $detected != $suffix ]]; then
+            prefix=$detected        # linked git worktree → parent repo name
+        else
+            prefix=${parent:t}      # non-git / standalone → container dir name
+        fi
+        local session="${prefix}:${suffix}"
+        local layout=dev
+        [[ -f ~/.config/zellij/layouts/${prefix}.kdl ]] && layout=$prefix
+        if [[ -n $ZELLIJ ]]; then
+            _zswitch "$session" "$layout" "$proj_path"
+            return
+        fi
+        builtin cd -- "$proj_path" || return
+        if zellij ls -s 2>/dev/null | grep -qxF -- "$session"; then
+            zellij attach -f "$session"
+        else
+            zellij -s "$session" -n "$layout"
+        fi
+        return
+    fi
+
     local proj=${proj_path:t}
 
     local -a all
