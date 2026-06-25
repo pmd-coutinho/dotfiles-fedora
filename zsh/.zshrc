@@ -141,15 +141,22 @@ zd() {
 # ones); Ctrl-X deletes the highlighted session (killing it first if running)
 # and refreshes the list, so you can prune several without leaving. Works from
 # inside Zellij too: Enter switches the current client (via _zswitch).
+# Inside Zellij the current session is pinned to line 1 (via zellij-sessions),
+# so line 2 is always the first session you'd switch TO; the cursor starts on
+# line 2, making Enter a one-press switch.
 zdl() {
     command -v fzf >/dev/null || { print -u2 "zdl: fzf not found"; return 1; }
+    local -a fzf_args=(
+        --no-sort
+        --header='enter: attach   ctrl-x: delete   esc: cancel'
+        --bind 'ctrl-x:execute-silent(zellij delete-session -f {1})+reload(zellij-sessions)'
+    )
+    # Pin current session to top + land the cursor on the first switchable one.
+    # `load` (not `start`) so the move runs after the piped list is fully read,
+    # and it re-fires after each ctrl-x reload to keep the cursor on line 2.
+    [[ -n $ZELLIJ_SESSION_NAME ]] && fzf_args+=(--bind 'load:pos(2)')
     local sel
-    sel=$(
-        zellij ls -n 2>/dev/null |
-        fzf --no-sort \
-            --header='enter: attach   ctrl-x: delete   esc: cancel' \
-            --bind 'ctrl-x:execute-silent(zellij delete-session -f {1})+reload(zellij ls -n 2>/dev/null)'
-    ) || return
+    sel=$(zellij-sessions | fzf "${fzf_args[@]}") || return
     [[ -n $sel ]] || return
     local name=${sel%% *}
     if [[ -n $ZELLIJ ]]; then

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# zellij-sessions — `zellij ls -n` with the current session pinned to the top.
+# Used by zdl so line 1 is always "you are here" and line 2 is the first
+# switchable session. Outside Zellij (no $ZELLIJ_SESSION_NAME) the order is
+# left untouched. Output format is `zellij ls -n` verbatim; only line order
+# changes.
+set -euo pipefail
+
+zellij ls -n 2>/dev/null | awk -v cur="${ZELLIJ_SESSION_NAME:-}" '
+    cur != "" && $1 == cur { print; next }
+    { rest = rest $0 "\n" }
+    END { printf "%s", rest }
+' || true
