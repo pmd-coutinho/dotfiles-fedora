@@ -35,7 +35,7 @@ sudo dnf -y install \
   bat ripgrep eza btop ShellCheck gettext unzip \
   yazi jujutsu \
   starship atuin zoxide stow tmux zellij \
-  SwayNotificationCenter swaybg swayidle hyprlock \
+  SwayNotificationCenter swaybg swayidle hyprlock wlsunset \
   walker elephant elephant-calc elephant-files elephant-clipboard \
   elephant-symbols elephant-unicode elephant-websearch elephant-runner \
   elephant-desktopapplications elephant-menus elephant-nirisessions \
@@ -196,6 +196,9 @@ bash "$DOTS/setup-editors.sh" || warn "run setup-editors.sh manually later"
 
 step "Workflow tooling (git+delta, .NET tools, Azure CLI, modern CLI, neovim/LazyVim)"
 sudo bash "$DOTS/setup-round6.sh" || warn "run setup-round6.sh manually later"
+
+step "CLI gap-fillers (sd, hyperfine, uv, glow, yq)"
+sudo bash "$DOTS/setup-round7.sh" || warn "run setup-round7.sh manually later"
 
 echo "  .NET SDK: run 'mise use -g dotnet@9' (or the version your solutions target)."
 echo "  Note: GUI-launched Rider won't inherit mise PATH — set its SDK path or DOTNET_ROOT."
