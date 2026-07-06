@@ -65,8 +65,7 @@ for f in CascadiaCode JetBrainsMono; do
 done
 fc-cache -f >/dev/null
 
-step "tmux TPM + zsh fzf-tab"
-[ -d ~/.tmux/plugins/tpm ] || git clone -q --depth 1 https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+step "zsh fzf-tab + zsh-abbr"
 mkdir -p ~/.local/share/zsh
 [ -d ~/.local/share/zsh/fzf-tab ] || git clone -q --depth 1 https://github.com/Aloxaf/fzf-tab ~/.local/share/zsh/fzf-tab
 # zsh-abbr needs its zsh-job-queue submodule
@@ -102,8 +101,8 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin bin btop dictation fuzzel gh-dash ghostty git gtk hyprlock jj lazygit niri nvim \
-           satty starship swaync systemd tmux walker waybar yazi zellij zsh; do
+for pkg in alacritty atuin bin btop dictation gh-dash ghostty git gtk hyprlock jj lazygit niri nvim \
+           satty starship swaync systemd walker waybar yazi zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
@@ -168,8 +167,6 @@ systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
 # click a notification -> focus the app it came from
 systemctl --user enable --now niri-notify-click.service 2>/dev/null || true
-# tmux plugins (non-interactive)
-~/.tmux/plugins/tpm/bin/install_plugins 2>/dev/null || true
 
 # ── 7. System setup (swap/zswap, kernel, greetd, power) ──────────────────
 step "Root system setup (swap/zswap, power, greetd, CachyOS kernel + nvidia)"

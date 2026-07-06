@@ -18,7 +18,7 @@ reboot                                  # lands on CachyOS kernel + greetd + zsw
 ```
 
 `bootstrap.sh` is idempotent and orchestrates the whole build:
-COPRs/RPMFusion → packages → fonts/TPM/fzf-tab/wallpaper → `stow` → gsettings →
+COPRs/RPMFusion → packages → fonts/fzf-tab/wallpaper → `stow` → gsettings →
 mise → dictation venv → services → then calls the system scripts (`setup-root.sh`,
 `setup-round2.sh`, `fix-igpu.sh`) for the `/etc`, swap, power, and kernel bits.
 The redundant `dnf` lines across scripts are intentional and harmless (no-ops
@@ -39,14 +39,14 @@ on re-run).
 | `setup-round6.sh` | Workflow tooling: git+delta (Catppuccin) + aliases, dotnet-ef, Azure CLI, modern CLI (tldr/duf/procs/difftastic/just + dust/xh/watchexec binaries), neovim/LazyVim with C# (Roslyn) LSP. See [`docs/CLI-WORKFLOW.md`](docs/CLI-WORKFLOW.md) for how to use it all. |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
 | `docs/DICTATION.md` | **GPU voice dictation** (offline faster-whisper): `Mod+Shift+D` speak→English, `Mod+Alt+D` verbatim. Stow pkg `dictation` + `setup.sh` venv. |
-| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, tmux, hyprlock, satty, swaync, fuzzel, starship, atuin, gtk, lazygit, btop, bin, systemd, alacritty, dictation. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
+| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, hyprlock, satty, swaync, starship, atuin, gtk, lazygit, btop, bin, systemd, alacritty, dictation. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
 
 ## The stack
 
 - **Compositor**: niri, rendering on the **NVIDIA dGPU** (`debug { render-drm-device }` by-path). 3 monitors: Huawei top-left, laptop below it, Gigabyte (4K@144 via DSC) right.
 - **Bars/UI**: waybar (one full bar per output), SwayNC notifications, walker launcher (+ elephant backend), hyprlock + swayidle (lock 10m / screens-off 15m).
 - **Login**: greetd + tuigreet (GDM kept installed as rescue).
-- **Terminal/shell**: Ghostty (CaskaydiaCove Nerd Font) · zsh (autosuggestions, syntax-highlighting, fzf-tab) + starship + atuin + zoxide + mise · tmux (TPM + catppuccin).
+- **Terminal/shell**: Ghostty (CaskaydiaCove Nerd Font) · zsh (autosuggestions, syntax-highlighting, fzf-tab) + starship + atuin + zoxide + mise · zellij (sessions/multiplexing; tmux + fuzzel configs retired to `archive/`).
 - **Kernel**: CachyOS (BORE scheduler) via `bieszczaders/kernel-cachyos`; stock Fedora kernel is the GRUB fallback.
 - **Swap**: 32G btrfs swapfile + **zswap** (zstd/zsmalloc) — zram disabled. For large .NET builds.
 - **Power**: tuned + tuned-ppd; udev auto-switch AC→performance / battery→balanced; waybar toggle via the `net.hadess.PowerProfiles` D-Bus interface (there is **no** `powerprofilesctl` — that ships with the conflicting power-profiles-daemon).
