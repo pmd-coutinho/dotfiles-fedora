@@ -252,6 +252,34 @@ feature" piece.
 
 ---
 
+## Text & data — sd, yq, glow (round 7)
+
+```bash
+sd 'v1/api' 'v2/api' src/**/*.cs      # sed, but literal-by-default + sane regex
+sd -p 'foo(\d+)' 'bar$1' file.txt     # -p previews without writing
+
+yq '.services.db.image' compose.yaml  # jq for YAML (also JSON/TOML/XML)
+yq -i '.version = "2"' config.yaml    # edit in place
+
+glow README.md                        # render markdown in the terminal
+glow -p docs/                         # browse a docs dir, pager mode
+```
+
+---
+
+## Benchmarks & Python — hyperfine, uv (round 7)
+
+```bash
+hyperfine 'dotnet build' 'dotnet build --no-restore'   # A/B with warmup+stats
+hyperfine --warmup 3 'zsh -i -c exit'                  # e.g. shell startup time
+
+uv venv && uv pip install requests    # pip/venv, but instant
+uvx ruff check .                      # run a python tool without installing it
+uv run script.py                      # PEP 723 inline-deps scripts
+```
+
+---
+
 ## Other tools already in the stack
 
 `bat` (cat), `eza` (ls/ll/la/lt), `fd` (find), `rg` (ripgrep/grep), `fzf`
