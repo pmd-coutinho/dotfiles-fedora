@@ -72,6 +72,8 @@ else warn "mise not found — skipping dotnet-ef + node"; fi
 
 # ── Git: import old ~/.gitconfig identity is already in the git/ package; ──
 #    back up any real ~/.gitconfig and stow the managed one.
+#    (bootstrap.sh already stows git/nvim — under bootstrap this is a no-op,
+#    kept so the script works standalone and resolves .gitconfig conflicts.)
 step "Stowing git + nvim packages"
 if [ -f "$UHOME/.gitconfig" ] && [ ! -L "$UHOME/.gitconfig" ]; then
   asuser cp "$UHOME/.gitconfig" "$UHOME/.gitconfig.pre-round6"
