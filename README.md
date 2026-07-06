@@ -12,7 +12,7 @@ Prereqs: **Secure Boot OFF** (the NVIDIA + CachyOS kernel modules are
 unsigned), an internet connection, and `git`/`stow` (`sudo dnf install -y git stow`).
 
 ```bash
-git clone <your-remote> ~/dotfiles      # TODO: set up the remote (see below)
+git clone git@github.com:pmd-coutinho/dotfiles-fedora.git ~/dotfiles
 bash ~/dotfiles/bootstrap.sh            # does everything, sudos where needed
 reboot                                  # lands on CachyOS kernel + greetd + zswap
 ```
@@ -90,5 +90,5 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 
 ## TODO
 
-- [ ] **Push to a git remote** (off-machine backup — currently local-only):
-  `git remote add origin <url> && git push -u origin main`
+(nothing pending — the repo lives at `github.com/pmd-coutinho/dotfiles-fedora`,
+branch `master`)
