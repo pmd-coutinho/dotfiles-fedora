@@ -146,10 +146,15 @@ zd() {
 # line 2, making Enter a one-press switch.
 zdl() {
     command -v fzf >/dev/null || { print -u2 "zdl: fzf not found"; return 1; }
+    # Ctrl-X refuses the session we're currently inside (deleting it would
+    # kill this very client).
+    local delete_cmd='zellij delete-session -f {1}'
+    [[ -n $ZELLIJ_SESSION_NAME ]] &&
+        delete_cmd="[[ {1} != ${(qq)ZELLIJ_SESSION_NAME} ]] && $delete_cmd"
     local -a fzf_args=(
         --no-sort
         --header='enter: attach   ctrl-x: delete   esc: cancel'
-        --bind 'ctrl-x:execute-silent(zellij delete-session -f {1})+reload(zellij-sessions)'
+        --bind "ctrl-x:execute-silent($delete_cmd)+reload(zellij-sessions)"
     )
     # Pin current session to top + land the cursor on the first switchable one.
     # `load` (not `start`) so the move runs after the piped list is fully read,
