@@ -339,9 +339,10 @@ binds {
     Mod+Shift+P { power-off-monitors; }
 }
 
-// ── Render on the NVIDIA dGPU ─────────────────────────────────────────
-// pci-0000:01:00.0 = RTX 4080 Max-Q (by-path is stable across boots,
-// unlike /dev/dri/cardN numbering).
-debug {
-    render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
-}
+// ── Render device ─────────────────────────────────────────────────────
+// The 4K144 monitor is now wired to the Intel iGPU (USB-C/DP), so niri's
+// default (render on the iGPU) is correct. If a heavy monitor ever moves
+// back to an NVIDIA-wired port, re-enable this to avoid cross-GPU copies:
+// debug {
+//     render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+// }
