@@ -52,8 +52,15 @@ dnf -y install openvpn3 || warn "openvpn3 install failed — check the OpenVPN r
 # Slack: NATIVE rpm (not Flatpak). The Flatpak sandbox breaks notification
 # action routing (clicking a notification never navigates to the conversation).
 # Slack ships one universal el8 rpm that installs fine on Fedora and self-updates
-# in-app, so the pinned version just needs to be installable; bump if it 404s.
-SLACK_RPM="https://downloads.slack-edge.com/desktop-releases/linux/x64/4.50.136/slack-4.50.136-0.1.el8.x86_64.rpm"
+# in-app. Discover the current version from the release-notes page so a rotated
+# download URL can't break a rebuild; fall back to the pinned version.
+slack_rpm_url() { echo "https://downloads.slack-edge.com/desktop-releases/linux/x64/$1/slack-$1-0.1.el8.x86_64.rpm"; }
+SLACK_VER_PIN="4.50.143"
+SLACK_VER=$(curl -fsSL --max-time 15 'https://slack.com/release-notes/linux' 2>/dev/null \
+  | grep -oE 'Slack [0-9]+\.[0-9]+\.[0-9]+' | head -1 | cut -d' ' -f2)
+SLACK_RPM=$(slack_rpm_url "${SLACK_VER:-$SLACK_VER_PIN}")
+# verify the constructed URL exists before handing it to dnf; else use the pin
+curl -fsIL --max-time 15 -o /dev/null "$SLACK_RPM" || SLACK_RPM=$(slack_rpm_url "$SLACK_VER_PIN")
 dnf -y install "$SLACK_RPM" || warn "Slack rpm install failed — check $SLACK_RPM"
 
 # ── USER-level: Flatpak + podman socket ───────────────────────────────
