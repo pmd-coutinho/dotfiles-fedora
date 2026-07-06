@@ -1,6 +1,18 @@
 [user]
 	name = Pedro Coutinho
 	email = pmd.coutinho@gmail.com
+	# "@Github" ed25519 key, served by KeePassXC via the ssh-agent user unit
+	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK8YxI4GHkNBE0ZLNzZC3rFU/1s6GxRjcsXoau5WjoPN
+
+[gpg]
+	format = ssh
+
+[gpg "ssh"]
+	# lets `git log --show-signature` verify locally
+	allowedSignersFile = ~/.config/git/allowed_signers
+
+[commit]
+	gpgsign = true
 
 [core]
 	editor = nvim
