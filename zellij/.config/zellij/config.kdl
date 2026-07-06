@@ -46,7 +46,7 @@ session_serialization true
 plugins {
     autolock location="https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm" {
         is_enabled true
-        triggers "nvim|vim|fzf|lazygit|less|man"
+        triggers "nvim|vim|fzf|lazygit|less|man|pi"
         reaction_seconds "0.3"
         print_to_log false
     }
