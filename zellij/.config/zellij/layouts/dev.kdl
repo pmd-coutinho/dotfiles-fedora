@@ -11,9 +11,9 @@
 // zellij from. When claude exits, Zellij keeps the pane so you can re-run it.
 
 layout {
-    // Custom layout replaces the default UI. Top = zjstatus (session, tabs, git
-    // branch, clock); bottom = a second zjstatus with curated keymap hints + a
-    // live {mode} indicator. Plugins fetch + cache from their pinned URLs first use.
+    // ── shared zjstatus tab bars (top: session/tabs/git/clock · bottom: keymap ──
+    // hints + live {mode}). Source: layouts/_zjstatus-tabbar.kdl — edit the
+    // fragment (colours: palette/catppuccin-mocha.env), then palette/render.sh.
     default_tab_template {
         pane size=1 borderless=true {
             plugin location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {

@@ -1,0 +1,24 @@
+// dev.kdl — agent workspace layout.
+//   tab "claude": auto-runs Claude Code
+//   tab "shell":  plain zsh
+//
+// Launch from a project root (both tabs inherit that directory):
+//     zellij -s <ticket> -n dev
+// Use -n (--new-session-with-layout), NOT --layout: with -s, --layout tries
+// to add tabs to an *existing* session and fails with "session not found".
+//
+// `claude` resolves via the mise PATH inherited from the zsh you launch
+// zellij from. When claude exits, Zellij keeps the pane so you can re-run it.
+
+layout {
+${zjstatus_tabbar}
+
+    tab name="claude" focus=true {
+        pane command="claude" {
+            args "--dangerously-skip-permissions"
+        }
+    }
+    tab name="shell" {
+        pane
+    }
+}

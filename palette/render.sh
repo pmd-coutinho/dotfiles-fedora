@@ -12,6 +12,12 @@ dots="$(cd "$here/.." && pwd)"
 set -a; . "$here/catppuccin-mocha.env"; set +a
 vars="$(grep -oE '^ctp_[a-z0-9]+' "$here/catppuccin-mocha.env" | sed 's/^/$/' | tr '\n' ' ')"
 
+# Zellij layouts share one zjstatus tab-bar block: colour-resolve the fragment,
+# then let layout templates pull it in as ${zjstatus_tabbar}.
+zjstatus_tabbar="$(envsubst "$vars" < "$dots/zellij/.config/zellij/layouts/_zjstatus-tabbar.kdl")"
+export zjstatus_tabbar
+vars="$vars \$zjstatus_tabbar"
+
 mode="${1:-render}"
 fail=0
 while IFS= read -r t; do

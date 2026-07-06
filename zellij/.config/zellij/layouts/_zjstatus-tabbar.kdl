@@ -1,0 +1,54 @@
+    // ── shared zjstatus tab bars (top: session/tabs/git/clock · bottom: keymap ──
+    // hints + live {mode}). Source: layouts/_zjstatus-tabbar.kdl — edit the
+    // fragment (colours: palette/catppuccin-mocha.env), then palette/render.sh.
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {
+                format_left  "#[fg=#${ctp_mauve},bold] {session} {tabs}"
+                format_right "{command_git}#[fg=#${ctp_blue},bold] {datetime}"
+                format_space ""
+                border_enabled "false"
+
+                tab_normal "#[fg=#${ctp_overlay0}] {name} "
+                tab_active "#[fg=#${ctp_base},bg=#${ctp_mauve},bold] {name} "
+
+                command_git_command    "git rev-parse --abbrev-ref HEAD"
+                command_git_format     "#[fg=#${ctp_green}] {stdout} "
+                command_git_interval   "5"
+                command_git_rendermode "static"
+
+                datetime          "#[fg=#${ctp_blue},bold]{format}"
+                datetime_format   "%a %d %b %H:%M"
+                datetime_timezone "Europe/Lisbon"
+            }
+        }
+        children
+        // Bottom bar: a second zjstatus instance (same plugin/style as the top)
+        // showing a CURATED set of the most-used Ctrl-mode keys + a live {mode}
+        // indicator on the right. We use zjstatus over the built-in status-bar
+        // because status-bar can't choose which keys to show and its ribbon
+        // looked cluttered. Trade-off: the hint text is static (the core mode
+        // keys never change); {mode} stays live (turns red LOCKED under autolock).
+        pane size=1 borderless=true {
+            plugin location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {
+                format_left  "#[fg=#${ctp_overlay0},bold] Ctrl + #[fg=#${ctp_mauve},bold]p#[fg=#${ctp_subtext1}] pane  #[fg=#${ctp_mauve},bold]t#[fg=#${ctp_subtext1}] tab  #[fg=#${ctp_mauve},bold]n#[fg=#${ctp_subtext1}] resize  #[fg=#${ctp_mauve},bold]o#[fg=#${ctp_subtext1}] session #[fg=#${ctp_overlay0}](#[fg=#${ctp_mauve},bold]g#[fg=#${ctp_subtext1}] proj #[fg=#${ctp_overlay0}]·#[fg=#${ctp_mauve},bold]s#[fg=#${ctp_subtext1}] sess#[fg=#${ctp_overlay0}])  #[fg=#${ctp_mauve},bold]g#[fg=#${ctp_subtext1}] lock  #[fg=#${ctp_mauve},bold]q#[fg=#${ctp_subtext1}] quit"
+                format_right "{mode}"
+                format_space ""
+                border_enabled "false"
+
+                mode_normal       "#[fg=#${ctp_base},bg=#${ctp_green},bold] NORMAL "
+                mode_locked       "#[fg=#${ctp_base},bg=#${ctp_red},bold] LOCKED "
+                mode_pane         "#[fg=#${ctp_base},bg=#${ctp_blue},bold] PANE "
+                mode_tab          "#[fg=#${ctp_base},bg=#${ctp_mauve},bold] TAB "
+                mode_resize       "#[fg=#${ctp_base},bg=#${ctp_peach},bold] RESIZE "
+                mode_move         "#[fg=#${ctp_base},bg=#${ctp_blue},bold] MOVE "
+                mode_scroll       "#[fg=#${ctp_base},bg=#${ctp_teal},bold] SCROLL "
+                mode_search       "#[fg=#${ctp_base},bg=#${ctp_teal},bold] SEARCH "
+                mode_enter_search "#[fg=#${ctp_base},bg=#${ctp_teal},bold] SEARCH "
+                mode_session      "#[fg=#${ctp_base},bg=#${ctp_mauve},bold] SESSION "
+                mode_tmux         "#[fg=#${ctp_base},bg=#${ctp_peach},bold] TMUX "
+                mode_rename_tab   "#[fg=#${ctp_base},bg=#${ctp_yellow},bold] RENAME "
+                mode_rename_pane  "#[fg=#${ctp_base},bg=#${ctp_yellow},bold] RENAME "
+            }
+        }
+    }

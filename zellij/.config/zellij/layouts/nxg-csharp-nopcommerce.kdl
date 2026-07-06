@@ -5,11 +5,11 @@
 //   dotnet : plain zsh for `dotnet watch` / `just` / test loops
 //   git    : lazygit
 // All tabs inherit the repo root `zp` cd's into.
-//
-// NOTE: the default_tab_template (top + bottom zjstatus bars) is duplicated from
-// dev.kdl — Zellij has no cross-file layout include. Keep the two in sync.
 
 layout {
+    // ── shared zjstatus tab bars (top: session/tabs/git/clock · bottom: keymap ──
+    // hints + live {mode}). Source: layouts/_zjstatus-tabbar.kdl — edit the
+    // fragment (colours: palette/catppuccin-mocha.env), then palette/render.sh.
     default_tab_template {
         pane size=1 borderless=true {
             plugin location="https://github.com/dj95/zjstatus/releases/download/v0.23.0/zjstatus.wasm" {

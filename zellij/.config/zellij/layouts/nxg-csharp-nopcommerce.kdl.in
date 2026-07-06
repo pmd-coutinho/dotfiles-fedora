@@ -1,0 +1,26 @@
+// nxg-csharp-nopcommerce.kdl — per-project layout, auto-selected by `zp` for
+// this repo (zp prefers layouts/<project>.kdl, else falls back to dev).
+//   claude : Claude Code agent
+//   shell  : plain zsh
+//   dotnet : plain zsh for `dotnet watch` / `just` / test loops
+//   git    : lazygit
+// All tabs inherit the repo root `zp` cd's into.
+
+layout {
+${zjstatus_tabbar}
+
+    tab name="claude" focus=true {
+        pane command="claude" {
+            args "--dangerously-skip-permissions"
+        }
+    }
+    tab name="shell" {
+        pane
+    }
+    tab name="dotnet" {
+        pane
+    }
+    tab name="git" {
+        pane command="lazygit"
+    }
+}
