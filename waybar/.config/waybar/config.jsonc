@@ -21,6 +21,7 @@
             "bluetooth",
             "network",
             "custom/powerprofile",
+            "custom/nightlight",
             "battery",
             "custom/notification"
         ],
@@ -130,6 +131,17 @@
             "on-click-right": "busctl --system set-property net.hadess.PowerProfiles /net/hadess/PowerProfiles net.hadess.PowerProfiles ActiveProfile s power-saver",
             "tooltip": true,
             "tooltip-format": "power profile (L: performance · M: balanced · R: saver)"
+        },
+
+        "custom/nightlight": {
+            // state = "is wlsunset running" (it has no queryable mode, so the
+            // toggle stops/starts it; same args as the niri startup spawn)
+            "format": "{}",
+            "interval": 5,
+            "signal": 8,
+            "return-type": "json",
+            "exec": "if pgrep -x wlsunset >/dev/null; then echo '{\"text\":\"󰖔\",\"tooltip\":\"night light: on (auto schedule)\",\"class\":\"on\"}'; else echo '{\"text\":\"󰖨\",\"tooltip\":\"night light: off\",\"class\":\"off\"}'; fi",
+            "on-click": "pkill -x wlsunset || setsid -f wlsunset -l 38.7 -L -9.1 -t 4000; pkill -RTMIN+8 waybar"
         },
 
         "custom/notification": {

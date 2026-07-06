@@ -103,6 +103,7 @@ window#waybar.empty #window {
 #battery,
 #mpris,
 #custom-powerprofile,
+#custom-nightlight,
 #custom-notification {
     padding: 0 10px;
     margin-right: 8px;
@@ -112,6 +113,9 @@ window#waybar.empty #window {
 #custom-powerprofile {
     color: @yellow;
 }
+
+#custom-nightlight     { color: @peach; }
+#custom-nightlight.off { color: @overlay0; }
 
 #mpris {
     color: @pink;
