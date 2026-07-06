@@ -1,0 +1,4 @@
+# global excludes (git's default path — no gitconfig entry needed)
+**/.claude/settings.local.json
+# per-project secret env values (see docs/CLI-WORKFLOW.md, mise section)
+mise.local.toml

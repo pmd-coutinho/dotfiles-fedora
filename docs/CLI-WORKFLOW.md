@@ -100,6 +100,28 @@ duf                     # disk free per mount, pretty
 
 ---
 
+## mise — per-project env vars (no direnv needed)
+
+mise already loads a repo's `mise.toml` on cd — its `[env]` block gives
+direnv-style per-project environment for free:
+
+```toml
+# mise.toml (committed — safe, non-secret values)
+[env]
+ASPNETCORE_ENVIRONMENT = "Development"
+DOTNET_CLI_TELEMETRY_OPTOUT = "1"
+
+# mise.local.toml (NOT committed — secrets, connection strings)
+[env]
+ConnectionStrings__Default = "Server=localhost;..."
+```
+
+`mise.local.toml` overrides `mise.toml` and is for machine/secret values —
+add it to the repo's `.gitignore` (mise merges both automatically). Check
+what's active with `mise env`, or `mise set KEY=value` to write from the CLI.
+
+---
+
 ## just — per-project task runner
 
 Drop a `justfile` in a repo root; run recipes from anywhere inside it. Example:
