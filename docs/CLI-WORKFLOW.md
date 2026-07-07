@@ -251,7 +251,7 @@ native `Ctrl-o w` (session-manager) to switch without detaching.
 **Container dirs → leaf workspaces.** Some `~/dev` entries aren't repos — they're
 *containers* of unrelated dirs: a worktrees pool, or a scratch folder holding
 several sub-projects. List them in **`$ZELLIJ_CONTAINER_DIRS`** (default
-`~/dev/exporation ~/dev/worktrees`) and `zp` lists their *children* as pickable
+`~/dev/exploration ~/dev/worktrees`) and `zp` lists their *children* as pickable
 workspaces (hiding the containers themselves). Picking one is a one-shot
 attach-or-create cwd'd into that dir — no ticket sub-prompt, since the dir *is*
 the workspace. Naming reuses the `:` namespace:
@@ -260,8 +260,8 @@ the workspace. Naming reuses the `:` namespace:
   `git rev-parse --git-common-dir`): `~/dev/worktrees/OT-12943` →
   **`nxg-csharp-nopcommerce:OT-12943`**, so `zs` filtering by the repo surfaces
   worktrees right next to that repo's ticket sessions;
-- anything else after its container: `~/dev/exporation/workflow` →
-  **`exporation:workflow`**.
+- anything else after its container: `~/dev/exploration/workflow` →
+  **`exploration:workflow`**.
 
 (Equivalent to `cd <dir> && zd`, but discoverable from the `zp` picker with a
 project-aware name.)

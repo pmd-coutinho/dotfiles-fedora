@@ -178,7 +178,7 @@ ZELLIJ_PROJECT_DIRS=(~/dev)
 # holding several unrelated sub-projects. `zp` lists their children directly and
 # skips the ticket sub-prompt. The containers themselves are hidden from the
 # project list.
-ZELLIJ_CONTAINER_DIRS=(~/dev/exporation ~/dev/worktrees)
+ZELLIJ_CONTAINER_DIRS=(~/dev/exploration ~/dev/worktrees)
 
 # zp — project → ticket sessionizer. Two stages: pick a project (subdir of
 # $ZELLIJ_PROJECT_DIRS), then pick one of its existing `<project>:<ticket>`
@@ -291,10 +291,13 @@ bindkey '^F' _zs_widget
 if command -v yazi >/dev/null; then
     y() {
         local tmp cwd; tmp="$(mktemp -t yazi-cwd.XXXXXX)"
-        yazi "$@" --cwd-file="$tmp"
-        cwd="$(command cat -- "$tmp" 2>/dev/null)"   # `command` bypasses the bat alias
-        [[ -n $cwd && $cwd != "$PWD" ]] && builtin cd -- "$cwd"
-        rm -f -- "$tmp"
+        {
+            yazi "$@" --cwd-file="$tmp"
+            cwd="$(command cat -- "$tmp" 2>/dev/null)"   # `command` bypasses the bat alias
+            [[ -n $cwd && $cwd != "$PWD" ]] && builtin cd -- "$cwd"
+        } always {
+            rm -f -- "$tmp"    # runs even on Ctrl-C — no tempfile leak
+        }
     }
 fi
 
@@ -302,7 +305,9 @@ fi
 export BAT_THEME="Catppuccin Mocha"
 # lazydocker → podman's docker-compatible socket
 export DOCKER_HOST="unix://${XDG_RUNTIME_DIR}/podman/podman.sock"
-# ssh-agent.service (systemd user) — KeePassXC loads keys into it on unlock
+# ssh-agent.service (systemd user) — KeePassXC loads keys into it on unlock.
+# environment.d/20-ssh-agent.conf covers the graphical session; this export is
+# the deliberate fallback for non-graphical logins (ssh into this machine).
 export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
 # zoxide must init before atuin/starship/syntax-highlighting for our setup;
 # its doctor flags that ordering but cd works fine — silence the nag.
@@ -316,6 +321,13 @@ export FZF_DEFAULT_OPTS=" \
 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
 --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
 --color=selected-bg:#45475a --height=40% --layout=reverse --border=rounded"
+# previews for the fzf widgets (fzf-tab has its own zstyle previews)
+export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {} 2>/dev/null || eza -1 --color=always {}'"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
+
+# colored man pages via bat
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANROFFOPT="-c"
 
 # ── PATH ──────────────────────────────────────────────────────────────
 # ~/.dotnet/tools = global dotnet tools (dotnet-ef, etc.)
