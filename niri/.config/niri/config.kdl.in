@@ -91,8 +91,8 @@ spawn-at-startup "waybar"
 spawn-at-startup "swaync"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpapers/cat-waves.png -m fill"
 spawn-sh-at-startup "swayidle -w timeout 600 'pgrep -x hyprlock || hyprlock' timeout 900 'niri msg action power-off-monitors' before-sleep 'pgrep -x hyprlock || hyprlock'"
-// night light — Lisbon coords; warms to 4000K after sunset
-spawn-at-startup "wlsunset" "-l" "38.7" "-L" "-9.1" "-t" "4000"
+// night light is a manual switch: the waybar 󰖔 module starts/stops wlsunset
+// (pinned ~4000K, no schedule) — nothing to spawn at startup
 spawn-at-startup "/usr/libexec/mate-polkit/polkit-mate-authentication-agent-1"
 spawn-at-startup "nm-applet"
 spawn-at-startup "blueman-applet"

@@ -134,14 +134,14 @@
         },
 
         "custom/nightlight": {
-            // state = "is wlsunset running" (it has no queryable mode, so the
-            // toggle stops/starts it; same args as the niri startup spawn)
+            // manual switch, no schedule: pinning -T next to -t keeps it warm
+            // whenever it runs, so "running" simply means "on"
             "format": "{}",
             "interval": 5,
             "signal": 8,
             "return-type": "json",
-            "exec": "if pgrep -x wlsunset >/dev/null; then echo '{\"text\":\"󰖔\",\"tooltip\":\"night light: on (auto schedule)\",\"class\":\"on\"}'; else echo '{\"text\":\"󰖨\",\"tooltip\":\"night light: off\",\"class\":\"off\"}'; fi",
-            "on-click": "pkill -x wlsunset || setsid -f wlsunset -l 38.7 -L -9.1 -t 4000; pkill -RTMIN+8 waybar"
+            "exec": "if pgrep -x wlsunset >/dev/null; then echo '{\"text\":\"󰖔\",\"tooltip\":\"night light: on\",\"class\":\"on\"}'; else echo '{\"text\":\"󰖨\",\"tooltip\":\"night light: off\",\"class\":\"off\"}'; fi",
+            "on-click": "pkill -x wlsunset || setsid -f wlsunset -T 4001 -t 4000; pkill -RTMIN+8 waybar"
         },
 
         "custom/notification": {
