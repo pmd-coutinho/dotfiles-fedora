@@ -8,3 +8,11 @@ email = "pmd.coutinho@gmail.com"
 
 [ui]
 default-command = "log"
+
+# Sign own commits with the same "@Github" ed25519 key as git (KeePassXC serves
+# it via the ssh-agent user unit) — keeps colocated repos consistent with
+# git's commit.gpgsign.
+[signing]
+behavior = "own"
+backend = "ssh"
+key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK8YxI4GHkNBE0ZLNzZC3rFU/1s6GxRjcsXoau5WjoPN"
