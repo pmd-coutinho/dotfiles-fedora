@@ -34,7 +34,7 @@ sudo dnf -y install \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
   bat ripgrep eza btop ShellCheck gettext unzip \
   yazi jujutsu \
-  starship atuin zoxide stow tmux zellij \
+  starship atuin zoxide stow zellij \
   SwayNotificationCenter swaybg swayidle hyprlock wlsunset \
   walker elephant elephant-calc elephant-files elephant-clipboard \
   elephant-symbols elephant-unicode elephant-websearch elephant-runner \
@@ -51,7 +51,7 @@ sudo dnf -y install \
   kernel-cachyos kernel-cachyos-devel-matched
 # NOTE: install the GCC kernel-cachyos, NOT kernel-cachyos-lto (breaks akmods).
 
-# ── 2. Manual fetches (fonts, tmux/zsh plugins, wallpaper) ───────────────
+# ── 2. Manual fetches (fonts, zsh plugins, wallpaper) ────────────────────
 step "Nerd fonts (CaskaydiaCove + JetBrainsMono)"
 mkdir -p ~/.local/share/fonts
 for f in CascadiaCode JetBrainsMono; do
@@ -101,8 +101,8 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin bin btop dictation gh-dash ghostty git gtk hyprlock jj lazygit niri nvim \
-           satty starship swaync systemd walker waybar yazi zellij zsh; do
+for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk hyprlock \
+           jj lazygit niri nvim satty starship swaync systemd walker waybar yazi zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
@@ -167,6 +167,13 @@ systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
 # click a notification -> focus the app it came from
 systemctl --user enable --now niri-notify-click.service 2>/dev/null || true
+# ssh-agent socket at $XDG_RUNTIME_DIR/ssh-agent.socket — KeePassXC loads keys
+# into it; git commit signing and environment.d's SSH_AUTH_SOCK depend on it
+systemctl --user enable --now ssh-agent.service 2>/dev/null || true
+# vault sync (rclone) — only once ~/vault exists (set up manually, see SECURITY.md)
+if [ -d ~/vault ]; then
+    systemctl --user enable --now rclone-vault-sync.timer rclone-vault-sync.path 2>/dev/null || true
+fi
 
 # ── 7. System setup (swap/zswap, kernel, greetd, power) ──────────────────
 step "Root system setup (swap/zswap, power, greetd, CachyOS kernel + nvidia)"

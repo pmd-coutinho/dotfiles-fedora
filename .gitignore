@@ -1,5 +1,3 @@
-tmux/.config/tmux/plugins/
-
 # VS Code rewrites this with machine state (mssql connections/tokens) — never track it
 vscode/.config/Code/User/settings.json
 
