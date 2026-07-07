@@ -31,6 +31,7 @@ if [ "$(id -u)" -eq 0 ]; then
       case "$url" in
         *.tar.gz|*.tgz) tar -xzf "$tmp/a" -C "$tmp" ;;
         *.tar.xz)       tar -xJf "$tmp/a" -C "$tmp" ;;
+        *.tar.zst)      tar --zstd -xf "$tmp/a" -C "$tmp" ;;
         *.zip)          (cd "$tmp" && unzip -q a) ;;
       esac
       local found; found=$(find "$tmp" -type f -name "$bin" | head -1)

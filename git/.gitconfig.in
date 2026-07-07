@@ -41,6 +41,12 @@
 [merge]
 	conflictStyle = zdiff3
 
+# mergiraf: syntax-aware merge that auto-resolves structural conflicts.
+# Activated per-language via ~/.config/git/attributes (merge=mergiraf).
+[merge "mergiraf"]
+	name = mergiraf
+	driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
+
 [rerere]
 	enabled = true
 

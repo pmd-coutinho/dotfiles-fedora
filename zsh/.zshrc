@@ -356,6 +356,8 @@ command -v zoxide  >/dev/null && eval "$(zoxide init zsh --cmd cd)"   # cd = zox
 [[ -r /usr/share/fzf/shell/key-bindings.zsh ]] && source /usr/share/fzf/shell/key-bindings.zsh
 [[ -r /usr/share/fzf/shell/completion.zsh ]]   && source /usr/share/fzf/shell/completion.zsh
 command -v atuin   >/dev/null && eval "$(atuin init zsh)"
+# typo'd a command? type `f` to get the corrected rerun
+command -v pay-respects >/dev/null && eval "$(pay-respects zsh --alias)"
 command -v starship >/dev/null && eval "$(starship init zsh)"  # prompt last
 
 # ── Syntax highlighting (must be sourced last) ────────────────────────

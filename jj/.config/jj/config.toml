@@ -16,3 +16,9 @@ default-command = "log"
 behavior = "own"
 backend = "ssh"
 key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK8YxI4GHkNBE0ZLNzZC3rFU/1s6GxRjcsXoau5WjoPN"
+
+# `jj resolve --tool mergiraf` — structural (syntax-aware) conflict resolution
+[merge-tools.mergiraf]
+program = "mergiraf"
+merge-args = ["merge", "$base", "$left", "$right", "-o", "$output"]
+merge-conflict-exit-codes = [1]
