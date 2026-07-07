@@ -19,10 +19,13 @@ reboot                                  # lands on CachyOS kernel + greetd + zsw
 
 `bootstrap.sh` is idempotent and orchestrates the whole build:
 COPRs/RPMFusion → packages → fonts/fzf-tab/wallpaper → `stow` → gsettings →
-mise → dictation venv → services → then calls the system scripts (`setup-root.sh`,
-`setup-round2.sh`, `fix-igpu.sh`) for the `/etc`, swap, power, and kernel bits.
-The redundant `dnf` lines across scripts are intentional and harmless (no-ops
-on re-run).
+mise → dictation venv → services → then calls the other scripts in this order:
+`setup-root.sh` → `setup-round2.sh` → `fix-igpu.sh` → `setup-round3.sh` →
+`install-toolbox.sh` → `setup-editors.sh` → `setup-round6.sh` →
+`setup-round7.sh` → `setup-round8.sh` → `setup-round4.sh`. Note the run order
+is **not** the numeric order (round4's OS hardening runs last) and there is no
+round5. The redundant `dnf` lines across scripts are intentional and harmless
+(no-ops on re-run).
 
 ## What's here
 
@@ -37,9 +40,11 @@ on re-run).
 | `fix-igpu.sh` | `xe.force_probe=a788` — kernel 7.0+ dropped i915 for this Raptor Lake iGPU; without it the laptop panel + Huawei go dark. |
 | `setup-editors.sh` | Catppuccin for VS Code + Rider, VS Code keyring fix (niri), Rider native-Wayland toolkit. |
 | `setup-round6.sh` | Workflow tooling: git+delta (Catppuccin) + aliases, dotnet-ef, Azure CLI, modern CLI (tldr/duf/procs/difftastic/just + dust/xh/watchexec binaries), neovim/LazyVim with C# (Roslyn) LSP. See [`docs/CLI-WORKFLOW.md`](docs/CLI-WORKFLOW.md) for how to use it all. |
+| `setup-round7.sh` | CLI gap-fillers: sd, hyperfine, uv, glow, yq. |
+| `setup-round8.sh` | Dev/ops TUIs + helpers: hurl, lnav, gum (dnf/COPR); mergiraf (git merge driver), trippy, kondo, ouch, pay-respects (pinned binaries); csharprepl (dotnet tool), posting + isd (uv tools). |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
 | `docs/DICTATION.md` | **GPU voice dictation** (offline faster-whisper): `Mod+Shift+D` speak→English, `Mod+Alt+D` verbatim. Stow pkg `dictation` + `setup.sh` venv. |
-| `*/` | stow packages: niri, waybar, walker, ghostty, git, nvim, zsh, hyprlock, satty, swaync, starship, atuin, gtk, lazygit, btop, bin, systemd, alacritty, dictation. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
+| `*/` | stow packages: alacritty, atuin, autostart, bin, btop, dictation, environment, gh-dash, ghostty, git, gtk, hyprlock, jj, lazygit, niri, nvim, satty, starship, swaync, systemd, walker, waybar, yazi, zellij, zsh. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
 
 ## The stack
 

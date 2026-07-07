@@ -49,7 +49,7 @@ Modal: press the `Ctrl` combo to enter a mode, then a letter. Hints show in the 
 | **Alt-Shift-z** * | Re-enable autolock |
 | **Ctrl-g** | Manually toggle Locked mode |
 
-Bars *: **top** = zjstatus (session · tabs · git branch · clock) · **bottom** = status-bar (live keymap hints).
+Bars *: **top** = zjstatus (session · tabs · git branch · clock) · **bottom** = a second zjstatus (static keymap hint line).
 
 ---
 
