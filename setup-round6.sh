@@ -5,14 +5,8 @@
 # (sudo needed for dnf; user-level bits run via `asuser`). Idempotent.
 # ============================================================================
 set -uo pipefail
-step() { echo -e "\n\033[1;35m==> $*\033[0m"; }
-warn() { echo -e "\033[1;33m!!  $*\033[0m"; }
-ok()   { echo -e "\033[1;32m$*\033[0m"; }
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo"; exit 1; }
-RUSER="${SUDO_USER:-$(logname 2>/dev/null)}"
-RUID="$(id -u "$RUSER")"
-UHOME="$(getent passwd "$RUSER" | cut -d: -f6)"
-asuser() { sudo -u "$RUSER" env XDG_RUNTIME_DIR="/run/user/$RUID" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$RUID/bus" HOME="$UHOME" "$@"; }
+. "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 DOTS="$UHOME/dotfiles"
 
 # ── Packages (Fedora repos) ───────────────────────────────────────────────
@@ -21,30 +15,9 @@ dnf -y install git-delta tealdeer duf procs difftastic just neovim azure-cli \
   || warn "one or more dnf packages failed — check names/repos"
 
 # ── Modern CLI binaries not packaged: dust, xh, watchexec → ~/.local/bin ──
-# Version-PINNED with sha256 verification (fail-closed: a mismatch skips the
-# install rather than running an unverified binary). To upgrade: bump the URL
-# and recompute the hash with `curl -fsSL <url> | sha256sum`.
+# fetch_bin (lib/common.sh) is version-pinned + sha256-verified, fail-closed.
 step "Fetching prebuilt binaries (dust, xh, watchexec) into ~/.local/bin (sha256-verified)"
 asuser mkdir -p "$UHOME/.local/bin"
-fetch_bin() {  # $1=binary-name  $2=url  $3=sha256
-  local bin="$1" url="$2" sum="$3" tmp
-  tmp=$(mktemp -d)
-  if ! curl -fsSL "$url" -o "$tmp/a"; then warn "$bin: download failed"; rm -rf "$tmp"; return; fi
-  if ! echo "$sum  $tmp/a" | sha256sum -c --status; then
-    warn "$bin: SHA256 MISMATCH — refusing to install (expected $sum)"; rm -rf "$tmp"; return
-  fi
-  case "$url" in
-    *.tar.gz|*.tgz) tar -xzf "$tmp/a" -C "$tmp" ;;
-    *.tar.xz)       tar -xJf "$tmp/a" -C "$tmp" ;;
-    *.zip)          (cd "$tmp" && unzip -q a) ;;
-  esac
-  local found; found=$(find "$tmp" -type f -name "$bin" | head -1)
-  if [ -n "$found" ]; then
-    install -m755 "$found" "$UHOME/.local/bin/$bin"; chown "$RUSER:$RUSER" "$UHOME/.local/bin/$bin"
-    ok "  installed $bin (verified)"
-  else warn "$bin: binary not found in archive"; fi
-  rm -rf "$tmp"
-}
 fetch_bin dust \
   "https://github.com/bootandy/dust/releases/download/v1.2.4/dust-v1.2.4-x86_64-unknown-linux-gnu.tar.gz" \
   "707cfdbfb9d2dc536f8c3853815bbe98a01012f2772463835edae06816551160"

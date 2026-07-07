@@ -126,7 +126,7 @@ animations {
 // Declaration order = display order on a fresh niri start (top→bottom,
 // left→right on the bar). NOTE: adding these while niri is already running
 // prepends them (reversed) — a relogin fixes the order to match this.
-// Laptop (eDP-1): 1-4 · Gigabyte (DP-3): 5-8 · Huawei (DP-2): 9-10.
+// Laptop panel: 1-4 · Gigabyte: 5-8 · Huawei: 9-10 (outputs matched by model, not connector).
 workspace "1-slack"     { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
 workspace "2-ayugram"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
 workspace "3-firefox"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
@@ -140,7 +140,7 @@ workspace "10-obsidian" { open-on-output "Huawei Technologies Co., Inc. HUAWEI A
 
 // ── Window rules ──────────────────────────────────────────────────────
 // Rounded corners everywhere, matching the 12px radius used across
-// waybar/swaync/fuzzel.
+// waybar/swaync/walker.
 window-rule {
     geometry-corner-radius 12
     clip-to-geometry true

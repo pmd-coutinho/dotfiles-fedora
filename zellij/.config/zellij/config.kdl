@@ -21,7 +21,7 @@ theme "catppuccin-mocha"
 
 default_shell "zsh"
 
-// Wayland clipboard — same choice as tmux.conf's `copy-pipe-and-cancel wl-copy`.
+// Wayland clipboard.
 copy_command "wl-copy"
 copy_clipboard "system"
 copy_on_select true

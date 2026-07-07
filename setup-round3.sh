@@ -4,12 +4,8 @@
 # Flatpak + podman socket steps are user-level — see the USER section run as
 # the invoking user. Idempotent.
 set -uo pipefail
-step() { echo -e "\n\033[1;35m==> $*\033[0m"; }
-warn() { echo -e "\033[1;33m!!  $*\033[0m"; }
-ok()   { echo -e "\033[1;32m$*\033[0m"; }
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo"; exit 1; }
-RUSER="${SUDO_USER:-$(logname 2>/dev/null)}"
-asuser() { sudo -u "$RUSER" env XDG_RUNTIME_DIR="/run/user/$(id -u "$RUSER")" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u "$RUSER")/bus" "$@"; }
+. "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # ── Third-party dnf repos ─────────────────────────────────────────────
 step "VS Code (Microsoft repo)"
@@ -87,7 +83,7 @@ asuser systemctl --user enable --now podman.socket 2>/dev/null || warn "enable p
 step "Microsoft Dev Tunnels CLI (devtunnel → ~/.local/bin)"
 # Official installer dumps to ~/bin + edits .zshrc + apt-get; we just grab
 # the binary into ~/.local/bin (already on PATH). Run 'devtunnel user login' after.
-RHOME=$(getent passwd "$RUSER" | cut -d: -f6)
+RHOME="$UHOME"
 asuser curl -fsSL -o "$RHOME/.local/bin/devtunnel" \
   "https://tunnelsassetsprod.blob.core.windows.net/cli/linux-x64-devtunnel" \
   && chmod +x "$RHOME/.local/bin/devtunnel" && echo "  devtunnel installed" \

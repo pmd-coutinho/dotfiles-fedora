@@ -8,9 +8,11 @@ fail=0
 files=$(git diff --cached --name-only --diff-filter=ACM)
 
 # 1. shellcheck staged shell scripts (errors block; install: dnf install ShellCheck)
+#    covers *.sh plus extensionless scripts with a sh/bash shebang (bin/…)
 if command -v shellcheck >/dev/null 2>&1; then
     while IFS= read -r f; do
-        [[ $f == *.sh ]] && [[ -f $f ]] || continue
+        [[ -f $f ]] || continue
+        [[ $f == *.sh ]] || head -1 "$f" 2>/dev/null | grep -qE '^#!.*\b(ba)?sh\b' || continue
         shellcheck -S error "$f" || { echo "pre-commit: shellcheck errors in $f" >&2; fail=1; }
     done <<< "$files"
 else
@@ -20,7 +22,7 @@ fi
 # 2. zsh -n syntax check on staged zsh files (blocking)
 if command -v zsh >/dev/null 2>&1; then
     while IFS= read -r f; do
-        [[ $f == *.zshrc || $f == *.zsh ]] && [[ -f $f ]] || continue
+        [[ $f == *.zshrc || $f == *.zshenv || $f == *.zsh ]] && [[ -f $f ]] || continue
         zsh -n "$f" 2>/dev/null || { echo "pre-commit: zsh syntax error in $f" >&2; fail=1; }
     done <<< "$files"
 fi

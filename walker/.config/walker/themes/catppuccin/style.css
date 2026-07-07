@@ -1,6 +1,6 @@
 /* Walker — Catppuccin Mocha
  * Inherits the default theme's layout.xml; overrides colors + shape only,
- * matching the waybar/swaync/fuzzel 12px-radius island language. */
+ * matching the waybar/swaync/walker 12px-radius island language. */
 
 @define-color base     #1e1e2e;
 @define-color mantle   #181825;

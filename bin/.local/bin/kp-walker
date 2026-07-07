@@ -3,7 +3,7 @@
 # Prompts for the master password, lists entries, then copies/types the chosen field.
 #
 # Env overrides:
-#   KP_DB       path to the .kdbx        (default: ~/vault/passwords.kdbx)
+#   KP_DB       path to the .kdbx        (default: ~/vault/Passwords.kdbx)
 #   KP_KEYFILE  optional key file path   (default: none)
 set -euo pipefail
 
