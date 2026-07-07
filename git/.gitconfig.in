@@ -66,16 +66,16 @@
 	minus-emph-style              = syntax "#56344a"
 	plus-style                    = syntax "#2c3b3a"
 	plus-emph-style               = syntax "#3a4f44"
-	line-numbers-minus-style      = "#f38ba8"
-	line-numbers-plus-style       = "#a6e3a1"
-	line-numbers-zero-style       = "#6c7086"
-	line-numbers-left-style       = "#313244"
-	line-numbers-right-style      = "#313244"
-	file-style                    = "#cba6f7" bold
-	file-decoration-style         = "#cba6f7" ul
-	hunk-header-style             = "#89b4fa" bold
-	hunk-header-decoration-style  = "#45475a" box
-	blame-palette                 = "#1e1e2e" "#181825" "#313244" "#45475a"
+	line-numbers-minus-style      = "#${ctp_red}"
+	line-numbers-plus-style       = "#${ctp_green}"
+	line-numbers-zero-style       = "#${ctp_overlay0}"
+	line-numbers-left-style       = "#${ctp_surface0}"
+	line-numbers-right-style      = "#${ctp_surface0}"
+	file-style                    = "#${ctp_mauve}" bold
+	file-decoration-style         = "#${ctp_mauve}" ul
+	hunk-header-style             = "#${ctp_blue}" bold
+	hunk-header-decoration-style  = "#${ctp_surface1}" box
+	blame-palette                 = "#${ctp_base}" "#${ctp_mantle}" "#${ctp_surface0}" "#${ctp_surface1}"
 
 [alias]
 	st = status

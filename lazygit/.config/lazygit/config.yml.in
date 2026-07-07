@@ -1,0 +1,39 @@
+# lazygit — Catppuccin Mocha (mauve accent)
+gui:
+  nerdFontsVersion: "3"
+  theme:
+    activeBorderColor:
+      - "#${ctp_mauve}"
+      - bold
+    inactiveBorderColor:
+      - "#${ctp_subtext0}"
+    optionsTextColor:
+      - "#${ctp_blue}"
+    selectedLineBgColor:
+      - "#${ctp_surface0}"
+    cherryPickedCommitBgColor:
+      - "#${ctp_surface1}"
+    cherryPickedCommitFgColor:
+      - "#${ctp_mauve}"
+    unstagedChangesColor:
+      - "#${ctp_red}"
+    defaultFgColor:
+      - "#${ctp_text}"
+    searchingActiveBorderColor:
+      - "#${ctp_yellow}"
+  authorColors:
+    "*": "#${ctp_mauve}"
+
+# Diffs: delta as the pager for review (reads [delta] theme from ~/.gitconfig);
+# difftastic on `U` for a structural (AST) diff of the selected file — far less
+# noise on big C# refactors. (difft can't be a pager, so it's a custom command.)
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+customCommands:
+  - key: "U"
+    context: "files"
+    description: "Difftastic (structural) diff of selected file"
+    command: "git -c diff.external=difft diff -- {{.SelectedFile.Name}} | less -R"
+    output: terminal
