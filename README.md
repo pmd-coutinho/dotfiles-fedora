@@ -56,6 +56,7 @@ round5. The redundant `dnf` lines across scripts are intentional and harmless
 - **Swap**: 32G btrfs swapfile + **zswap** (zstd/zsmalloc) — zram disabled. For large .NET builds.
 - **Power**: tuned + tuned-ppd; udev auto-switch AC→performance / battery→balanced; waybar toggle via the `net.hadess.PowerProfiles` D-Bus interface (there is **no** `powerprofilesctl` — that ships with the conflicting power-profiles-daemon).
 - **Screenshots**: `Print` → grim+satty annotate; native niri grabs on Mod/Alt/Ctrl+Print.
+- **Passwords**: KeePassXC (`~/vault/Passwords.kdbx`) two-way synced to Google Drive via `rclone bisync` (systemd `.path` + `.timer` units, `systemd/` stow pkg). On a fresh install the rclone Drive OAuth (`rclone config`) and the first `rclone bisync --resync` are manual — see [`docs/SECURITY.md`](docs/SECURITY.md) for the safety flags and recovery commands.
 
 ## Post-reboot verification
 

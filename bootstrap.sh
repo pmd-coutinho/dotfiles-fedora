@@ -41,6 +41,7 @@ sudo dnf -y install \
   elephant-desktopapplications elephant-menus elephant-nirisessions \
   elephant-providerlist elephant-bluetooth elephant-bookmarks \
   elephant-snippets elephant-todo elephant-windows elephant-1password \
+  keepassxc rclone \
   satty grim slurp wl-clipboard cliphist wlogout \
   papirus-icon-theme adw-gtk3-theme jetbrains-mono-fonts \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
