@@ -5,17 +5,26 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import qs.Bar
+import qs.Idle
 import qs.Notifications
 import qs.Osd
+import qs.SessionMenu
 import qs.Services
+import qs.Wallpaper
 
 ShellRoot {
+    Wallpaper {}
     Bar {}
     Popups {}
     Panel {}
     Osd {}
+    Idle {}
 
-    // niri keybinds drive shell UI through `qs ipc call notifs <fn>`
+    SessionMenu {
+        id: sessionMenu
+    }
+
+    // niri keybinds drive shell UI through `qs ipc call <target> <fn>`
     IpcHandler {
         target: "notifs"
 
@@ -24,6 +33,14 @@ ShellRoot {
         }
         function dnd(): void {
             Notifs.dnd = !Notifs.dnd;
+        }
+    }
+
+    IpcHandler {
+        target: "session"
+
+        function toggle(): void {
+            sessionMenu.toggle();
         }
     }
 }

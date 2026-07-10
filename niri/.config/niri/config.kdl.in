@@ -87,9 +87,10 @@ prefer-no-csd
 
 // ── Startup ───────────────────────────────────────────────────────────
 // xwayland-satellite is managed by niri itself (>= 25.08), no spawn needed.
-spawn-at-startup "qs"    // quickshell: bar + notifications (replacing swaybg/swayidle/wlogout in phases)
-spawn-sh-at-startup "swaybg -i ~/Pictures/wallpapers/cat-waves.png -m fill"
-spawn-sh-at-startup "swayidle -w timeout 600 'pgrep -x hyprlock || hyprlock' timeout 900 'niri msg action power-off-monitors' before-sleep 'pgrep -x hyprlock || hyprlock'"
+spawn-at-startup "qs"    // quickshell: bar, notifications, OSD, wallpaper, idle, session menu
+// swayidle handles ONLY lock-before-sleep (its -w takes the logind sleep
+// inhibitor so suspend waits for the lock); idle timeouts live in quickshell
+spawn-sh-at-startup "swayidle -w before-sleep 'pgrep -x hyprlock || hyprlock'"
 // night light is a manual switch: the quickshell 󰖔 module owns wlsunset
 // (pinned ~4000K, no schedule) — nothing to spawn at startup
 spawn-at-startup "/usr/libexec/mate-polkit/polkit-mate-authentication-agent-1"
@@ -334,7 +335,7 @@ binds {
 
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
-    Mod+Shift+E { quit; }
+    Mod+Shift+E hotkey-overlay-title="Session Menu" { spawn "qs" "ipc" "call" "session" "toggle"; }
     Ctrl+Alt+Delete { quit; }
 
     Mod+Shift+P { power-off-monitors; }
