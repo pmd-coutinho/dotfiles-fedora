@@ -6,12 +6,14 @@ import Quickshell.Io
 import QtQuick
 import qs.Bar
 import qs.Notifications
+import qs.Osd
 import qs.Services
 
 ShellRoot {
     Bar {}
     Popups {}
     Panel {}
+    Osd {}
 
     // niri keybinds drive shell UI through `qs ipc call notifs <fn>`
     IpcHandler {
