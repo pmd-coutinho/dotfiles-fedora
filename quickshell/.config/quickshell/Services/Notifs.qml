@@ -32,18 +32,53 @@ Singleton {
         popups = popups.filter(n => n !== notif);
     }
 
+    // ── grouping: collapse same app + summary (e.g. consecutive Slack
+    // messages from one sender) into a single card with a count ──
+    function groupList(arr) {
+        const groups = [];
+        const idx = new Map();
+        for (const n of arr) {
+            const key = (n.desktopEntry !== "" ? n.desktopEntry : n.appName) + "|" + n.summary;
+            if (idx.has(key)) {
+                const g = groups[idx.get(key)];
+                g.count += 1;
+                g.notifs.push(n);
+                g.latest = n;
+            } else {
+                idx.set(key, groups.length);
+                groups.push({ key: key, latest: n, count: 1, notifs: [n] });
+            }
+        }
+        return groups;
+    }
+
+    readonly property var popupGroups: groupList(popups)
+    readonly property var historyGroups: groupList(server.trackedNotifications.values.slice().reverse())
+
+    function hideGroupPopup(group) {
+        popups = popups.filter(n => !group.notifs.includes(n));
+    }
+
+    function dismissGroup(group) {
+        for (const n of group.notifs.slice())
+            n.dismiss();
+    }
+
     function clearAll() {
         for (const n of server.trackedNotifications.values.slice())
             n.dismiss();
     }
 
     // click → invoke the default action (if any) and raise the source window
-    function activate(notif) {
+    function activate(notif, group) {
         const def = notif.actions.find(a => a.identifier === "default") ?? null;
         if (def)
             def.invoke();
         focusSource(notif);
-        hidePopup(notif);   // swaync hide-on-action
+        if (group)
+            hideGroupPopup(group);   // swaync hide-on-action
+        else
+            hidePopup(notif);
         if (!def)
             notif.dismiss();
     }

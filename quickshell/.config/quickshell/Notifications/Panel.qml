@@ -278,11 +278,12 @@ Scope {
                         height: parent.height - y
                         clip: true
                         spacing: 8
-                        model: [...Notifs.server.trackedNotifications.values].reverse()
+                        model: Notifs.historyGroups
 
                         delegate: NotificationCard {
                             required property var modelData
-                            notif: modelData
+                            notif: modelData.latest
+                            group: modelData
                             width: ListView.view.width
                         }
 

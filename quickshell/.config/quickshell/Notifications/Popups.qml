@@ -32,11 +32,12 @@ Scope {
             spacing: 8
 
             Repeater {
-                model: Notifs.popups
+                model: Notifs.popupGroups
 
                 NotificationCard {
                     required property var modelData
-                    notif: modelData
+                    notif: modelData.latest
+                    group: modelData
                     isPopup: true
                     width: parent.width
                 }

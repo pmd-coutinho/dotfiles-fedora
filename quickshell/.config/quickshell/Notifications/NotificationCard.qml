@@ -13,6 +13,9 @@ Rectangle {
     required property var notif
     // popups auto-hide on a timer; panel cards persist
     property bool isPopup: false
+    // group of same app+summary notifications this card represents
+    property var group: null
+    readonly property int count: group?.count ?? 1
 
     implicitHeight: layout.implicitHeight + 24
     radius: Theme.islandRadius
@@ -22,13 +25,13 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: Notifs.activate(card.notif)
+        onClicked: Notifs.activate(card.notif, card.group)
     }
 
     Timer {
         interval: Notifs.timeoutFor(card.notif)
         running: card.isPopup && interval > 0
-        onTriggered: Notifs.hidePopup(card.notif)
+        onTriggered: card.group ? Notifs.hideGroupPopup(card.group) : Notifs.hidePopup(card.notif)
     }
 
     Column {
@@ -58,14 +61,39 @@ Rectangle {
                 width: parent.width - (icon.visible ? 50 : 0) - 26
                 spacing: 2
 
-                Text {
+                Row {
                     width: parent.width
-                    text: card.notif.summary
-                    elide: Text.ElideRight
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSize
-                    font.weight: Font.Bold
-                    color: Theme.text
+                    spacing: 6
+
+                    Text {
+                        width: parent.width - (countBadge.visible ? countBadge.width + 6 : 0)
+                        text: card.notif.summary
+                        elide: Text.ElideRight
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSize
+                        font.weight: Font.Bold
+                        color: Theme.text
+                    }
+
+                    Rectangle {
+                        id: countBadge
+                        visible: card.count > 1
+                        width: countText.implicitWidth + 12
+                        height: 18
+                        radius: 9
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: Theme.mauve
+
+                        Text {
+                            id: countText
+                            anchors.centerIn: parent
+                            text: card.count
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSize - 3
+                            font.weight: Font.Bold
+                            color: Theme.crust
+                        }
+                    }
                 }
                 Text {
                     width: parent.width
@@ -100,7 +128,7 @@ Rectangle {
                     anchors.fill: parent
                     anchors.margins: -6
                     hoverEnabled: true
-                    onClicked: card.notif.dismiss()
+                    onClicked: card.group ? Notifs.dismissGroup(card.group) : card.notif.dismiss()
                 }
             }
         }

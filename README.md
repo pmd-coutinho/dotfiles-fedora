@@ -44,17 +44,17 @@ round5. The redundant `dnf` lines across scripts are intentional and harmless
 | `setup-round8.sh` | Dev/ops TUIs + helpers: hurl, lnav, gum (dnf/COPR); mergiraf (git merge driver), trippy, kondo, ouch, pay-respects (pinned binaries); csharprepl (dotnet tool), posting + isd (uv tools). |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
 | `docs/DICTATION.md` | **GPU voice dictation** (offline faster-whisper): `Mod+Shift+D` speak→English, `Mod+Alt+D` verbatim. Stow pkg `dictation` + `setup.sh` venv. |
-| `*/` | stow packages: alacritty, atuin, autostart, bin, btop, dictation, environment, gh-dash, ghostty, git, gtk, hyprlock, jj, lazygit, niri, nvim, satty, starship, swaync, systemd, walker, waybar, yazi, zellij, zsh. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
+| `*/` | stow packages: alacritty, atuin, autostart, bin, btop, dictation, environment, gh-dash, ghostty, git, gtk, hyprlock, jj, lazygit, niri, nvim, quickshell, satty, starship, systemd, walker, yazi, zellij, zsh. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
 
 ## The stack
 
 - **Compositor**: niri, rendering on the **NVIDIA dGPU** (`debug { render-drm-device }` by-path). 3 monitors: Huawei top-left, laptop below it, Gigabyte (4K@144 via DSC) right.
-- **Bars/UI**: waybar (one full bar per output), SwayNC notifications, walker launcher (+ elephant backend), hyprlock + swayidle (lock 10m / screens-off 15m).
+- **Bars/UI**: **quickshell** (`quickshell/` stow pkg, one QML process) owns the bar (per output), notifications (server + popups + Mod+Shift+N panel), volume/brightness OSD, wallpaper, idle timeouts (lock 10m / screens-off 15m) and the Mod+Shift+E session menu. Colors come from the palette via `Theme.qml.in`. walker launcher (+ elephant backend) stays. hyprlock is still the active locker (a quickshell lockscreen is in trial — `qs ipc call lock lock`); a minimal `swayidle -w before-sleep` holds the logind sleep inhibitor for lock-before-sleep. waybar/swaync configs retired to `archive/`.
 - **Login**: greetd + tuigreet (GDM kept installed as rescue).
 - **Terminal/shell**: Ghostty (CaskaydiaCove Nerd Font) · zsh (autosuggestions, syntax-highlighting, fzf-tab) + starship + atuin + zoxide + mise · zellij (sessions/multiplexing; tmux + fuzzel configs retired to `archive/`).
 - **Kernel**: CachyOS (BORE scheduler) via `bieszczaders/kernel-cachyos`; stock Fedora kernel is the GRUB fallback.
 - **Swap**: 32G btrfs swapfile + **zswap** (zstd/zsmalloc) — zram disabled. For large .NET builds.
-- **Power**: tuned + tuned-ppd; udev auto-switch AC→performance / battery→balanced; waybar toggle via the `net.hadess.PowerProfiles` D-Bus interface (there is **no** `powerprofilesctl` — that ships with the conflicting power-profiles-daemon).
+- **Power**: tuned + tuned-ppd; udev auto-switch AC→performance / battery→balanced; the quickshell bar module uses the native `PowerProfiles` D-Bus binding, event-driven (there is **no** `powerprofilesctl` — that ships with the conflicting power-profiles-daemon).
 - **Screenshots**: `Print` → grim+satty annotate; native niri grabs on Mod/Alt/Ctrl+Print.
 - **Passwords**: KeePassXC (`~/vault/Passwords.kdbx`) two-way synced to Google Drive via `rclone bisync` (systemd `.path` + `.timer` units, `systemd/` stow pkg). On a fresh install the rclone Drive OAuth (`rclone config`) and the first `rclone bisync --resync` are manual — see [`docs/SECURITY.md`](docs/SECURITY.md) for the safety flags and recovery commands.
 
@@ -70,7 +70,7 @@ busctl --system get-property net.hadess.PowerProfiles /net/hadess/PowerProfiles 
   net.hadess.PowerProfiles ActiveProfile              # "performance" on AC
 niri msg outputs                                      # 3 monitors, Gigabyte 4K@144
 ```
-Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12 power menu, unplug AC → waybar power icon flips.
+Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12 power menu, unplug AC → bar power icon flips, volume key → OSD pops, `Mod+Shift+N` notification panel, `Mod+Shift+E` session menu.
 
 ## Known gotchas (learned the hard way)
 
@@ -82,6 +82,10 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **Walker file search needs `fd`** (`fd-find`); the emoji/symbol & calc providers are separate `elephant-*` packages.
 - **atuin ↑ history**: if up-arrow only shows the current session, set `filter_mode_shell_up_key_binding = "global"` and run `atuin import auto`.
 - **New apps not in walker**: elephant only scans at startup. The `elephant-rescan.path` user unit (in the `systemd/` stow pkg) watches the app dirs and restarts elephant automatically; if it's not enabled, `systemctl --user restart elephant`.
+- **quickshell breaks on Qt updates**: it's built against a specific Qt minor (COPR `errornointernet/quickshell`); after a `dnf upgrade` that bumps Qt, the shell may fail to start until the COPR rebuilds. Fallback: `dnf downgrade qt6-qtbase` or wait it out — niri itself is unaffected.
+- **quickshell hot-reload goes stale**: after many file edits the running instance sometimes silently stops applying reloads — if a change doesn't show up, `qs kill && qs -d`, don't debug ghosts.
+- **swaync must stay masked while installed**: dbus-broker re-spawns it via D-Bus activation (`SystemdService=`) even when disabled — `systemctl --user mask swaync.service` (bootstrap no longer installs it; remove the package and the mask + `~/.local/share/dbus-1/services/org.freedesktop.Notifications.service` override become moot).
+- **console.log in QML is filtered** from quickshell's default log level — use `console.warn` when debugging the shell, and read logs with `qs log`.
 - **lazydocker** talks to **podman** via `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` (zshrc) + `systemctl --user enable --now podman.socket`.
 - **Rider + mise .NET**: GUI-launched Rider doesn't inherit mise's shell PATH — point Rider at the mise dotnet SDK path or export `DOTNET_ROOT` where the graphical session sees it. `mise use -g dotnet@9` (not `@latest`, which is currently a .NET 11 preview).
 - **`cd` is zoxide** (`--cmd cd`); `ls`/`ll`/`la`/`lt` are eza; `cat` is bat (raw `\cat` still works). fzf owns Ctrl-T/Alt-C, atuin owns Ctrl-R.

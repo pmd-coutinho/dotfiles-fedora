@@ -13,13 +13,20 @@ PanelWindow {
 
     required property var bar
     property var rootHandle: null
+    property var anchorSlot: null
     // submenu navigation stack of QsMenuEntry handles
     property var stack: []
     property real menuX: 0
 
     function openFor(item, handle) {
+        // clicking the same tray icon again closes the menu
+        if (visible && anchorSlot === item) {
+            close();
+            return;
+        }
         const centerX = Theme.barMarginSide + item.mapToItem(null, item.width / 2, 0).x;
-        menuX = Math.min(Math.max(8, centerX - 120), screen.width - 248);
+        menuX = Math.min(Math.max(8, centerX - 120), width - 248);
+        anchorSlot = item;
         rootHandle = handle;
         stack = [];
         visible = true;
@@ -27,6 +34,7 @@ PanelWindow {
 
     function close() {
         visible = false;
+        anchorSlot = null;
         rootHandle = null;
         stack = [];
     }
@@ -38,6 +46,10 @@ PanelWindow {
         left: true
         right: true
         bottom: true
+    }
+    margins {
+        // start below the bar so the bar itself stays interactive
+        top: Theme.barHeight + Theme.barMarginTop * 2
     }
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
@@ -57,7 +69,7 @@ PanelWindow {
     Rectangle {
         id: box
         x: menuWin.menuX
-        y: Theme.barMarginTop + Theme.barHeight + 4
+        y: 4
         width: 240
         height: list.implicitHeight + 12
         radius: Theme.islandRadius

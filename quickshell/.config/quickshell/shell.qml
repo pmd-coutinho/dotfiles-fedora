@@ -6,6 +6,7 @@ import Quickshell.Io
 import QtQuick
 import qs.Bar
 import qs.Idle
+import qs.Lock
 import qs.Notifications
 import qs.Osd
 import qs.SessionMenu
@@ -22,6 +23,12 @@ ShellRoot {
 
     SessionMenu {
         id: sessionMenu
+    }
+
+    // trial-mode lockscreen: `qs ipc call lock lock` — hyprlock stays the
+    // active locker until this survives a week (see Lock/Lock.qml)
+    Lock {
+        id: lockScreen
     }
 
     // niri keybinds drive shell UI through `qs ipc call <target> <fn>`
@@ -41,6 +48,14 @@ ShellRoot {
 
         function toggle(): void {
             sessionMenu.toggle();
+        }
+    }
+
+    IpcHandler {
+        target: "lock"
+
+        function lock(): void {
+            lockScreen.lock();
         }
     }
 }
