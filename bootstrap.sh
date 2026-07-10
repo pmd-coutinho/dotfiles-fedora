@@ -20,7 +20,8 @@ sudo dnf -y install \
   "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || true
 for c in scottames/ghostty atim/starship solopasha/hyprland \
-         errornointernet/walker errornointernet/packages bieszczaders/kernel-cachyos \
+         errornointernet/walker errornointernet/packages errornointernet/quickshell \
+         bieszczaders/kernel-cachyos \
          ifas/zellij; do   # ifas tracks latest (0.44.3); varlad's COPR stalled at 0.42.2
     sudo dnf -y copr enable "$c"
 done
@@ -28,7 +29,7 @@ done
 # ── 1. Packages ──────────────────────────────────────────────────────────
 step "Installing packages (dnf)"
 sudo dnf -y install \
-  niri waybar xwayland-satellite \
+  niri waybar quickshell xwayland-satellite \
   akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
@@ -103,7 +104,7 @@ cd "$DOTS"
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
 for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk hyprlock \
-           jj lazygit niri nvim satty starship swaync systemd walker waybar yazi zellij zsh; do
+           jj lazygit niri nvim quickshell satty starship swaync systemd walker waybar yazi zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 

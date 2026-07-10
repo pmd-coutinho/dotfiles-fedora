@@ -1,0 +1,48 @@
+pragma Singleton
+// Catppuccin Mocha tokens + shared shell metrics. RENDERED from Theme.qml.in
+// by palette/render.sh — edit the .in template, never the rendered file.
+import QtQuick
+import Quickshell
+
+Singleton {
+    // ── palette ──
+    readonly property color rosewater: "#${ctp_rosewater}"
+    readonly property color flamingo: "#${ctp_flamingo}"
+    readonly property color pink: "#${ctp_pink}"
+    readonly property color mauve: "#${ctp_mauve}"
+    readonly property color red: "#${ctp_red}"
+    readonly property color maroon: "#${ctp_maroon}"
+    readonly property color peach: "#${ctp_peach}"
+    readonly property color yellow: "#${ctp_yellow}"
+    readonly property color green: "#${ctp_green}"
+    readonly property color teal: "#${ctp_teal}"
+    readonly property color sky: "#${ctp_sky}"
+    readonly property color sapphire: "#${ctp_sapphire}"
+    readonly property color blue: "#${ctp_blue}"
+    readonly property color lavender: "#${ctp_lavender}"
+    readonly property color text: "#${ctp_text}"
+    readonly property color subtext1: "#${ctp_subtext1}"
+    readonly property color subtext0: "#${ctp_subtext0}"
+    readonly property color overlay2: "#${ctp_overlay2}"
+    readonly property color overlay1: "#${ctp_overlay1}"
+    readonly property color overlay0: "#${ctp_overlay0}"
+    readonly property color surface2: "#${ctp_surface2}"
+    readonly property color surface1: "#${ctp_surface1}"
+    readonly property color surface0: "#${ctp_surface0}"
+    readonly property color base: "#${ctp_base}"
+    readonly property color mantle: "#${ctp_mantle}"
+    readonly property color crust: "#${ctp_crust}"
+
+    // ── shared metrics (match the old waybar floating-islands look) ──
+    readonly property string fontFamily: "JetBrainsMono Nerd Font"
+    readonly property int fontSize: 13
+    readonly property int barHeight: 30
+    readonly property int barMarginTop: 6
+    readonly property int barMarginSide: 10
+    readonly property int islandRadius: 12   // matches niri window corners
+    readonly property color islandBg: Qt.alpha(base, 0.92)
+    readonly property color islandBorder: Qt.alpha(surface0, 0.9)
+
+    // translucent helper for one-off alpha shades
+    function alpha(c, a) { return Qt.alpha(c, a); }
+}
