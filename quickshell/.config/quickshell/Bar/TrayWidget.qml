@@ -5,6 +5,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.SystemTray
+import qs.Services
 import qs.Theme
 
 Row {
@@ -42,7 +43,7 @@ Row {
                 onClicked: mouse => {
                     if (mouse.button === Qt.RightButton || slot.modelData.onlyMenu) {
                         if (slot.modelData.hasMenu)
-                            root.bar.trayMenu.openFor(slot, slot.modelData.menu);
+                            Bus.trayMenu?.openFor(slot, slot.modelData.menu, root.bar.screen);
                     } else if (mouse.button === Qt.LeftButton) {
                         slot.modelData.activate();
                     } else {

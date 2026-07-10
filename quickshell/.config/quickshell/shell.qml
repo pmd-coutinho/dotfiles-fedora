@@ -25,6 +25,13 @@ ShellRoot {
         id: sessionMenu
     }
 
+    // one global tray menu, jumps to the clicked icon's screen (see TrayMenu.qml)
+    TrayMenu {
+        id: trayMenu
+    }
+
+    Component.onCompleted: Bus.trayMenu = trayMenu
+
     // trial-mode lockscreen: `qs ipc call lock lock` — hyprlock stays the
     // active locker until this survives a week (see Lock/Lock.qml)
     Lock {

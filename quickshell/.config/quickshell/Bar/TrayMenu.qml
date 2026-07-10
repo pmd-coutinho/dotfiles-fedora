@@ -1,7 +1,9 @@
 pragma ComponentBehavior: Bound
 // QML-rendered tray context menu — platform menus under Qt come up unthemed
-// and mispositioned on niri. A fullscreen transparent overlay catches
-// outside clicks to dismiss; submenus navigate in place with a back row.
+// and mispositioned on niri. ONE global window that jumps to the clicked
+// icon's screen on open (a persistent per-bar window nested in the Variants
+// delegate mapped on the wrong output). The transparent overlay below the
+// bar catches outside clicks to dismiss; submenus navigate with a back row.
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -11,21 +13,21 @@ import qs.Theme
 PanelWindow {
     id: menuWin
 
-    required property var bar
     property var rootHandle: null
     property var anchorSlot: null
     // submenu navigation stack of QsMenuEntry handles
     property var stack: []
     property real menuX: 0
 
-    function openFor(item, handle) {
+    function openFor(item, handle, scr) {
         // clicking the same tray icon again closes the menu
         if (visible && anchorSlot === item) {
             close();
             return;
         }
+        screen = scr;
         const centerX = Theme.barMarginSide + item.mapToItem(null, item.width / 2, 0).x;
-        menuX = Math.min(Math.max(8, centerX - 120), width - 248);
+        menuX = Math.min(Math.max(8, centerX - 120), scr.width - 248);
         anchorSlot = item;
         rootHandle = handle;
         stack = [];
@@ -39,7 +41,6 @@ PanelWindow {
         stack = [];
     }
 
-    screen: bar.screen
     visible: false
     anchors {
         top: true
