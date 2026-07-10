@@ -76,7 +76,8 @@ Scope {
                 right: 10
                 bottom: 8
             }
-            exclusionMode: ExclusionMode.Ignore
+            // respect the bar's exclusive zone (drawer starts below the bar)
+            exclusionMode: ExclusionMode.Normal
             color: "transparent"
             implicitWidth: 420
 

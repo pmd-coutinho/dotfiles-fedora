@@ -48,11 +48,9 @@ PanelWindow {
         right: true
         bottom: true
     }
-    margins {
-        // start below the bar so the bar itself stays interactive
-        top: Theme.barHeight + Theme.barMarginTop * 2
-    }
-    exclusionMode: ExclusionMode.Ignore
+    // respect the bar's exclusive zone: the scrim starts below the bar, so
+    // the bar itself stays interactive while a menu is open
+    exclusionMode: ExclusionMode.Normal
     WlrLayershell.layer: WlrLayer.Overlay
     color: "transparent"
 

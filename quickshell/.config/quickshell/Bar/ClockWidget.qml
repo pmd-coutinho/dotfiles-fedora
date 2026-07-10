@@ -41,17 +41,24 @@ BarText {
         implicitWidth: calBox.implicitWidth
         implicitHeight: calBox.implicitHeight
 
+        function reposition() {
+            // computed at open time: a declarative binding evaluates before
+            // the clock is laid out and never re-fires (popup lands top-left)
+            anchor.rect.x = root.mapToItem(null, root.width / 2, 0).x - calWin.implicitWidth / 2;
+        }
+
         onVisibleChanged: {
             if (visible) {
                 grid.month = clock.date.getMonth();
                 grid.year = clock.date.getFullYear();
+                reposition();
             }
         }
 
         anchor {
             window: root.bar
-            rect.x: root.mapToItem(null, root.width / 2, 0).x - calWin.implicitWidth / 2
             rect.y: Theme.barHeight + Theme.barMarginTop
+            onAnchoring: calWin.reposition()
         }
 
         Rectangle {

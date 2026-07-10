@@ -20,7 +20,9 @@ Scope {
             top: 6
             right: 10
         }
-        exclusionMode: ExclusionMode.Ignore
+        // Normal (zone 0): respect the bar's exclusive zone so toasts stack
+        // below it — Ignore would overlay the bar itself
+        exclusionMode: ExclusionMode.Normal
         WlrLayershell.layer: WlrLayer.Overlay
         color: "transparent"
         implicitWidth: 400
