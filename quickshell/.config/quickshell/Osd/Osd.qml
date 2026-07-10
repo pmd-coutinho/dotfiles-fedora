@@ -93,24 +93,32 @@ Scope {
         PanelWindow {
             screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput)
                 ?? Quickshell.screens[0]
-            anchors.bottom: true
+            // full-width strip so the pill centers reliably; empty input mask
+            // so the invisible parts never eat clicks meant for windows below
+            anchors {
+                left: true
+                right: true
+                bottom: true
+            }
             margins.bottom: 96
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.layer: WlrLayer.Overlay
             color: "transparent"
-            implicitWidth: 280
             implicitHeight: 52
+            mask: Region {}
 
             Rectangle {
-                anchors.fill: parent
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: osdContent.implicitWidth + 36
+                height: 52
                 radius: Theme.islandRadius
                 color: Theme.alpha(Theme.base, 0.96)
                 border.width: 1
                 border.color: Theme.surface0
 
                 Row {
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: 16
+                    id: osdContent
+                    anchors.centerIn: parent
                     spacing: 12
 
                     Text {
