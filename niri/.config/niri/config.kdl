@@ -87,11 +87,11 @@ prefer-no-csd
 
 // ── Startup ───────────────────────────────────────────────────────────
 // xwayland-satellite is managed by niri itself (>= 25.08), no spawn needed.
-spawn-at-startup "waybar"
+spawn-at-startup "qs"    // quickshell: bar (replacing swaync/swaybg/swayidle/wlogout in phases)
 spawn-at-startup "swaync"
 spawn-sh-at-startup "swaybg -i ~/Pictures/wallpapers/cat-waves.png -m fill"
 spawn-sh-at-startup "swayidle -w timeout 600 'pgrep -x hyprlock || hyprlock' timeout 900 'niri msg action power-off-monitors' before-sleep 'pgrep -x hyprlock || hyprlock'"
-// night light is a manual switch: the waybar 󰖔 module starts/stops wlsunset
+// night light is a manual switch: the quickshell 󰖔 module owns wlsunset
 // (pinned ~4000K, no schedule) — nothing to spawn at startup
 spawn-at-startup "/usr/libexec/mate-polkit/polkit-mate-authentication-agent-1"
 spawn-at-startup "nm-applet"

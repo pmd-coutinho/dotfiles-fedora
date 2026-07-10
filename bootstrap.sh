@@ -29,7 +29,7 @@ done
 # ── 1. Packages ──────────────────────────────────────────────────────────
 step "Installing packages (dnf)"
 sudo dnf -y install \
-  niri waybar quickshell xwayland-satellite \
+  niri quickshell xwayland-satellite \
   akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
@@ -104,7 +104,7 @@ cd "$DOTS"
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
 for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk hyprlock \
-           jj lazygit niri nvim quickshell satty starship swaync systemd walker waybar yazi zellij zsh; do
+           jj lazygit niri nvim quickshell satty starship swaync systemd walker yazi zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
