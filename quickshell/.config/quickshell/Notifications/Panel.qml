@@ -66,23 +66,32 @@ Scope {
             screen: modelData
             visible: Notifs.panelOpen && Niri.focusedOutput === modelData.name
 
+            // cover the whole area below the bar: clicking outside the
+            // drawer dismisses the panel (bar itself stays interactive)
             anchors {
                 top: true
+                left: true
                 right: true
                 bottom: true
             }
-            margins {
-                top: 6
-                right: 10
-                bottom: 8
-            }
-            // respect the bar's exclusive zone (drawer starts below the bar)
             exclusionMode: ExclusionMode.Normal
             color: "transparent"
-            implicitWidth: 420
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: Notifs.panelOpen = false
+            }
 
             Rectangle {
-                anchors.fill: parent
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    bottom: parent.bottom
+                    topMargin: 6
+                    rightMargin: 10
+                    bottomMargin: 8
+                }
+                width: 420
                 radius: Theme.islandRadius
                 color: Theme.alpha(Theme.base, 0.96)
                 border.width: 1
