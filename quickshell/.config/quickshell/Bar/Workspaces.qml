@@ -14,7 +14,7 @@ Row {
     // workspace name → label (same map as the old waybar format-icons)
     readonly property var labels: ({
         "1-slack": "slack",
-        "2-ayugram": "ayugram",
+        "2-telegram": "telegram",
         "3-firefox": "firefox",
         "4-laptop": "4",
         "5-term": "term",

@@ -104,7 +104,7 @@ spawn-at-startup "firefox"
 spawn-at-startup "vivaldi-stable"
 spawn-at-startup "ghostty"
 spawn-at-startup "slack"
-spawn-at-startup "flatpak" "run" "com.ayugram.desktop"
+spawn-at-startup "flatpak" "run" "org.telegram.desktop"
 spawn-at-startup "flatpak" "run" "md.obsidian.Obsidian"
 
 environment {
@@ -128,7 +128,7 @@ animations {
 // prepends them (reversed) — a relogin fixes the order to match this.
 // Laptop panel: 1-4 · Gigabyte: 5-8 · Huawei: 9-10 (outputs matched by model, not connector).
 workspace "1-slack"     { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
-workspace "2-ayugram"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
+workspace "2-telegram"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
 workspace "3-firefox"   { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
 workspace "4-laptop"    { open-on-output "Chimei Innolux Corporation 0x1621 Unknown"; }
 workspace "5-term"      { open-on-output "GIGA-BYTE TECHNOLOGY CO., LTD. M28U 22010B004763"; }
@@ -156,7 +156,7 @@ window-rule {
 // open-focused true → switch to the workspace when the app opens.
 // open-maximized true → open as a full-width (maximized) column.
 window-rule { match app-id=r#"(?i)^(com\.slack\.slack|slack)$"#; open-on-workspace "1-slack";     open-focused true; open-maximized true; }
-window-rule { match app-id=r#"^com\.ayugram\.desktop$"#;   open-on-workspace "2-ayugram";   open-focused true; open-maximized true; }
+window-rule { match app-id=r#"^org\.telegram\.desktop$"#;   open-on-workspace "2-telegram";   open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^org\.mozilla\.firefox$"#;   open-on-workspace "3-firefox";   open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^com\.mitchellh\.ghostty$"#; open-on-workspace "5-term";      open-focused true; open-maximized true; }
 window-rule { match app-id=r#"^code$"#;                    open-on-workspace "6-code";      open-focused true; open-maximized true; }
@@ -276,7 +276,7 @@ binds {
     // Named workspaces (pinned to monitors below). Mod+N focuses, Mod+Shift+N
     // moves the focused window there. 0 = the 10th workspace.
     Mod+1 { focus-workspace "1-slack"; }
-    Mod+2 { focus-workspace "2-ayugram"; }
+    Mod+2 { focus-workspace "2-telegram"; }
     Mod+3 { focus-workspace "3-firefox"; }
     Mod+4 { focus-workspace "4-laptop"; }
     Mod+5 { focus-workspace "5-term"; }
@@ -286,7 +286,7 @@ binds {
     Mod+9 { focus-workspace "9-vivaldi"; }
     Mod+0 { focus-workspace "10-obsidian"; }
     Mod+Shift+1 { move-window-to-workspace "1-slack"; }
-    Mod+Shift+2 { move-window-to-workspace "2-ayugram"; }
+    Mod+Shift+2 { move-window-to-workspace "2-telegram"; }
     Mod+Shift+3 { move-window-to-workspace "3-firefox"; }
     Mod+Shift+4 { move-window-to-workspace "4-laptop"; }
     Mod+Shift+5 { move-window-to-workspace "5-term"; }

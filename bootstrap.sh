@@ -187,7 +187,7 @@ if ! grep -q 'xe.force_probe' /etc/kernel/cmdline 2>/dev/null; then
 fi
 
 # ── 8. Applications (Round 3): repos, flatpaks, COPR CLI tools ───────────
-step "Apps + CLI tools (VS Code, Vivaldi, OpenVPN3, Slack/Obsidian/AyuGram, lazygit/lazydocker)"
+step "Apps + CLI tools (VS Code, Vivaldi, OpenVPN3, Slack/Obsidian/Telegram, lazygit/lazydocker)"
 sudo bash "$DOTS/setup-round3.sh"
 
 step "atuin: import existing shell history"

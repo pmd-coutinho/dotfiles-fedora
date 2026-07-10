@@ -66,16 +66,9 @@ flatpak remote-modify --no-filter flathub 2>/dev/null || true
 # Slack is installed natively above (rpm); drop any old Flatpak copy.
 asuser flatpak uninstall -y com.slack.Slack 2>/dev/null || true
 asuser flatpak install -y --noninteractive flathub md.obsidian.Obsidian || warn "Obsidian flatpak failed"
-# AyuGram is NOT on Flathub — install the prebuilt bundle from 0FL01's repo.
-step "AyuGram (prebuilt .flatpak from 0FL01/AyuGramDesktop-flatpak)"
-AYU_URL=$(curl -fsSL "https://api.github.com/repos/0FL01/AyuGramDesktop-flatpak/releases/latest" \
-  | python3 -c "import json,sys;[print(a['browser_download_url']) for a in json.load(sys.stdin)['assets'] if a['name'].endswith('.flatpak')]" | head -1)
-if [ -n "$AYU_URL" ]; then
-    curl -fsSL "$AYU_URL" -o /tmp/ayugram.flatpak
-    asuser flatpak install -y --noninteractive /tmp/ayugram.flatpak || warn "AyuGram install failed"
-else
-    warn "couldn't resolve AyuGram .flatpak URL"
-fi
+# Telegram (official) from Flathub. Replaced AyuGram Jul 2026 — its
+# sideloaded bundle (0FL01 repo) had no flatpak remote, so it could never update.
+asuser flatpak install --user -y --noninteractive flathub org.telegram.desktop || warn "Telegram flatpak failed"
 
 step "Enabling podman socket for lazydocker (as $RUSER)"
 asuser systemctl --user enable --now podman.socket 2>/dev/null || warn "enable podman.socket manually"
