@@ -130,8 +130,8 @@ Scope {
                             if (root.kind === "mic")
                                 return root.muted ? "󰍭" : "󰍬";
                             if (root.muted)
-                                return "";
-                            return root.value <= 0.33 ? "" : root.value <= 0.66 ? "" : "";
+                                return "󰝟";
+                            return root.value <= 0.33 ? "󰕿" : root.value <= 0.66 ? "󰖀" : "󰕾";
                         }
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSize + 4
