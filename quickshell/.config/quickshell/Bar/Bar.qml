@@ -36,6 +36,14 @@ Scope {
             function showTip(item) { tipTarget = item; }
             function hideTip(item) { if (tipTarget === item) tipTarget = null; }
 
+            // ── shared tray context menu (one per bar) ──
+            property var trayMenu: trayMenuWin
+
+            TrayMenu {
+                id: trayMenuWin
+                bar: panel
+            }
+
             PopupWindow {
                 id: tipWin
                 visible: panel.tipTarget !== null && (panel.tipTarget.tip ?? "") !== ""

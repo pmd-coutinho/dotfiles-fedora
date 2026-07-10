@@ -15,6 +15,8 @@ Singleton {
     property var workspaces: []
     property var windows: []
 
+    readonly property string focusedOutput: workspaces.find(w => w.is_focused)?.output ?? ""
+
     function workspacesOn(output) {
         return workspaces.filter(w => w.output === output);
     }

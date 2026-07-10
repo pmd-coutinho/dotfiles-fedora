@@ -36,7 +36,7 @@ sudo dnf -y install \
   bat ripgrep eza btop ShellCheck gettext unzip \
   yazi jujutsu \
   starship atuin zoxide stow zellij \
-  SwayNotificationCenter swaybg swayidle hyprlock wlsunset \
+  swaybg swayidle hyprlock wlsunset \
   walker elephant elephant-calc elephant-files elephant-clipboard \
   elephant-symbols elephant-unicode elephant-websearch elephant-runner \
   elephant-desktopapplications elephant-menus elephant-nirisessions \
@@ -104,7 +104,7 @@ cd "$DOTS"
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
 for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk hyprlock \
-           jj lazygit niri nvim quickshell satty starship swaync systemd walker yazi zellij zsh; do
+           jj lazygit niri nvim quickshell satty starship systemd walker yazi zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done
 
@@ -162,13 +162,9 @@ systemctl --user enable --now elephant 2>/dev/null || true
 elephant service enable 2>/dev/null || true
 # auto-rescan elephant when apps are installed/removed (so walker sees them)
 systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
-# niri spawns swaync directly; disable the redundant (failing) systemd unit,
-# and mask the nvidia-settings autostart that fails under niri.
-systemctl --user disable --now swaync.service 2>/dev/null || true
+# mask the nvidia-settings autostart that fails under niri.
 systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
-# click a notification -> focus the app it came from
-systemctl --user enable --now niri-notify-click.service 2>/dev/null || true
 # ssh-agent socket at $XDG_RUNTIME_DIR/ssh-agent.socket — KeePassXC loads keys
 # into it; git commit signing and environment.d's SSH_AUTH_SOCK depend on it
 systemctl --user enable --now ssh-agent.service 2>/dev/null || true

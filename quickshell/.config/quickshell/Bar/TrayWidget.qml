@@ -36,21 +36,13 @@ Row {
                 opacity: slot.modelData.status === Status.Passive ? 0.5 : 1
             }
 
-            QsMenuAnchor {
-                id: menuAnchor
-                menu: slot.modelData.menu
-                anchor.window: root.bar
-                anchor.rect.x: slot.mapToItem(null, slot.width / 2, 0).x
-                anchor.rect.y: Theme.barHeight + Theme.barMarginTop
-            }
-
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
                 onClicked: mouse => {
                     if (mouse.button === Qt.RightButton || slot.modelData.onlyMenu) {
                         if (slot.modelData.hasMenu)
-                            menuAnchor.open();
+                            root.bar.trayMenu.openFor(slot, slot.modelData.menu);
                     } else if (mouse.button === Qt.LeftButton) {
                         slot.modelData.activate();
                     } else {
