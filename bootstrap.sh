@@ -165,6 +165,8 @@ systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 # mask the nvidia-settings autostart that fails under niri.
 systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
+# desktop authorization prompts under niri (the package's XDG autostart is MATE-only)
+systemctl --user enable --now polkit-mate-agent.service 2>/dev/null || true
 # ssh-agent socket at $XDG_RUNTIME_DIR/ssh-agent.socket — KeePassXC loads keys
 # into it; git commit signing and environment.d's SSH_AUTH_SOCK depend on it
 systemctl --user enable --now ssh-agent.service 2>/dev/null || true

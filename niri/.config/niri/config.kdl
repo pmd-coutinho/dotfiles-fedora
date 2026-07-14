@@ -93,7 +93,7 @@ spawn-at-startup "qs"    // quickshell: bar, notifications, OSD, wallpaper, idle
 spawn-sh-at-startup "swayidle -w before-sleep 'pgrep -x hyprlock || hyprlock'"
 // night light is a manual switch: the quickshell 󰖔 module owns wlsunset
 // (pinned ~4000K, no schedule) — nothing to spawn at startup
-spawn-at-startup "/usr/libexec/mate-polkit/polkit-mate-authentication-agent-1"
+// PolicyKit authentication is supervised by polkit-mate-agent.service.
 spawn-at-startup "nm-applet"
 spawn-at-startup "blueman-applet"
 // walker launcher daemon (elephant backend runs as a user service)
