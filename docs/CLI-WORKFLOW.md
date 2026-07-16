@@ -240,7 +240,7 @@ delimiter.
 
 | Cmd | Job |
 |---|---|
-| **`zp`** | Sessionizer: fzf a project (subdir of `$ZELLIJ_PROJECT_DIRS`, default `~/dev`), then pick one of its `<project>:*` sessions or **＋ new ticket**. Creates `<project>:<ticket>` with the project's layout, else `dev`. Also lists children of `$ZELLIJ_CONTAINER_DIRS` as leaf workspaces — see below. |
+| **`zp`** | Sessionizer: fzf a project under `$ZELLIJ_PROJECT_DIRS` (default `~/dev`), then choose one of its Git worktrees. The primary checkout continues to its `<project>:*` session / **＋ new ticket** picker; a linked worktree immediately opens `<project>:<worktree-dir>`. Explicit `$ZELLIJ_PROJECT_PATHS` entries such as `~/dotfiles` open one basename-named session without a ticket. Also lists children of `$ZELLIJ_CONTAINER_DIRS` as leaf workspaces — see below. |
 | **`zs`** (Ctrl-f) | Flat fzf navigator over *all* sessions. Type a project to filter to its tickets, or a ticket to jump straight. Run from a plain terminal. |
 | `zd` | Quick attach-or-create for the current dir (no ticket). |
 | `zdl` | fzf picker; Ctrl-X deletes the highlighted session. |
@@ -248,23 +248,19 @@ delimiter.
 `zp`/`zs`/`zd` attach from *outside* Zellij; **inside** a session use Zellij's
 native `Ctrl-o w` (session-manager) to switch without detaching.
 
-**Container dirs → leaf workspaces.** Some `~/dev` entries aren't repos — they're
-*containers* of unrelated dirs: a worktrees pool, or a scratch folder holding
-several sub-projects. List them in **`$ZELLIJ_CONTAINER_DIRS`** (default
-`~/dev/exploration ~/dev/worktrees`) and `zp` lists their *children* as pickable
-workspaces (hiding the containers themselves). Picking one is a one-shot
-attach-or-create cwd'd into that dir — no ticket sub-prompt, since the dir *is*
-the workspace. Naming reuses the `:` namespace:
+**Git worktrees.** After choosing a Git project, `zp` reads `git worktree list`
+and shows its primary checkout first, followed by every linked worktree wherever
+it lives. Choosing the primary checkout continues to the normal ticket picker.
+Choosing `~/dev/worktrees/OT-12943` immediately attaches or creates
+**`nxg-csharp-nopcommerce:OT-12943`**, inferring the ticket from the worktree
+directory and using it as the session cwd.
 
-- a **git worktree** is named after its parent repo (detected via
-  `git rev-parse --git-common-dir`): `~/dev/worktrees/OT-12943` →
-  **`nxg-csharp-nopcommerce:OT-12943`**, so `zs` filtering by the repo surfaces
-  worktrees right next to that repo's ticket sessions;
-- anything else after its container: `~/dev/exploration/workflow` →
-  **`exploration:workflow`**.
-
-(Equivalent to `cd <dir> && zd`, but discoverable from the `zp` picker with a
-project-aware name.)
+**Container dirs → leaf workspaces.** Some `~/dev` entries aren't projects but
+containers of unrelated scratch directories. List them in
+**`$ZELLIJ_CONTAINER_DIRS`** (default `~/dev/exploration`) and `zp` lists their
+children while hiding the container itself. Picking
+`~/dev/exploration/workflow` directly opens **`exploration:workflow`** without a
+ticket sub-prompt.
 
 **Per-project layouts:** drop `~/.config/zellij/layouts/<project>.kdl` and `zp`
 uses it for that project's new sessions (e.g. a repo that wants `claude + shell

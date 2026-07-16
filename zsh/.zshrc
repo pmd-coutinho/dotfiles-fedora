@@ -171,33 +171,68 @@ zdl() {
     zellij attach -f "$name"
 }
 
-# Roots that `zp` scans for projects (immediate subdirs become projects).
+# Roots that `zp` scans for projects (immediate subdirs become projects), plus
+# individual project paths that should appear alongside them.
 ZELLIJ_PROJECT_DIRS=(~/dev)
+# Explicit standalone projects open one basename-named session with no ticket.
+ZELLIJ_PROJECT_PATHS=(~/dotfiles)
+ZELLIJ_PROJECT_EXCLUDES=(~/dev/worktrees)
 # Container roots whose immediate subdirs are *leaf workspaces* (each its own
-# cwd+session), not multi-ticket projects — e.g. a worktrees dir, or a folder
-# holding several unrelated sub-projects. `zp` lists their children directly and
-# skips the ticket sub-prompt. The containers themselves are hidden from the
-# project list.
-ZELLIJ_CONTAINER_DIRS=(~/dev/exploration ~/dev/worktrees)
+# cwd+session), not multi-ticket projects. `zp` lists their children directly
+# and skips the ticket sub-prompt. Git worktrees are instead discovered from
+# their owning project with `git worktree list`.
+ZELLIJ_CONTAINER_DIRS=(~/dev/exploration)
 
-# zp — project → ticket sessionizer. Two stages: pick a project (subdir of
-# $ZELLIJ_PROJECT_DIRS), then pick one of its existing `<project>:<ticket>`
-# sessions or create a new ticket. Sessions are named `<project>:<ticket>` so
-# the flat Zellij namespace reads as project→session. New sessions use
+# Pick one of a Git project's worktrees. The primary checkout is always first;
+# the two hidden fields tell zp whether the selected path is primary or linked.
+_zp_pick_worktree() {
+    local project=$1 line worktree_path branch kind bare
+    local -a rows
+    while IFS= read -r line; do
+        if [[ $line == worktree\ * ]]; then
+            if [[ -n $worktree_path && -z $bare && -d $worktree_path ]]; then
+                kind=linked
+                (( ${#rows} == 0 )) && kind=main
+                rows+=("${kind}"$'\t'"${worktree_path}"$'\t'"${kind}  ${branch:-detached}  ${worktree_path}")
+            fi
+            worktree_path=${line#worktree }
+            branch=
+            bare=
+        elif [[ $line == branch\ refs/heads/* ]]; then
+            branch=${line#branch refs/heads/}
+        elif [[ $line == detached ]]; then
+            branch=detached
+        elif [[ $line == bare ]]; then
+            bare=1
+        fi
+    done < <(git -C "$project" worktree list --porcelain 2>/dev/null)
+    if [[ -n $worktree_path && -z $bare && -d $worktree_path ]]; then
+        kind=linked
+        (( ${#rows} == 0 )) && kind=main
+        rows+=("${kind}"$'\t'"${worktree_path}"$'\t'"${kind}  ${branch:-detached}  ${worktree_path}")
+    fi
+    (( ${#rows} )) || return 1
+    print -l -- $rows | fzf --delimiter=$'\t' --with-nth=3.. --no-sort \
+        --prompt="${project:t} worktree > "
+}
+
+# zp — project → worktree → ticket sessionizer. A project's primary checkout
+# continues to its existing `<project>:<ticket>` picker; a linked worktree
+# immediately opens `<project>:<worktree-dir>`. New sessions use
 # ~/.config/zellij/layouts/<project>.kdl if it exists, else the `dev` layout.
-#
-# Children of $ZELLIJ_CONTAINER_DIRS also appear in the picker as leaf
-# workspaces: picking one attaches-or-creates a single session cwd'd into that
-# dir (no ticket prompt). A git worktree is named after its parent repo
-# (`<project>:<worktree>`); anything else after its container (`<container>:<dir>`).
+# Children of $ZELLIJ_CONTAINER_DIRS remain directly selectable leaf workspaces.
 zp() {
     command -v fzf >/dev/null || { print -u2 "zp: fzf not found"; return 1; }
-    local -a containers candidates
+    local -a containers excludes standalone candidates
     containers=(${ZELLIJ_CONTAINER_DIRS[@]:A})
+    excludes=(${ZELLIJ_PROJECT_EXCLUDES[@]:A})
+    standalone=(${ZELLIJ_PROJECT_PATHS[@]:A})
     # projects (children of PROJECT_DIRS, minus the containers themselves)…
     candidates=(${(f)"$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_PROJECT_DIRS 2>/dev/null)"})
     candidates=(${candidates:A})
     candidates=(${candidates:|containers})
+    candidates=(${candidates:|excludes})
+    candidates+=($standalone)
     # …plus leaf workspaces (children of CONTAINER_DIRS)
     candidates+=(${(f)"$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_CONTAINER_DIRS 2>/dev/null)"})
     candidates=(${candidates:A})   # normalize (strip fd's trailing slash, resolve)
@@ -233,22 +268,42 @@ zp() {
     fi
 
     local proj=${proj_path:t}
+    local session
+
+    # Explicit project paths are standalone: one basename-named session, no
+    # worktree or ticket picker.
+    if (( ${standalone[(Ie)${proj_path:A}]} )); then
+        session=$proj
+    fi
+
+    # Git projects expose their linked worktrees after the project picker. The
+    # primary checkout keeps the normal ticket picker; linked worktrees infer
+    # their ticket from the directory name and open directly.
+    if [[ -z $session ]] && git -C "$proj_path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        local worktree_pick worktree_kind
+        worktree_pick=$(_zp_pick_worktree "$proj_path") || return
+        worktree_kind=${worktree_pick%%$'\t'*}
+        worktree_pick=${worktree_pick#*$'\t'}
+        proj_path=${worktree_pick%%$'\t'*}
+        [[ $worktree_kind == linked ]] && session="${proj}:${proj_path:t}"
+    fi
 
     local -a all
     all=(${(f)"$(zellij ls -s 2>/dev/null)"})
-    local new='＋ new ticket…'
-    local pick
-    pick=$(print -l -- "$new" ${(M)all:#${proj}:*} | fzf --prompt="${proj} > ") || return
-    [[ -n $pick ]] || return
+    if [[ -z $session ]]; then
+        local new='＋ new ticket…'
+        local pick
+        pick=$(print -l -- "$new" ${(M)all:#${proj}:*} | fzf --prompt="${proj} > ") || return
+        [[ -n $pick ]] || return
 
-    local session
-    if [[ $pick == $new ]]; then
-        local ticket
-        read "ticket?ticket (e.g. OT-12935): "
-        [[ -n $ticket ]] || { print -u2 "zp: no ticket given"; return 1; }
-        session="${proj}:${ticket}"
-    else
-        session=$pick
+        if [[ $pick == $new ]]; then
+            local ticket
+            read "ticket?ticket (e.g. OT-12935): "
+            [[ -n $ticket ]] || { print -u2 "zp: no ticket given"; return 1; }
+            session="${proj}:${ticket}"
+        else
+            session=$pick
+        fi
     fi
 
     local layout=dev

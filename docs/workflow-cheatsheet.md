@@ -15,7 +15,7 @@ These shell commands run **from a plain terminal** (outside Zellij).
 |---|---|
 | `zd` * | Attach-or-create a session named after the current dir (resurrects if dead) |
 | `zd <name>` * | …or name it explicitly |
-| `zp` * | **Project → ticket sessionizer**: fzf a repo under `~/dev`, then pick/create a ticket session |
+| `zp` * | **Project → worktree sessionizer**: repos under `~/dev` use ticket/worktree sessions; `~/dotfiles` directly opens the `dotfiles` session |
 | `zs` * / **Ctrl-f** * | Flat fzf navigator over *all* sessions (type a project or ticket to jump) |
 | `zdl` * | fzf session picker — **Ctrl-X** deletes the highlighted session, **Enter** attaches |
 | `zellij ls` | List running + serialized sessions |
