@@ -240,7 +240,7 @@ delimiter.
 
 | Cmd | Job |
 |---|---|
-| **`zp`** | Sessionizer: fzf a project under `$ZELLIJ_PROJECT_DIRS` (default `~/dev`), then choose one of its Git worktrees. The primary checkout continues to its `<project>:*` session / **＋ new ticket** picker; a linked worktree immediately opens `<project>:<worktree-dir>`. Explicit `$ZELLIJ_PROJECT_PATHS` entries such as `~/dotfiles` open one basename-named session without a ticket. Also lists children of `$ZELLIJ_CONTAINER_DIRS` as leaf workspaces — see below. |
+| **`zp`** | Sessionizer: fzf a project under `$ZELLIJ_PROJECT_DIRS` (default `~/dev`), then choose one of its Git worktrees. The primary checkout continues to its `<project>:*` session / **＋ new ticket** picker; a linked worktree immediately opens `<project>:<worktree-dir>`. Explicit `$ZELLIJ_PROJECT_PATHS` entries such as `~/dotfiles` open one basename-named session without a ticket. Containers such as `exploration` open a child/create picker — see below. |
 | **`zs`** (Ctrl-f) | Flat fzf navigator over *all* sessions. Type a project to filter to its tickets, or a ticket to jump straight. Run from a plain terminal. |
 | `zd` | Quick attach-or-create for the current dir (no ticket). |
 | `zdl` | fzf picker; Ctrl-X deletes the highlighted session. |
@@ -255,12 +255,13 @@ Choosing `~/dev/worktrees/OT-12943` immediately attaches or creates
 **`nxg-csharp-nopcommerce:OT-12943`**, inferring the ticket from the worktree
 directory and using it as the session cwd.
 
-**Container dirs → leaf workspaces.** Some `~/dev` entries aren't projects but
-containers of unrelated scratch directories. List them in
-**`$ZELLIJ_CONTAINER_DIRS`** (default `~/dev/exploration`) and `zp` lists their
-children while hiding the container itself. Picking
-`~/dev/exploration/workflow` directly opens **`exploration:workflow`** without a
-ticket sub-prompt.
+**Container dirs → child workspaces.** Some `~/dev` entries group unrelated
+scratch directories. List them in **`$ZELLIJ_CONTAINER_DIRS`** (default
+`~/dev/exploration`): `zp` shows the container in its main picker, then a second
+picker containing its immediate child directories and **＋ new exploration…**.
+Picking or creating `~/dev/exploration/workflow` opens
+**`exploration:workflow`** without a ticket prompt. New names are safe slugs made
+from letters, numbers, dots, underscores, and hyphens.
 
 **Per-project layouts:** drop `~/.config/zellij/layouts/<project>.kdl` and `zp`
 uses it for that project's new sessions (e.g. a repo that wants `claude + shell

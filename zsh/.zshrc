@@ -177,11 +177,32 @@ ZELLIJ_PROJECT_DIRS=(~/dev)
 # Explicit standalone projects open one basename-named session with no ticket.
 ZELLIJ_PROJECT_PATHS=(~/dotfiles)
 ZELLIJ_PROJECT_EXCLUDES=(~/dev/worktrees)
-# Container roots whose immediate subdirs are *leaf workspaces* (each its own
-# cwd+session), not multi-ticket projects. `zp` lists their children directly
-# and skips the ticket sub-prompt. Git worktrees are instead discovered from
-# their owning project with `git worktree list`.
+# Containers appear in the project picker, then open a second picker for their
+# child workspaces. Git worktrees are instead discovered from their owning
+# project with `git worktree list`.
 ZELLIJ_CONTAINER_DIRS=(~/dev/exploration)
+
+# Pick or create an immediate child workspace inside a container.
+_zp_pick_container_workspace() {
+    local container=$1 new='＋ new exploration…' pick name
+    local -a workspaces
+    workspaces=(${(f)"$(fd --type d --max-depth 1 --min-depth 1 . "$container" 2>/dev/null)"})
+    workspaces=(${workspaces:A})
+    pick=$(print -l -- "$new" $workspaces | fzf --prompt="${container:t} > ") || return
+    [[ -n $pick ]] || return
+    if [[ $pick == $new ]]; then
+        read "name?exploration name: "
+        [[ $name =~ '^[[:alnum:]][[:alnum:]._-]*$' ]] || {
+            print -u2 "zp: use letters, numbers, dots, underscores, or hyphens"
+            return 1
+        }
+        pick="${container:A}/${name}"
+        if [[ ! -d $pick ]]; then
+            mkdir -- "$pick" || return
+        fi
+    fi
+    print -r -- "${pick:A}"
+}
 
 # Pick one of a Git project's worktrees. The primary checkout is always first;
 # the two hidden fields tell zp whether the selected path is primary or linked.
@@ -220,7 +241,7 @@ _zp_pick_worktree() {
 # continues to its existing `<project>:<ticket>` picker; a linked worktree
 # immediately opens `<project>:<worktree-dir>`. New sessions use
 # ~/.config/zellij/layouts/<project>.kdl if it exists, else the `dev` layout.
-# Children of $ZELLIJ_CONTAINER_DIRS remain directly selectable leaf workspaces.
+# Containers open a nested child/new-workspace picker.
 zp() {
     command -v fzf >/dev/null || { print -u2 "zp: fzf not found"; return 1; }
     local -a containers excludes standalone candidates
@@ -232,43 +253,23 @@ zp() {
     candidates=(${candidates:A})
     candidates=(${candidates:|containers})
     candidates=(${candidates:|excludes})
-    candidates+=($standalone)
-    # …plus leaf workspaces (children of CONTAINER_DIRS)
-    candidates+=(${(f)"$(fd --type d --max-depth 1 --min-depth 1 . $ZELLIJ_CONTAINER_DIRS 2>/dev/null)"})
+    candidates+=($standalone $containers)
     candidates=(${candidates:A})   # normalize (strip fd's trailing slash, resolve)
     local proj_path
     proj_path=$(print -l -- $candidates | fzf --prompt='project > ') || return
     [[ -n $proj_path ]] || return
 
-    # Leaf workspace? (its parent dir is a container) → attach-or-create directly.
-    local parent=${proj_path:A:h}
-    if (( ${containers[(Ie)$parent]} )); then
-        local suffix=${proj_path:t} prefix common detected
-        common=$(git -C "$proj_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
-        detected=${${common:h}:t}
-        if [[ -n $common && $detected != $suffix ]]; then
-            prefix=$detected        # linked git worktree → parent repo name
-        else
-            prefix=${parent:t}      # non-git / standalone → container dir name
-        fi
-        local session="${prefix}:${suffix}"
-        local layout=dev
-        [[ -f ~/.config/zellij/layouts/${prefix}.kdl ]] && layout=$prefix
-        if [[ -n $ZELLIJ ]]; then
-            _zswitch "$session" "$layout" "$proj_path"
-            return
-        fi
-        builtin cd -- "$proj_path" || return
-        if zellij ls -s 2>/dev/null | grep -qxF -- "$session"; then
-            zellij attach -f "$session"
-        else
-            zellij -s "$session" -n "$layout"
-        fi
-        return
+    # Containers open a second picker for an existing or new child workspace.
+    local container
+    if (( ${containers[(Ie)${proj_path:A}]} )); then
+        container=${proj_path:A}
+        proj_path=$(_zp_pick_container_workspace "$container") || return
     fi
 
-    local proj=${proj_path:t}
+    local proj=${container:t}
+    [[ -n $proj ]] || proj=${proj_path:t}
     local session
+    [[ -n $container ]] && session="${proj}:${proj_path:t}"
 
     # Explicit project paths are standalone: one basename-named session, no
     # worktree or ticket picker.
