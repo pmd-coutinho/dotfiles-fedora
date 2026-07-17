@@ -326,7 +326,9 @@ binds {
 
     // Screenshot + annotate with satty. satty's config.toml handles
     // save dir, copy-to-clipboard, and filename.
-    Print hotkey-overlay-title="Screenshot region → annotate (satty)" { spawn-sh "grim -g \"$(slurp -d)\" - | satty -f -"; }
+    // Print: drag a box for a region, or single-click a monitor to grab the
+    // whole output (screenshot-region feeds slurp the monitor rectangles).
+    Print hotkey-overlay-title="Screenshot region/monitor → annotate (satty)" { spawn-sh "~/.local/bin/screenshot-region"; }
     Shift+Print hotkey-overlay-title="Screenshot whole desktop → annotate (satty)" { spawn-sh "grim - | satty -f -"; }
     // Quick grabs without annotation (niri native: select + copy)
     Mod+Print hotkey-overlay-title="Quick screenshot (region → clipboard)" { screenshot; }

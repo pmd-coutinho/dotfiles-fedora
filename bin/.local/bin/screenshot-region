@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# screenshot-region — region/monitor screenshot into satty (niri/Wayland).
+# Drag a box to grab a region, or single-click a monitor to grab that whole
+# output. Monitor rectangles come from `niri msg --json outputs` (.logical,
+# the coordinate space slurp uses). Piped to satty for annotation; satty's
+# config.toml owns save dir + clipboard.
+set -euo pipefail
+
+boxes=$(niri msg --json outputs \
+  | jq -r 'to_entries[] | .value.logical | "\(.x),\(.y) \(.width)x\(.height)"')
+
+# -d keeps the dimensions readout. slurp exits non-zero on cancel → quit quietly.
+geom=$(printf '%s\n' "$boxes" | slurp -d) || exit 0
+
+grim -g "$geom" - | satty -f -
