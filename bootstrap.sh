@@ -35,7 +35,7 @@ sudo dnf -y install \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
   bat ripgrep eza btop ShellCheck gettext unzip \
   yazi jujutsu \
-  starship atuin zoxide stow zellij \
+  starship atuin zoxide stow zellij mosh \
   swaybg swayidle hyprlock wlsunset \
   walker elephant elephant-calc elephant-files elephant-clipboard \
   elephant-symbols elephant-unicode elephant-websearch elephant-runner \
