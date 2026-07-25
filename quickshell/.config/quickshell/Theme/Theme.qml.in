@@ -37,13 +37,13 @@ Singleton {
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
     readonly property int fontSize: 13
     readonly property int barHeight: 30
-    readonly property int barMarginTop: 6
+    readonly property int barMarginTop: 3
     readonly property int barMarginSide: 10
     // Extra reserved space BELOW the bar, on top of the bar itself and its top
     // margin. This used to be a second barMarginTop (mimicking waybar's
-    // margin-bottom), which put 14px between the bar and the first window once
-    // niri's own `gaps 8` was added on top. 0 leaves niri's gap as the only
-    // separation.
+    // margin-bottom) with nothing drawn in it, which put 14px between the bar
+    // and the first window once niri's own `gaps 8` was added. 0 leaves niri's
+    // gap as the only separation.
     readonly property int barGapBelow: 0
     readonly property int islandRadius: 12   // matches niri window corners
     readonly property color islandBg: Qt.alpha(base, 0.92)

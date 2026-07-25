@@ -27,9 +27,13 @@ Scope {
                 right: Theme.barMarginSide
             }
             implicitHeight: Theme.barHeight
-            // reserve exactly the strip the bar occupies, plus Theme.barGapBelow
-            // (0 by default) — niri's own `gaps` provides the visual separation
-            exclusiveZone: Theme.barHeight + Theme.barMarginTop + Theme.barGapBelow
+            // Just the bar's own height (+ barGapBelow, 0 by default). The
+            // compositor adds `margins.top` ON TOP of the exclusive zone, so
+            // including barMarginTop here reserved it twice — that double count
+            // was the real source of the oversized gap under the bar (measured:
+            // 6px margin + 42px zone reserved 48px for a bar whose bottom edge
+            // was at 36). niri's own `gaps` then provides the visual separation.
+            exclusiveZone: Theme.barHeight + Theme.barGapBelow
             color: "transparent"
 
             // ── shared hover tooltip (one per bar) ──
