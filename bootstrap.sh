@@ -99,8 +99,13 @@ if ! command -v jjui >/dev/null; then
     rm -rf "$jtmp"
 fi
 
-step "Wallpaper"
+step "Wallpapers"
+# Not tracked in the repo (they live outside it, and a 4K image is megabytes on a
+# public repo). quickshell/wallpaper.json names which one is active; the accent
+# colour is quantized from it at runtime, so any of these keeps the bar coherent.
 mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots
+[ -f ~/Pictures/wallpapers/particle-swirl.jpg ] || curl -fsSL -o ~/Pictures/wallpapers/particle-swirl.jpg \
+  "https://w.wallhaven.cc/full/o5/wallhaven-o5j7v7.jpg" || true
 [ -f ~/Pictures/wallpapers/cat-waves.png ] || curl -fsSL -o ~/Pictures/wallpapers/cat-waves.png \
   "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/main/waves/cat-waves.png" || true
 
@@ -186,6 +191,8 @@ systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
 # keep the analog card profile matching the headphone jack (see the unit)
 systemctl --user enable --now audio-jack-profile.service 2>/dev/null || true
+# bluetooth tray applet, supervised so a crash doesn't lose the icon silently
+systemctl --user enable --now blueman-applet.service 2>/dev/null || true
 # NOTE: no polkit agent unit — quickshell registers one itself (Polkit/Polkit.qml).
 # Only one agent may own a session, so nothing else may claim it.
 # ssh-agent socket at $XDG_RUNTIME_DIR/ssh-agent.socket — KeePassXC loads keys

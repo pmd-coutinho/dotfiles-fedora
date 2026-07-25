@@ -1,0 +1,17 @@
+[Unit]
+# Was a bare `spawn-at-startup "blueman-applet"` in niri's config, which means
+# nothing notices if it dies — the bluetooth tray icon just silently disappears
+# for the rest of the session (it did, for hours, after being caught by a stray
+# pkill). Supervised here instead, same as the other tray/session helpers.
+Description=Blueman bluetooth applet (tray)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/blueman-applet
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

@@ -70,24 +70,53 @@ Singleton {
     }
 
     // ── accent from the wallpaper ──
-    ColorQuantizer {
-        id: quantizer
-        source: root.primary === "" ? "" : "file://" + root.primary
-        // 4 → up to 16 buckets: enough to find a vivid colour without turning
-        // the whole image into mush
-        depth: 4
+    // ColorQuantizer quantizes once and does NOT re-run when its `source`
+    // changes (verified: setting a magenta wallpaper at runtime left a blue
+    // accent until the shell restarted). So rebuild the object instead of
+    // reassigning its source — toggling the Loader is what forces a fresh
+    // quantization.
+    Loader {
+        id: quantLoader
+
+        active: root.primary !== ""
+        sourceComponent: ColorQuantizer {
+            source: "file://" + root.primary
+            // 4 → up to 16 buckets: enough to find a vivid colour without
+            // turning the whole image into mush
+            depth: 4
+        }
     }
 
-    // Prefer a saturated, mid-lightness colour: quantized palettes are mostly
-    // muddy averages, and picking the first bucket usually yields grey. Falls
-    // back to the Catppuccin accent when there is no usable candidate (no
-    // wallpaper, or a monochrome one).
-    readonly property color accent: {
-        const cs = quantizer.colors ?? [];
+    onPrimaryChanged: {
+        if (root.primary === "")
+            return;
+        quantLoader.active = false;
+        quantLoader.active = true;
+    }
+
+    // The Catppuccin accents, in palette order. The wallpaper picks WHICH of
+    // these to use; it never introduces a colour of its own. Quantizing a photo
+    // yields things like #3c61d9 — legible, but visibly not Mocha sitting next
+    // to the rest of the bar. Snapping keeps the shell coherent while still
+    // following the image.
+    readonly property var accentPalette: [
+        Theme.rosewater, Theme.flamingo, Theme.pink, Theme.mauve, Theme.red,
+        Theme.maroon, Theme.peach, Theme.yellow, Theme.green, Theme.teal,
+        Theme.sky, Theme.sapphire, Theme.blue, Theme.lavender
+    ]
+
+    // Dominant colour of the wallpaper, before snapping. Depends on `primary` as
+    // well as the quantizer output: ColorQuantizer doesn't re-notify when only
+    // its source changes, so without that dependency a runtime wallpaper change
+    // left the previous accent in place until the shell restarted.
+    readonly property color rawAccent: {
+        const cs = quantLoader.item?.colors ?? [];
         let best = null;
         let bestScore = -1;
         for (const c of cs) {
-            // ignore near-black/near-white and washed-out buckets
+            // ignore near-black/near-white and washed-out buckets: quantized
+            // palettes are mostly muddy averages and the first bucket is usually
+            // grey
             if (c.hslLightness < 0.25 || c.hslLightness > 0.85)
                 continue;
             if (c.hslSaturation < 0.25)
@@ -100,5 +129,28 @@ Singleton {
             }
         }
         return best ?? Theme.mauve;
+    }
+
+    // Nearest palette accent by hue, with lightness/saturation as a weak
+    // tie-break — hue is what makes "blue wallpaper → blue accent" read right,
+    // and comparing straight RGB distance tends to land on whichever palette
+    // entry happens to be darkest.
+    readonly property color accent: {
+        const target = rawAccent;
+        let best = Theme.mauve;
+        let bestDist = Number.MAX_VALUE;
+        for (const c of accentPalette) {
+            let dh = Math.abs(c.hslHue - target.hslHue);
+            if (dh > 0.5)
+                dh = 1.0 - dh;   // hue is circular
+            const dist = dh * 3.0
+                + Math.abs(c.hslSaturation - target.hslSaturation) * 0.5
+                + Math.abs(c.hslLightness - target.hslLightness) * 0.5;
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = c;
+            }
+        }
+        return best;
     }
 }

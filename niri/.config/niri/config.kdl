@@ -98,7 +98,9 @@ spawn-sh-at-startup "swayidle -w before-sleep 'qs ipc call lock lock'"
 // PolicyKit prompts come from quickshell itself (Polkit/Polkit.qml) — nothing
 // to spawn, and nothing else may register an agent for this session.
 spawn-at-startup "nm-applet"
-spawn-at-startup "blueman-applet"
+// blueman-applet is a supervised user unit (blueman-applet.service), not a bare
+// spawn — an unsupervised applet that dies takes the bluetooth tray icon with it
+// and nothing brings it back.
 // walker launcher daemon (elephant backend runs as a user service)
 spawn-at-startup "walker" "--gapplication-service"
 
