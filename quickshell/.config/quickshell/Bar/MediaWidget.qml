@@ -12,10 +12,15 @@ BarText {
 
     readonly property var player: Media.player
 
-    visible: player !== null
-    // cap the width: some titles are absurd, and the bar's centre island must
-    // not get shoved around by whatever Vivaldi is playing
-    width: Math.min(implicitWidth, 260)
+    // Space the bar can spare for us, set by Bar.qml from the gap between the
+    // clock and the right edge. 260 is only the ceiling for a wide output — a
+    // long title would otherwise run into the clock on a 1920-wide screen.
+    property real maxWidth: 260
+
+    // below this there's no room for a useful amount of text, so don't render a
+    // two-character stub
+    visible: player !== null && maxWidth >= 70
+    width: Math.min(implicitWidth, maxWidth, 260)
     elide: Text.ElideRight
     color: Theme.pink
 

@@ -84,6 +84,8 @@ Scope {
 
             // ── center island: clock ──
             Island {
+                id: centerIsland
+
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 ClockWidget {
@@ -96,13 +98,43 @@ Scope {
                 anchors.right: parent.right
 
                 Row {
+                    id: rightRow
+
+                    // The three islands are anchored independently, so nothing
+                    // stops this one growing left into the clock. Everything
+                    // here is fixed-width except the media title, so give that
+                    // whatever is left between the clock and the right edge.
+                    // Without this a long track name overlaps the clock on a
+                    // 1920-wide output (there's room at 2560, which is why it
+                    // only showed up on the FHD screens).
+                    readonly property real mediaBudget: {
+                        const toClock = (panel.width - centerIsland.width) / 2
+                            - Theme.barMarginSide - Theme.spacingMd;
+                        let others = 0;
+                        let gaps = 0;
+                        for (const c of children) {
+                            // Must not read ANY property of `media` here: its
+                            // width and visibility both derive from this budget,
+                            // so touching either is a binding loop (was one).
+                            if (c === media || !c.visible)
+                                continue;
+                            others += c.width;
+                            gaps += 1;
+                        }
+                        return Math.max(0, toClock - others - spacing * gaps);
+                    }
+
                     anchors.verticalCenter: parent.verticalCenter
                     height: parent.height
                     spacing: Theme.spacingSm
 
                     RecordingWidget { bar: panel }
                     MicWidget { bar: panel }
-                    MediaWidget { bar: panel }
+                    MediaWidget {
+                        id: media
+                        bar: panel
+                        maxWidth: rightRow.mediaBudget
+                    }
                     TrayWidget { bar: panel }
                     Divider {}
                     CpuWidget { bar: panel }
