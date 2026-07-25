@@ -75,7 +75,6 @@ Scope {
                 anchors.left: parent.left
 
                 Workspaces {
-                    bar: panel
                     output: panel.output
                 }
                 WindowTitle {

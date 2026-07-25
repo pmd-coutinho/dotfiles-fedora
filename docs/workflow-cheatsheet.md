@@ -133,7 +133,7 @@ Launch with `y` (cds on quit). Inside:
 | Action | Cmd |
 |---|---|
 | Change a colour everywhere | edit `palette/catppuccin-mocha.env`, then `palette/render.sh` |
-| Templated files | `*.in` → rendered to real file (waybar style+config, swaync, alacritty, niri, starship, satty, hyprlock, walker theme) |
+| Templated files | `*.in` → rendered to real file (quickshell `Theme.qml`, alacritty, niri, starship, satty, git, lazygit, walker theme, zellij layouts) |
 | Verify in sync | `palette/render.sh --check` (also run by the pre-commit hook) |
 
 ---

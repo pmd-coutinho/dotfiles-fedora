@@ -37,6 +37,29 @@ if [[ -x palette/render.sh ]] && command -v envsubst >/dev/null 2>&1; then
     palette/render.sh --check || { echo "pre-commit: run palette/render.sh and stage the result" >&2; fail=1; }
 fi
 
+# 5. qmllint on staged QML (advisory — reports, does not block)
+#    Install with: dnf install qt6-qtdeclarative-devel
+#
+#    quickshell synthesizes the `qs.*` modules from the config directory at
+#    runtime, so there is no qmldir on disk for qmllint to resolve
+#    `import qs.Theme` against. Left at defaults that produces ~1500 lines of
+#    fallout: the failed import makes every `Theme.foo` an "unqualified access",
+#    every PanelWindow "uncreatable", and so on. Disabling exactly the
+#    categories that are downstream of that leaves the checks that do work —
+#    property shadowing, unused imports, signal-handler signatures, type
+#    coercion. That subset found a real bug (BluetoothWidget shadowing
+#    Item.enabled), so it earns its place.
+qmllint_bin=$(command -v qmllint-qt6 || command -v qmllint) || qmllint_bin=""
+if [[ -n $qmllint_bin ]]; then
+    while IFS= read -r f; do
+        [[ $f == *.qml ]] && [[ -f $f ]] || continue
+        "$qmllint_bin" -I /usr/lib64/qt6/qml \
+            --import disable --unqualified disable --unresolved-type disable \
+            --uncreatable-type disable --missing-property disable --missing-type disable \
+            "$f" 2>&1 || echo "pre-commit: qmllint notes above for $f (advisory)" >&2
+    done <<< "$files"
+fi
+
 if (( fail )); then
     echo "pre-commit: validation failed — fix the above, or bypass with 'git commit --no-verify'" >&2
     exit 1

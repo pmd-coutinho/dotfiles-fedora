@@ -10,26 +10,25 @@ warn() { echo -e "\033[1;33m!!  $*\033[0m"; }
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo"; exit 1; }
 
 # ── 1. COPRs ──────────────────────────────────────────────────────────
-step "Enabling COPRs (ghostty, starship, hyprlock)"
+step "Enabling COPRs (ghostty, starship)"
 dnf -y copr enable scottames/ghostty
 dnf -y copr enable atim/starship
-dnf -y copr enable solopasha/hyprland || warn "solopasha/hyprland COPR failed to enable — hyprlock will be skipped"
 
 # ── 2. Main package transaction ───────────────────────────────────────
+# swayidle stays: it holds the logind sleep inhibitor for lock-before-sleep.
+# SwayNotificationCenter/swaybg/wlogout/hyprlock are NOT here — quickshell owns
+# notifications, wallpaper, the session menu and the lockscreen now.
 step "Installing packages"
 dnf -y install \
     akmod-nvidia xorg-x11-drv-nvidia-cuda xorg-x11-drv-nvidia-power \
-    atuin zoxide SwayNotificationCenter swaybg swayidle \
+    atuin zoxide swayidle \
     fzf zsh-autosuggestions zsh-syntax-highlighting \
     stow papirus-icon-theme adw-gtk3-theme cliphist \
     brightnessctl pavucontrol network-manager-applet blueman \
-    mate-polkit gnome-keyring grim slurp wlogout \
+    mate-polkit gnome-keyring grim slurp \
     jetbrains-mono-fonts greetd tuigreet \
     ghostty starship \
     || { warn "main dnf transaction failed — fix and re-run"; exit 1; }
-
-step "Installing hyprlock (best effort)"
-dnf -y install hyprlock || warn "hyprlock not installable — swaylock remains the fallback (Super+Alt+L bind will need changing)"
 
 # ── 3. NVIDIA: VRAM-leak application profile (from niri wiki) ────────
 step "Writing NVIDIA application profile for niri"

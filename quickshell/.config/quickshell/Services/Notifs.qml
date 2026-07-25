@@ -11,8 +11,19 @@ import qs.Services
 Singleton {
     id: root
 
-    property bool dnd: false
-    property bool panelOpen: false
+    // DND and the panel state survive a config reload. These used to be plain
+    // properties, so every hot reload silently turned DND back off — easy to
+    // miss, and this shell gets reloaded a lot while being edited.
+    property alias dnd: persist.dnd
+    property alias panelOpen: persist.panelOpen
+
+    PersistentProperties {
+        id: persist
+        reloadableId: "notifs"
+
+        property bool dnd: false
+        property bool panelOpen: false
+    }
     // notifications currently shown as popup toasts (history lives in
     // server.trackedNotifications until dismissed/cleared)
     property var popups: []

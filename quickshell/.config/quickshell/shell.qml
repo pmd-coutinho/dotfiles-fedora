@@ -32,11 +32,9 @@ ShellRoot {
 
     Component.onCompleted: Bus.trayMenu = trayMenu
 
-    // trial-mode lockscreen: `qs ipc call lock lock` — hyprlock stays the
-    // active locker until this survives a week (see Lock/Lock.qml)
-    Lock {
-        id: lockScreen
-    }
+    // the session locker (idle, before-sleep and Super+Alt+L all route here
+    // through Services/Session.qml — see Lock/Lock.qml for the TTY escape hatch)
+    Lock {}
 
     // niri keybinds drive shell UI through `qs ipc call <target> <fn>`
     IpcHandler {
@@ -62,7 +60,7 @@ ShellRoot {
         target: "lock"
 
         function lock(): void {
-            lockScreen.lock();
+            Session.lock();
         }
     }
 }

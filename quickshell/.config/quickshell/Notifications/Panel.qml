@@ -158,7 +158,7 @@ Scope {
                             onTapped: if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled
                         }
                         ToggleButton {
-                            label: "󰍬"
+                            label: Theme.micIcon(Pipewire.defaultAudioSource?.audio?.muted ?? true)
                             active: !(Pipewire.defaultAudioSource?.audio?.muted ?? true)
                             onTapped: if (Pipewire.defaultAudioSource?.audio) Pipewire.defaultAudioSource.audio.muted = !Pipewire.defaultAudioSource.audio.muted
                         }
@@ -166,7 +166,7 @@ Scope {
                             label: "󰌾"
                             onTapped: {
                                 Notifs.panelOpen = false;
-                                Quickshell.execDetached(["hyprlock"]);
+                                Session.lock();
                             }
                         }
                     }
@@ -283,12 +283,21 @@ Scope {
                     }
 
                     // ── history ──
+                    // keyed model so scroll position and delegate state survive
+                    // a new notification arriving (groupList() returns a fresh
+                    // array every time)
+                    ScriptModel {
+                        id: historyModel
+                        objectProp: "key"
+                        values: Notifs.historyGroups
+                    }
+
                     ListView {
                         width: parent.width
                         height: parent.height - y
                         clip: true
                         spacing: 8
-                        model: Notifs.historyGroups
+                        model: historyModel
 
                         delegate: NotificationCard {
                             required property var modelData

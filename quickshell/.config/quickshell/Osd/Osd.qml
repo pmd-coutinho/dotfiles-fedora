@@ -51,33 +51,65 @@ Scope {
         objects: [root.sink, root.source].filter(Boolean)
     }
 
+    // The `?.` inside the handlers matters: `target` is re-evaluated when the
+    // default sink changes, and a switch landing between signal emission and
+    // handler invocation would otherwise be a hard null deref.
     Connections {
         target: root.sink?.audio ?? null
         function onVolumeChanged() {
-            root.show("volume", root.sink.audio.volume, root.sink.audio.muted);
+            root.showAudio("volume", root.sink?.audio);
         }
         function onMutedChanged() {
-            root.show("volume", root.sink.audio.volume, root.sink.audio.muted);
+            root.showAudio("volume", root.sink?.audio);
         }
     }
 
     Connections {
         target: root.source?.audio ?? null
+        // mic volume used to have no handler at all, so turning the mic up or
+        // down showed nothing while the speaker equivalent did
+        function onVolumeChanged() {
+            root.showAudio("mic", root.source?.audio);
+        }
         function onMutedChanged() {
-            root.show("mic", root.source.audio.volume, root.source.audio.muted);
+            root.showAudio("mic", root.source?.audio);
         }
     }
 
+    function showAudio(kind, audio) {
+        if (!audio)
+            return;
+        show(kind, audio.volume, audio.muted);
+    }
+
     // ── brightness (sysfs watch) ──
+    // The backlight device was hardcoded to intel_backlight, which silently
+    // stops working the moment the panel is driven by something else
+    // (amdgpu_bl0, nv_backlight...). Discover it once at startup instead.
+    property string backlightDir: ""
+
+    Process {
+        running: true
+        command: ["sh", "-c", "ls -d /sys/class/backlight/*/ 2>/dev/null | head -1"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const dir = text.trim().replace(/\/$/, "");
+                if (dir !== "")
+                    root.backlightDir = dir;
+            }
+        }
+    }
+
     FileView {
         id: maxBrightness
-        path: "/sys/class/backlight/intel_backlight/max_brightness"
-        blockLoading: true
+        // no blockLoading: the old code did a synchronous read of a path that
+        // may not exist at all (a desktop has no backlight)
+        path: root.backlightDir === "" ? "" : root.backlightDir + "/max_brightness"
     }
 
     FileView {
         id: brightness
-        path: "/sys/class/backlight/intel_backlight/brightness"
+        path: root.backlightDir === "" ? "" : root.backlightDir + "/brightness"
         watchChanges: true
         onFileChanged: {
             reload();
@@ -91,8 +123,7 @@ Scope {
         active: root.shown
 
         PanelWindow {
-            screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput)
-                ?? Quickshell.screens[0]
+            screen: Niri.focusedScreen
             // full-width strip so the pill centers reliably; empty input mask
             // so the invisible parts never eat clicks meant for windows below
             anchors {
@@ -128,10 +159,8 @@ Scope {
                             if (root.kind === "brightness")
                                 return "󰃟";
                             if (root.kind === "mic")
-                                return root.muted ? "󰍭" : "󰍬";
-                            if (root.muted)
-                                return "󰝟";
-                            return root.value <= 0.33 ? "󰕿" : root.value <= 0.66 ? "󰖀" : "󰕾";
+                                return Theme.micIcon(root.muted);
+                            return Theme.volumeIcon(root.value, root.muted);
                         }
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSize + 4

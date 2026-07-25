@@ -6,14 +6,17 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import qs.Services
 
 Scope {
     IdleMonitor {
         timeout: 600
         respectInhibitors: true
         onIsIdleChanged: {
+            // Session.lock() is idempotent (it just sets a bool), so the
+            // pgrep guard the hyprlock era needed is gone.
             if (isIdle)
-                Quickshell.execDetached(["sh", "-c", "pgrep -x hyprlock || hyprlock"]);
+                Session.lock();
         }
     }
 

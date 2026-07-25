@@ -89,8 +89,10 @@ prefer-no-csd
 // xwayland-satellite is managed by niri itself (>= 25.08), no spawn needed.
 spawn-at-startup "qs"    // quickshell: bar, notifications, OSD, wallpaper, idle, session menu
 // swayidle handles ONLY lock-before-sleep (its -w takes the logind sleep
-// inhibitor so suspend waits for the lock); idle timeouts live in quickshell
-spawn-sh-at-startup "swayidle -w before-sleep 'pgrep -x hyprlock || hyprlock'"
+// inhibitor so suspend waits for the lock); idle timeouts live in quickshell.
+// The lock itself is quickshell's — `qs ipc call lock lock` is idempotent, so
+// no pgrep guard is needed the way it was with hyprlock.
+spawn-sh-at-startup "swayidle -w before-sleep 'qs ipc call lock lock'"
 // night light is a manual switch: the quickshell 󰖔 module owns wlsunset
 // (pinned ~4000K, no schedule) — nothing to spawn at startup
 // PolicyKit authentication is supervised by polkit-mate-agent.service.
@@ -185,7 +187,7 @@ binds {
 
     Mod+T hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
     Mod+D hotkey-overlay-title="Run an Application: walker" { spawn "walker"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen" { spawn-sh "qs ipc call lock lock"; }
     Mod+Shift+N hotkey-overlay-title="Notification Center" { spawn "qs" "ipc" "call" "notifs" "toggle"; }
     Mod+Shift+S hotkey-overlay-title="Clipboard History (text + images)" { spawn "walker" "-m" "clipboard"; }
     Mod+E hotkey-overlay-title="Emoji / symbol picker" { spawn "walker" "-m" "symbols"; }

@@ -45,4 +45,26 @@ Singleton {
 
     // translucent helper for one-off alpha shades
     function alpha(c, a) { return Qt.alpha(c, a); }
+
+    // shared load ramp for the CPU/memory readouts (they used identical
+    // thresholds inline); negative means "no reading yet"
+    function loadColor(pct) {
+        if (pct < 0)
+            return overlay0;
+        return pct >= 90 ? red : pct >= 70 ? peach : subtext0;
+    }
+
+    // ── shared glyphs ──
+    // The volume ramp was duplicated verbatim between the bar widget and the
+    // OSD (in 0-100 and 0-1 scales respectively), so a glyph change had to be
+    // made twice. `level` is 0..1 here.
+    function volumeIcon(level, muted) {
+        if (muted)
+            return "󰝟";
+        return level <= 0.33 ? "󰕿" : level <= 0.66 ? "󰖀" : "󰕾";
+    }
+
+    function micIcon(muted) {
+        return muted ? "󰍭" : "󰍬";
+    }
 }

@@ -1,6 +1,8 @@
 pragma ComponentBehavior: Bound
-// Popup toasts — pinned to the laptop panel (eDP-1) top-right on the overlay
-// layer, like the old swaync notification window.
+// Popup toasts — top-right of the FOCUSED output on the overlay layer, like the
+// old swaync notification window. (These used to be pinned to a hardcoded
+// "eDP-1", which is both a connector name in a portable dotfiles repo and a
+// guarantee you miss toasts while working on another monitor.)
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -9,7 +11,7 @@ import qs.Theme
 
 Scope {
     PanelWindow {
-        screen: Quickshell.screens.find(s => s.name === "eDP-1") ?? Quickshell.screens[0]
+        screen: Niri.focusedScreen
         visible: Notifs.popups.length > 0
 
         anchors {
@@ -33,8 +35,16 @@ Scope {
             width: 400
             spacing: 8
 
+            // groupList() rebuilds the array on any notification change; keying
+            // by the group key keeps existing cards (and their timers) alive
+            ScriptModel {
+                id: popupModel
+                objectProp: "key"
+                values: Notifs.popupGroups
+            }
+
             Repeater {
-                model: Notifs.popupGroups
+                model: popupModel
 
                 NotificationCard {
                     required property var modelData

@@ -17,8 +17,8 @@ BarText {
         objects: root.sink ? [root.sink] : []
     }
 
-    text: muted ? "󰝟  muted"
-        : (vol <= 33 ? "󰕿" : vol <= 66 ? "󰖀" : "󰕾") + "  " + vol + "%"
+    text: muted ? Theme.volumeIcon(0, true) + "  muted"
+        : Theme.volumeIcon(vol / 100, false) + "  " + vol + "%"
     color: muted ? Theme.overlay0 : Theme.teal
 
     onModuleClicked: button => {

@@ -19,7 +19,7 @@ step "Enabling RPMFusion (free + nonfree) and COPRs"
 sudo dnf -y install \
   "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || true
-for c in scottames/ghostty atim/starship solopasha/hyprland \
+for c in scottames/ghostty atim/starship \
          errornointernet/walker errornointernet/packages errornointernet/quickshell \
          bieszczaders/kernel-cachyos \
          ifas/zellij; do   # ifas tracks latest (0.44.3); varlad's COPR stalled at 0.42.2
@@ -34,16 +34,17 @@ sudo dnf -y install \
   ghostty alacritty \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
   bat ripgrep eza btop ShellCheck gettext unzip \
+  qt6-qtdeclarative-devel \
   yazi jujutsu \
   starship atuin zoxide stow zellij mosh \
-  swaybg swayidle hyprlock wlsunset \
+  swayidle wlsunset \
   walker elephant elephant-calc elephant-files elephant-clipboard \
   elephant-symbols elephant-unicode elephant-websearch elephant-runner \
   elephant-desktopapplications elephant-menus elephant-nirisessions \
   elephant-providerlist elephant-bluetooth elephant-bookmarks \
   elephant-snippets elephant-todo elephant-windows elephant-1password \
   keepassxc rclone \
-  satty grim slurp wl-clipboard cliphist wlogout \
+  satty grim slurp wl-clipboard cliphist \
   papirus-icon-theme adw-gtk3-theme jetbrains-mono-fonts \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
   cups printer-driver-brlaser \
@@ -103,7 +104,7 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk hyprlock \
+for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk \
            jj lazygit niri nvim quickshell satty starship systemd walker yazi zellij zsh; do
     stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
 done

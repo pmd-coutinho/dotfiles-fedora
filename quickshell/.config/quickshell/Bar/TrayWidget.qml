@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 // System tray (StatusNotifier): left-click activates, middle-click secondary,
 // right-click opens the item's native DBus menu.
 import QtQuick
-import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.SystemTray
 import qs.Services

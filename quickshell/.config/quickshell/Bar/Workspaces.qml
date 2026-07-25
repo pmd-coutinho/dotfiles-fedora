@@ -2,13 +2,13 @@ pragma ComponentBehavior: Bound
 // Named-workspace pills for this output (waybar niri/workspaces port):
 // text labels per workspace, active pill stretches and fills mauve.
 import QtQuick
+import Quickshell
 import qs.Services
 import qs.Theme
 
 Row {
     id: root
 
-    property var bar
     property string output
 
     // workspace name → label (same map as the old waybar format-icons)
@@ -30,8 +30,18 @@ Row {
     leftPadding: 2
     rightPadding: 2
 
+    // Niri.workspacesOn() returns a fresh array on every compositor event, so a
+    // plain `model:` binding tore down and rebuilt every delegate — which is why
+    // the width Behavior below never actually animated and hover state reset on
+    // each switch. ScriptModel diffs by `id` and keeps the delegates alive.
+    ScriptModel {
+        id: workspaceModel
+        objectProp: "id"
+        values: Niri.workspacesOn(root.output)
+    }
+
     Repeater {
-        model: Niri.workspacesOn(root.output)
+        model: workspaceModel
 
         Rectangle {
             id: pill

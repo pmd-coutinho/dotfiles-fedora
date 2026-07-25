@@ -9,19 +9,23 @@ BarText {
     id: root
 
     readonly property var adapter: Bluetooth.defaultAdapter
-    readonly property bool enabled: adapter?.enabled ?? false
+    // Deliberately NOT called `enabled`: that shadows Item.enabled on the
+    // underlying Text, which at best confuses readers and at worst disables the
+    // MouseArea that right-click-to-power-on depends on — i.e. exactly when the
+    // adapter is off and you need that click. (qmllint property-override.)
+    readonly property bool adapterOn: adapter?.enabled ?? false
     readonly property var connectedDevs: Bluetooth.devices.values.filter(d => d.connected)
     readonly property var battDev: connectedDevs.find(d => d.batteryAvailable) ?? null
 
-    text: !enabled ? "󰂲"
+    text: !adapterOn ? "󰂲"
         : connectedDevs.length === 0 ? ""
         : battDev ? " " + Math.round(battDev.battery * 100) + "%"
         : " " + connectedDevs.length
-    color: enabled ? Theme.blue : Theme.overlay0
+    color: adapterOn ? Theme.blue : Theme.overlay0
 
     tip: {
         const name = adapter?.name ?? "bluetooth";
-        if (!enabled)
+        if (!adapterOn)
             return name + "\noff";
         if (connectedDevs.length === 0)
             return name + "\non";

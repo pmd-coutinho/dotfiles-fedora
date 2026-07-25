@@ -66,8 +66,7 @@ Scope {
         active: root.open
 
         PanelWindow {
-            screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput)
-                ?? Quickshell.screens[0]
+            screen: Niri.focusedScreen
             anchors {
                 top: true
                 left: true
@@ -97,27 +96,27 @@ Scope {
                     SessionButton {
                         icon: "󰌾"
                         label: "lock"
-                        run: () => Quickshell.execDetached(["hyprlock"])
+                        run: () => Session.lock()
                     }
                     SessionButton {
                         icon: "󰗽"
                         label: "logout"
-                        run: () => Quickshell.execDetached(["niri", "msg", "action", "quit", "--skip-confirmation"])
+                        run: () => Session.logout()
                     }
                     SessionButton {
                         icon: "󰤄"
                         label: "suspend"
-                        run: () => Quickshell.execDetached(["systemctl", "suspend"])
+                        run: () => Session.suspend()
                     }
                     SessionButton {
                         icon: "󰜉"
                         label: "reboot"
-                        run: () => Quickshell.execDetached(["systemctl", "reboot"])
+                        run: () => Session.reboot()
                     }
                     SessionButton {
                         icon: "󰐥"
                         label: "poweroff"
-                        run: () => Quickshell.execDetached(["systemctl", "poweroff"])
+                        run: () => Session.poweroff()
                     }
                 }
             }
