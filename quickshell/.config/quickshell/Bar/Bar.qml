@@ -98,9 +98,10 @@ Scope {
                 Row {
                     anchors.verticalCenter: parent.verticalCenter
                     height: parent.height
-                    spacing: 8
+                    spacing: Theme.spacingSm
 
                     RecordingWidget { bar: panel }
+                    MicWidget { bar: panel }
                     MediaWidget { bar: panel }
                     TrayWidget { bar: panel }
                     Divider {}
@@ -112,6 +113,7 @@ Scope {
                     NetworkWidget { bar: panel }
                     Divider {}
                     PowerProfileWidget { bar: panel }
+                    CaffeineWidget { bar: panel }
                     NightLightWidget { bar: panel }
                     BatteryWidget { bar: panel }
                     Divider {}

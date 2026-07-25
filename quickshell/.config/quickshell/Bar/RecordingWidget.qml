@@ -20,8 +20,8 @@ BarText {
     SequentialAnimation on opacity {
         running: Recorder.active
         loops: Animation.Infinite
-        NumberAnimation { to: 0.35; duration: 900; easing.type: Easing.InOutQuad }
-        NumberAnimation { to: 1.0; duration: 900; easing.type: Easing.InOutQuad }
+        NumberAnimation { to: 0.35; duration: Theme.durationPulse; easing.type: Easing.InOutQuad }
+        NumberAnimation { to: 1.0; duration: Theme.durationPulse; easing.type: Easing.InOutQuad }
     }
 
     onModuleClicked: button => {

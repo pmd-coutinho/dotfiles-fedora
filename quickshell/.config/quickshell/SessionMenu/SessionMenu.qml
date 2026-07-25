@@ -33,7 +33,7 @@ Scope {
 
         Column {
             anchors.centerIn: parent
-            spacing: 8
+            spacing: Theme.spacingSm
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -46,7 +46,7 @@ Scope {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: btn.label
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSize - 1
+                font.pixelSize: Theme.fontLabel
                 color: Theme.subtext0
             }
         }
@@ -91,10 +91,10 @@ Scope {
 
                 Row {
                     anchors.centerIn: parent
-                    spacing: 16
+                    spacing: Theme.spacingLg
 
                     SessionButton {
-                        icon: "󰌾"
+                        icon: Icons.lock
                         label: "lock"
                         run: () => Session.lock()
                     }

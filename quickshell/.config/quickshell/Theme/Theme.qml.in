@@ -43,6 +43,38 @@ Singleton {
     readonly property color islandBg: Qt.alpha(base, 0.92)
     readonly property color islandBorder: Qt.alpha(surface0, 0.9)
 
+    // ── type scale ──
+    // Named by role rather than by number so a size change lands everywhere it
+    // should. These are the sizes the shell already used as `fontSize ± n`.
+    readonly property int fontTiny: fontSize - 3    // count badges, hints
+    readonly property int fontSmall: fontSize - 2   // menu rows, captions
+    readonly property int fontLabel: fontSize - 1   // secondary text (commonest)
+    readonly property int fontMedium: fontSize + 1  // emphasised inline text
+    readonly property int fontLarge: fontSize + 3   // panel headings
+    readonly property int fontXLarge: fontSize + 4  // OSD glyph, media buttons
+
+    // ── radius scale ──
+    // Pill shapes (badges, toggles, progress bars) deliberately use `height / 2`
+    // at the call site instead of a token — that's the shape, not a style choice.
+    readonly property int radiusSmall: 6            // menu rows
+    readonly property int radiusMedium: 8           // cards, workspace pills
+
+    // ── animation ──
+    readonly property int durationFast: 80          // OSD level bar
+    readonly property int durationShort: 150        // toggle knobs
+    readonly property int durationMedium: 200       // workspace pill width
+    readonly property int durationPulse: 900        // recording indicator breath
+
+    // ── spacing scale ──
+    // Applied only where the existing literal already matched, so the sweep is
+    // pixel-identical; a handful of one-off 2/6/10/14px gaps stay inline rather
+    // than be rounded into the scale and shift the bar around.
+    readonly property int spacingXs: 4
+    readonly property int spacingSm: 8
+    readonly property int spacingMd: 12
+    readonly property int spacingLg: 16
+    readonly property int spacingXl: 24
+
     // translucent helper for one-off alpha shades
     function alpha(c, a) { return Qt.alpha(c, a); }
 
@@ -54,17 +86,6 @@ Singleton {
         return pct >= 90 ? red : pct >= 70 ? peach : subtext0;
     }
 
-    // ── shared glyphs ──
-    // The volume ramp was duplicated verbatim between the bar widget and the
-    // OSD (in 0-100 and 0-1 scales respectively), so a glyph change had to be
-    // made twice. `level` is 0..1 here.
-    function volumeIcon(level, muted) {
-        if (muted)
-            return "󰝟";
-        return level <= 0.33 ? "󰕿" : level <= 0.66 ? "󰖀" : "󰕾";
-    }
-
-    function micIcon(muted) {
-        return muted ? "󰍭" : "󰍬";
-    }
+    // Glyphs live in Theme/Icons.qml — they don't depend on the palette, so they
+    // stay out of this generated file.
 }

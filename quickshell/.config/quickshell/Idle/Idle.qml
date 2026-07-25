@@ -9,9 +9,12 @@ import Quickshell.Wayland
 import qs.Services
 
 Scope {
+    // Both monitors are switched off by the caffeine toggle (bar 󰅶). swayidle's
+    // lock-before-sleep is untouched by it — suspend should always lock.
     IdleMonitor {
         timeout: 600
         respectInhibitors: true
+        enabled: !Caffeine.active
         onIsIdleChanged: {
             // Session.lock() is idempotent (it just sets a bool), so the
             // pgrep guard the hyprlock era needed is gone.
@@ -23,6 +26,7 @@ Scope {
     IdleMonitor {
         timeout: 900
         respectInhibitors: true
+        enabled: !Caffeine.active
         onIsIdleChanged: {
             if (isIdle)
                 Quickshell.execDetached(["niri", "msg", "action", "power-off-monitors"]);

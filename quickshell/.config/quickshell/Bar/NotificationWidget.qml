@@ -7,7 +7,7 @@ import qs.Theme
 BarText {
     text: Notifs.dnd ? "󰂛" : Notifs.count > 0 ? "󱅫" : "󰂚"
     color: Theme.mauve
-    font.pixelSize: Theme.fontSize + 1
+    font.pixelSize: Theme.fontMedium
     rightPadding: 14
 
     onModuleClicked: button => {

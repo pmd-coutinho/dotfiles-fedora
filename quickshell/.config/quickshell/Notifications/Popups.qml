@@ -33,7 +33,7 @@ Scope {
         Column {
             id: stack
             width: 400
-            spacing: 8
+            spacing: Theme.spacingSm
 
             // groupList() rebuilds the array on any notification change; keying
             // by the group key keeps existing cards (and their timers) alive

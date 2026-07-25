@@ -80,7 +80,7 @@ Rectangle {
                         visible: card.count > 1
                         width: countText.implicitWidth + 12
                         height: 18
-                        radius: 9
+                        radius: height / 2   // pill
                         anchors.verticalCenter: parent.verticalCenter
                         color: Theme.mauve
 
@@ -89,7 +89,7 @@ Rectangle {
                             anchors.centerIn: parent
                             text: card.count
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize - 3
+                            font.pixelSize: Theme.fontTiny
                             font.weight: Font.Bold
                             color: Theme.crust
                         }
@@ -104,7 +104,7 @@ Rectangle {
                     maximumLineCount: 4
                     elide: Text.ElideRight
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSize - 1
+                    font.pixelSize: Theme.fontLabel
                     color: Theme.subtext0
                     onLinkActivated: link => Qt.openUrlExternally(link)
                 }
@@ -117,7 +117,7 @@ Rectangle {
                     text: card.notif.appName
                         + (at !== "" ? (card.notif.appName !== "" ? " · " : "") + at : "")
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSize - 2
+                    font.pixelSize: Theme.fontSmall
                     color: Theme.overlay0
                 }
             }
@@ -152,7 +152,7 @@ Rectangle {
                     required property var modelData
                     implicitWidth: actionLabel.implicitWidth + 20
                     implicitHeight: 24
-                    radius: 8
+                    radius: Theme.radiusMedium
                     color: actionArea.containsMouse ? Theme.surface1 : Theme.surface0
 
                     Text {
@@ -160,7 +160,7 @@ Rectangle {
                         anchors.centerIn: parent
                         text: actionBtn.modelData.text
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize - 1
+                        font.pixelSize: Theme.fontLabel
                         color: Theme.text
                     }
                     MouseArea {

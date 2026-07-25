@@ -18,8 +18,8 @@ BarText {
         objects: root.sink ? [root.sink] : []
     }
 
-    text: muted ? Theme.volumeIcon(0, true) + "  muted"
-        : Theme.volumeIcon(vol / 100, false) + "  " + vol + "%"
+    text: muted ? Icons.volume(0, true) + "  muted"
+        : Icons.volume(vol / 100, false) + "  " + vol + "%"
     color: muted ? Theme.overlay0 : Theme.teal
 
     // Bus.audioMenu is assigned in shell.qml's Component.onCompleted, so it can
@@ -29,7 +29,7 @@ BarText {
         ? (Bus.audioMenu?.label(sink) ?? sink.description ?? sink.name ?? "output")
         : "no output"
 
-    tip: (sink ? Theme.volumeIcon(vol / 100, muted) + "  " + sinkLabel : sinkLabel)
+    tip: (sink ? Icons.volume(vol / 100, muted) + "  " + sinkLabel : sinkLabel)
         + "\nL: mute · M: pick device · R: pavucontrol · scroll: volume"
 
     onModuleClicked: button => {

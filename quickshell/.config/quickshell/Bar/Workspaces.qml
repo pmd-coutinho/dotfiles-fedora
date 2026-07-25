@@ -26,7 +26,7 @@ Row {
     })
 
     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-    spacing: 4
+    spacing: Theme.spacingXs
     leftPadding: 2
     rightPadding: 2
 
@@ -53,7 +53,7 @@ Row {
             anchors.verticalCenter: parent.verticalCenter
             height: Theme.barHeight - 8
             width: label.implicitWidth + (active ? 28 : 14)
-            radius: 8
+            radius: Theme.radiusMedium
             // the active pill follows the wallpaper's accent (Wallpapers.accent
             // falls back to Theme.mauve when the image yields nothing vivid)
             color: urgent ? Theme.red
@@ -63,7 +63,7 @@ Row {
 
             Behavior on width {
                 NumberAnimation {
-                    duration: 200
+                    duration: Theme.durationMedium
                     easing.type: Easing.OutBack
                 }
             }

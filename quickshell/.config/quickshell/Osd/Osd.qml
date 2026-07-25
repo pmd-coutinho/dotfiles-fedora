@@ -150,7 +150,7 @@ Scope {
                 Row {
                     id: osdContent
                     anchors.centerIn: parent
-                    spacing: 12
+                    spacing: Theme.spacingMd
 
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -159,11 +159,11 @@ Scope {
                             if (root.kind === "brightness")
                                 return "󰃟";
                             if (root.kind === "mic")
-                                return Theme.micIcon(root.muted);
-                            return Theme.volumeIcon(root.value, root.muted);
+                                return Icons.mic(root.muted);
+                            return Icons.volume(root.value, root.muted);
                         }
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize + 4
+                        font.pixelSize: Theme.fontXLarge
                         color: root.muted ? Theme.overlay0
                              : root.kind === "brightness" ? Theme.yellow
                              : Theme.teal
@@ -173,18 +173,18 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 180
                         height: 6
-                        radius: 3
+                        radius: height / 2   // pill
                         color: Theme.surface0
 
                         Rectangle {
                             width: parent.width * Math.min(1, root.value)
                             height: parent.height
-                            radius: 3
+                            radius: height / 2   // pill
                             color: root.muted ? Theme.overlay0
                                  : root.kind === "brightness" ? Theme.yellow
                                  : Theme.teal
                             Behavior on width {
-                                NumberAnimation { duration: 80 }
+                                NumberAnimation { duration: Theme.durationFast }
                             }
                         }
                     }
@@ -194,7 +194,7 @@ Scope {
                         text: root.muted && root.kind !== "brightness"
                             ? "muted" : Math.round(root.value * 100) + "%"
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize - 1
+                        font.pixelSize: Theme.fontLabel
                         color: Theme.subtext0
                     }
                 }

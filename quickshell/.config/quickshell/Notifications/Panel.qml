@@ -21,14 +21,14 @@ Scope {
 
         width: (parent.width - 24) / 4
         height: 40
-        radius: 8
+        radius: Theme.radiusMedium
         color: active ? Theme.mauve : Theme.surface0
 
         Text {
             anchors.centerIn: parent
             text: tbtn.label
             font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize + 3
+            font.pixelSize: Theme.fontLarge
             color: tbtn.active ? Theme.crust : Theme.subtext0
         }
         MouseArea {
@@ -44,7 +44,7 @@ Scope {
         signal tapped()
         property bool available: true
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize + 4
+        font.pixelSize: Theme.fontXLarge
         color: available ? Theme.pink : Theme.overlay0
         MouseArea {
             anchors.fill: parent
@@ -103,7 +103,7 @@ Scope {
                 Column {
                     anchors.fill: parent
                     anchors.margins: 14
-                    spacing: 12
+                    spacing: Theme.spacingMd
 
                     // ── do not disturb ──
                     Item {
@@ -124,18 +124,18 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 44
                             height: 22
-                            radius: 11
+                            radius: height / 2   // pill
                             color: Notifs.dnd ? Theme.mauve : Theme.surface1
 
                             Rectangle {
                                 width: 16
                                 height: 16
-                                radius: 8
+                                radius: Theme.radiusMedium
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: Notifs.dnd ? parent.width - width - 3 : 3
                                 color: Notifs.dnd ? Theme.crust : Theme.overlay1
                                 Behavior on x {
-                                    NumberAnimation { duration: 150 }
+                                    NumberAnimation { duration: Theme.durationShort }
                                 }
                             }
                             MouseArea {
@@ -148,7 +148,7 @@ Scope {
                     // ── quick toggles (old swaync buttons-grid) ──
                     Row {
                         width: parent.width
-                        spacing: 8
+                        spacing: Theme.spacingSm
 
                         ToggleButton {
                             label: "󰖩"
@@ -161,12 +161,12 @@ Scope {
                             onTapped: if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled
                         }
                         ToggleButton {
-                            label: Theme.micIcon(Pipewire.defaultAudioSource?.audio?.muted ?? true)
+                            label: Icons.mic(Pipewire.defaultAudioSource?.audio?.muted ?? true)
                             active: !(Pipewire.defaultAudioSource?.audio?.muted ?? true)
                             onTapped: if (Pipewire.defaultAudioSource?.audio) Pipewire.defaultAudioSource.audio.muted = !Pipewire.defaultAudioSource.audio.muted
                         }
                         ToggleButton {
-                            label: "󰌾"
+                            label: Icons.lock
                             onTapped: {
                                 Notifs.panelOpen = false;
                                 Session.lock();
@@ -183,7 +183,7 @@ Scope {
                         width: parent.width
                         height: 96
                         visible: player !== null
-                        radius: 8
+                        radius: Theme.radiusMedium
                         color: Theme.surface0
 
                         Row {
@@ -194,7 +194,7 @@ Scope {
                             ClippingRectangle {
                                 width: 84
                                 height: 84
-                                radius: 8
+                                radius: Theme.radiusMedium
                                 color: Theme.surface1
 
                                 Image {
@@ -207,7 +207,7 @@ Scope {
                             Column {
                                 width: parent.width - 84 - 20
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: 4
+                                spacing: Theme.spacingXs
 
                                 Text {
                                     width: parent.width
@@ -223,11 +223,11 @@ Scope {
                                     text: mpris.player?.trackArtist ?? ""
                                     elide: Text.ElideRight
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.fontSize - 1
+                                    font.pixelSize: Theme.fontLabel
                                     color: Theme.subtext0
                                 }
                                 Row {
-                                    spacing: 16
+                                    spacing: Theme.spacingLg
 
                                     MediaBtn {
                                         text: "󰒮"
@@ -235,7 +235,7 @@ Scope {
                                         onTapped: mpris.player?.previous()
                                     }
                                     MediaBtn {
-                                        text: mpris.player?.isPlaying ? "󰏤" : "󰐊"
+                                        text: mpris.player?.isPlaying ? Icons.pause : Icons.play
                                         available: mpris.player?.canTogglePlaying ?? false
                                         onTapped: mpris.player?.togglePlaying()
                                     }
@@ -251,7 +251,7 @@ Scope {
                                     MediaBtn {
                                         visible: Media.players.length > 1
                                         text: "󰲸"
-                                        font.pixelSize: Theme.fontSize + 1
+                                        font.pixelSize: Theme.fontMedium
                                         onTapped: Media.cycle()
                                     }
                                 }
@@ -268,7 +268,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Notifications"
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize + 1
+                            font.pixelSize: Theme.fontMedium
                             font.weight: Font.Bold
                             color: Theme.text
                         }
@@ -278,7 +278,7 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                             width: clearLabel.implicitWidth + 20
                             height: 24
-                            radius: 8
+                            radius: Theme.radiusMedium
                             visible: Notifs.count > 0
                             color: clearArea.containsMouse ? Theme.surface1 : Theme.surface0
 
@@ -287,7 +287,7 @@ Scope {
                                 anchors.centerIn: parent
                                 text: "Clear All"
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSize - 1
+                                font.pixelSize: Theme.fontLabel
                                 color: Theme.text
                             }
                             MouseArea {
@@ -313,7 +313,7 @@ Scope {
                         width: parent.width
                         height: parent.height - y
                         clip: true
-                        spacing: 8
+                        spacing: Theme.spacingSm
                         model: historyModel
 
                         delegate: NotificationCard {

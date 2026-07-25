@@ -88,7 +88,7 @@ PanelWindow {
                 visible: menuWin.stack.length > 0
                 width: parent.width
                 height: 28
-                radius: 6
+                radius: Theme.radiusSmall
                 color: backArea.containsMouse ? Theme.surface0 : "transparent"
 
                 Text {
@@ -96,7 +96,7 @@ PanelWindow {
                     x: 8
                     text: "󰅁 back"
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSize - 1
+                    font.pixelSize: Theme.fontLabel
                     color: Theme.subtext0
                 }
                 MouseArea {
@@ -118,7 +118,7 @@ PanelWindow {
 
                     width: parent.width
                     height: isSep ? 9 : 28
-                    radius: 6
+                    radius: Theme.radiusSmall
                     color: !isSep && rowArea.containsMouse && modelData.enabled
                         ? Theme.surface0 : "transparent"
 
@@ -135,14 +135,14 @@ PanelWindow {
                         visible: !row.isSep
                         anchors.verticalCenter: parent.verticalCenter
                         x: 8
-                        spacing: 8
+                        spacing: Theme.spacingSm
 
                         Text {
                             visible: row.modelData.buttonType !== 0
                             anchors.verticalCenter: parent.verticalCenter
-                            text: row.modelData.checkState === Qt.Checked ? "󰄲" : "󰄱"
+                            text: row.modelData.checkState === Qt.Checked ? Icons.checked : Icons.unchecked
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize - 1
+                            font.pixelSize: Theme.fontLabel
                             color: row.modelData.checkState === Qt.Checked ? Theme.mauve : Theme.overlay0
                         }
 
@@ -158,7 +158,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             text: row.modelData.text
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize - 1
+                            font.pixelSize: Theme.fontLabel
                             color: row.modelData.enabled ? Theme.text : Theme.overlay0
                         }
                     }
@@ -170,7 +170,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "󰅂"
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize - 1
+                        font.pixelSize: Theme.fontLabel
                         color: Theme.overlay0
                     }
 

@@ -82,7 +82,7 @@ BarText {
             Column {
                 id: content
                 anchors.centerIn: parent
-                spacing: 4
+                spacing: Theme.spacingXs
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -101,7 +101,7 @@ BarText {
                         text: model.shortName
                         horizontalAlignment: Text.AlignHCenter
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize - 1
+                        font.pixelSize: Theme.fontLabel
                         font.weight: Font.Bold
                         color: Theme.yellow
                     }
@@ -118,7 +118,7 @@ BarText {
                         verticalAlignment: Text.AlignVCenter
                         text: model.day
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize - 1
+                        font.pixelSize: Theme.fontLabel
                         font.weight: model.today ? Font.Bold : Font.Medium
                         font.underline: model.today
                         color: model.today ? Theme.red

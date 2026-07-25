@@ -76,7 +76,7 @@ Scope {
                             horizontalAlignment: Text.AlignHCenter
                             text: "󰒃  authentication required"
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize + 3
+                            font.pixelSize: Theme.fontLarge
                             font.weight: Font.Bold
                             color: Theme.mauve
                         }
@@ -100,7 +100,7 @@ Scope {
                             elide: Text.ElideMiddle
                             text: win.flow?.actionId ?? ""
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize - 3
+                            font.pixelSize: Theme.fontTiny
                             color: Theme.overlay1
                         }
 
@@ -109,7 +109,7 @@ Scope {
                             visible: win.flow?.isResponseRequired ?? false
                             width: 300
                             height: 46
-                            radius: 12
+                            radius: Theme.islandRadius
                             color: Theme.surface0
                             border.width: 2
                             border.color: (win.flow?.supplementaryIsError ?? false)
@@ -126,7 +126,7 @@ Scope {
                                     ? TextInput.Normal : TextInput.Password
                                 passwordCharacter: "•"
                                 font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSize + 1
+                                font.pixelSize: Theme.fontMedium
                                 color: Theme.text
                                 verticalAlignment: TextInput.AlignVCenter
                                 horizontalAlignment: TextInput.AlignHCenter
@@ -157,7 +157,7 @@ Scope {
                             wrapMode: Text.WordWrap
                             text: win.flow?.supplementaryMessage ?? ""
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize - 1
+                            font.pixelSize: Theme.fontLabel
                             color: (win.flow?.supplementaryIsError ?? false)
                                 ? Theme.red : Theme.subtext0
                         }
@@ -167,7 +167,7 @@ Scope {
                             horizontalAlignment: Text.AlignHCenter
                             text: "enter to confirm · esc to cancel"
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize - 3
+                            font.pixelSize: Theme.fontTiny
                             color: Theme.overlay0
                         }
                     }

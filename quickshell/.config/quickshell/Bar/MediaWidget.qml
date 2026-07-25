@@ -22,7 +22,9 @@ BarText {
     text: {
         if (!player)
             return "";
-        const glyph = player.isPlaying ? "󰎆" : "󰏤";
+        // the glyph is the ACTION, matching the panel's transport buttons:
+        // playing shows pause, paused shows play
+        const glyph = player.isPlaying ? Icons.pause : Icons.play;
         const title = player.trackTitle ?? "";
         const artist = player.trackArtist ?? "";
         if (title === "")

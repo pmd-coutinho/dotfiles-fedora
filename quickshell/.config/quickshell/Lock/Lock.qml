@@ -131,7 +131,7 @@ Scope {
 
             Column {
                 anchors.centerIn: parent
-                spacing: 24
+                spacing: Theme.spacingXl
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -154,7 +154,7 @@ Scope {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: 280
                     height: 52
-                    radius: 12
+                    radius: Theme.islandRadius
                     color: Theme.surface0
                     border.width: 2
                     border.color: root.failed ? Theme.red
@@ -169,7 +169,7 @@ Scope {
                         echoMode: TextInput.Password
                         passwordCharacter: "•"
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize + 2
+                        font.pixelSize: Theme.fontMedium
                         color: Theme.text
                         verticalAlignment: TextInput.AlignVCenter
                         horizontalAlignment: TextInput.AlignHCenter
@@ -191,7 +191,7 @@ Scope {
                         visible: passwordField.text === "" && !root.failed
                         text: "password…"
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize + 1
+                        font.pixelSize: Theme.fontMedium
                         font.italic: true
                         color: Theme.overlay0
                     }
@@ -203,7 +203,7 @@ Scope {
                             ? "wait " + Math.ceil(root.backoffMs / 1000) + "s (" + root.attempts + ")"
                             : "nope (" + root.attempts + ")"
                         font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize + 1
+                        font.pixelSize: Theme.fontMedium
                         font.italic: true
                         color: Theme.red
                     }

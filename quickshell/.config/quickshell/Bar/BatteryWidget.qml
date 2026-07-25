@@ -41,7 +41,7 @@ BarText {
         anchors.topMargin: 4
         anchors.bottomMargin: 4
         z: -1
-        radius: 8
+        radius: Theme.radiusMedium
         color: root.flash ? Theme.red : "transparent"
     }
 
