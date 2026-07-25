@@ -39,6 +39,12 @@ Singleton {
     readonly property int barHeight: 30
     readonly property int barMarginTop: 6
     readonly property int barMarginSide: 10
+    // Extra reserved space BELOW the bar, on top of the bar itself and its top
+    // margin. This used to be a second barMarginTop (mimicking waybar's
+    // margin-bottom), which put 14px between the bar and the first window once
+    // niri's own `gaps 8` was added on top. 0 leaves niri's gap as the only
+    // separation.
+    readonly property int barGapBelow: 0
     readonly property int islandRadius: 12   // matches niri window corners
     readonly property color islandBg: Qt.alpha(base, 0.92)
     readonly property color islandBorder: Qt.alpha(surface0, 0.9)

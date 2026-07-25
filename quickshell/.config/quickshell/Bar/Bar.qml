@@ -27,8 +27,9 @@ Scope {
                 right: Theme.barMarginSide
             }
             implicitHeight: Theme.barHeight
-            // reserve the 6px below the bar too (waybar margin-bottom)
-            exclusiveZone: Theme.barHeight + Theme.barMarginTop * 2
+            // reserve exactly the strip the bar occupies, plus Theme.barGapBelow
+            // (0 by default) — niri's own `gaps` provides the visual separation
+            exclusiveZone: Theme.barHeight + Theme.barMarginTop + Theme.barGapBelow
             color: "transparent"
 
             // ── shared hover tooltip (one per bar) ──
