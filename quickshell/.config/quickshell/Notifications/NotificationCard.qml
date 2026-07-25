@@ -108,9 +108,14 @@ Rectangle {
                     color: Theme.subtext0
                     onLinkActivated: link => Qt.openUrlExternally(link)
                 }
+                // app name, plus arrival time in the panel list — a toast is
+                // obviously "now", but history without times is hard to read
                 Text {
-                    visible: card.notif.appName !== ""
+                    readonly property string at: card.isPopup ? "" : Notifs.timeOf(card.notif)
+
+                    visible: text !== ""
                     text: card.notif.appName
+                        + (at !== "" ? (card.notif.appName !== "" ? " · " : "") + at : "")
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSize - 2
                     color: Theme.overlay0

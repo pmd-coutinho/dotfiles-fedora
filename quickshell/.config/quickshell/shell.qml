@@ -9,6 +9,7 @@ import qs.Idle
 import qs.Lock
 import qs.Notifications
 import qs.Osd
+import qs.Polkit
 import qs.SessionMenu
 import qs.Services
 import qs.Wallpaper
@@ -20,6 +21,7 @@ ShellRoot {
     Panel {}
     Osd {}
     Idle {}
+    Polkit {}
 
     SessionMenu {
         id: sessionMenu
@@ -30,7 +32,15 @@ ShellRoot {
         id: trayMenu
     }
 
-    Component.onCompleted: Bus.trayMenu = trayMenu
+    // audio output/input picker, same one-global-window reasoning as TrayMenu
+    AudioMenu {
+        id: audioMenu
+    }
+
+    Component.onCompleted: {
+        Bus.trayMenu = trayMenu;
+        Bus.audioMenu = audioMenu;
+    }
 
     // the session locker (idle, before-sleep and Super+Alt+L all route here
     // through Services/Session.qml — see Lock/Lock.qml for the TTY escape hatch)
@@ -61,6 +71,21 @@ ShellRoot {
 
         function lock(): void {
             Session.lock();
+        }
+    }
+
+    IpcHandler {
+        target: "wallpaper"
+
+        function set(path: string): void {
+            Wallpapers.set(path);
+        }
+        function setOn(output: string, path: string): void {
+            Wallpapers.setOn(output, path);
+        }
+        // the accent the shell derived from the current wallpaper
+        function accent(): string {
+            return String(Wallpapers.accent);
         }
     }
 }

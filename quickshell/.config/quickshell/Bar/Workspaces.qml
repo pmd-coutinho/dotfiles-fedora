@@ -54,8 +54,10 @@ Row {
             height: Theme.barHeight - 8
             width: label.implicitWidth + (active ? 28 : 14)
             radius: 8
+            // the active pill follows the wallpaper's accent (Wallpapers.accent
+            // falls back to Theme.mauve when the image yields nothing vivid)
             color: urgent ? Theme.red
-                 : active ? Theme.mauve
+                 : active ? Wallpapers.accent
                  : mouse.containsMouse ? Theme.surface0
                  : "transparent"
 

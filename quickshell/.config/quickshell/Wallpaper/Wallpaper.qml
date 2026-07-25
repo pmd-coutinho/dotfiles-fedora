@@ -1,8 +1,10 @@
 pragma ComponentBehavior: Bound
-// Background-layer wallpaper on every output (replaces swaybg).
+// Background-layer wallpaper on every output (replaces swaybg). Paths come from
+// Services/Wallpapers.qml, which allows a per-output override.
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import qs.Services
 import qs.Theme
 
 Scope {
@@ -10,6 +12,8 @@ Scope {
         model: Quickshell.screens
 
         PanelWindow {
+            id: win
+
             required property ShellScreen modelData
 
             screen: modelData
@@ -25,7 +29,9 @@ Scope {
 
             Image {
                 anchors.fill: parent
-                source: Quickshell.env("HOME") + "/Pictures/wallpapers/cat-waves.png"
+                // `win`, not `parent`: inside a PanelWindow, `parent` is the
+                // content item and has no modelData
+                source: Wallpapers.forOutput(win.modelData.name)
                 fillMode: Image.PreserveAspectCrop   // swaybg -m fill
                 asynchronous: true
             }

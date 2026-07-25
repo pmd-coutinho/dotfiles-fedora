@@ -49,7 +49,7 @@ sudo dnf -y install \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
   cups printer-driver-brlaser \
   wtype ffmpeg \
-  mate-polkit gnome-keyring tuned tuned-ppd \
+  gnome-keyring tuned tuned-ppd \
   greetd tuigreet \
   kernel-cachyos kernel-cachyos-devel-matched
 # NOTE: install the GCC kernel-cachyos, NOT kernel-cachyos-lto (breaks akmods).
@@ -166,8 +166,8 @@ systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 # mask the nvidia-settings autostart that fails under niri.
 systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
-# desktop authorization prompts under niri (the package's XDG autostart is MATE-only)
-systemctl --user enable --now polkit-mate-agent.service 2>/dev/null || true
+# NOTE: no polkit agent unit — quickshell registers one itself (Polkit/Polkit.qml).
+# Only one agent may own a session, so nothing else may claim it.
 # ssh-agent socket at $XDG_RUNTIME_DIR/ssh-agent.socket — KeePassXC loads keys
 # into it; git commit signing and environment.d's SSH_AUTH_SOCK depend on it
 systemctl --user enable --now ssh-agent.service 2>/dev/null || true

@@ -1,9 +1,10 @@
-// Default sink volume via native pipewire — click mutes, right-click opens
-// pavucontrol, scroll ±5% (same bindings as the old waybar pulseaudio module,
-// minus the wpctl shell-outs).
+// Default sink volume via native pipewire — click mutes, middle-click opens the
+// output/input picker, right-click opens pavucontrol, scroll ±5% (the waybar
+// pulseaudio bindings, minus the wpctl shell-outs).
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
+import qs.Services
 import qs.Theme
 
 BarText {
@@ -21,9 +22,21 @@ BarText {
         : Theme.volumeIcon(vol / 100, false) + "  " + vol + "%"
     color: muted ? Theme.overlay0 : Theme.teal
 
+    // Bus.audioMenu is assigned in shell.qml's Component.onCompleted, so it can
+    // be null on the first evaluation — fall back to the raw node description
+    // rather than rendering the string "undefined".
+    readonly property string sinkLabel: sink
+        ? (Bus.audioMenu?.label(sink) ?? sink.description ?? sink.name ?? "output")
+        : "no output"
+
+    tip: (sink ? Theme.volumeIcon(vol / 100, muted) + "  " + sinkLabel : sinkLabel)
+        + "\nL: mute · M: pick device · R: pavucontrol · scroll: volume"
+
     onModuleClicked: button => {
         if (button === Qt.LeftButton && sink?.audio)
             sink.audio.muted = !sink.audio.muted;
+        else if (button === Qt.MiddleButton)
+            Bus.audioMenu?.openFor(root, root.bar.screen);
         else if (button === Qt.RightButton)
             Quickshell.execDetached(["pavucontrol"]);
     }

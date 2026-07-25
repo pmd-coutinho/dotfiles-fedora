@@ -30,13 +30,29 @@ Singleton {
 
     readonly property int count: server.trackedNotifications.values.length
 
-    // swaync timeouts: normal 8s, low 4s, critical sticks until acted on
+    // Timeout for a popup. A client may ask for a specific one via
+    // expireTimeout (seconds; -1 means "you decide", 0 means "never expire") —
+    // that used to be discarded in favour of the urgency ramp below. Critical
+    // still overrides everything and sticks until acted on, matching swaync.
     function timeoutFor(notif) {
-        switch (notif.urgency) {
-        case NotificationUrgency.Critical: return 0;
-        case NotificationUrgency.Low: return 4000;
-        default: return 8000;
-        }
+        if (notif.urgency === NotificationUrgency.Critical)
+            return 0;
+        const asked = notif.expireTimeout ?? -1;
+        if (asked === 0)
+            return 0;
+        if (asked > 0)
+            return asked * 1000;
+        // swaync defaults: normal 8s, low 4s
+        return notif.urgency === NotificationUrgency.Low ? 4000 : 8000;
+    }
+
+    // Notification has no timestamp property in quickshell 0.3.0, so record one
+    // when it arrives — otherwise the history list can't show times at all.
+    property var seenAt: new Map()
+
+    function timeOf(notif) {
+        const t = seenAt.get(notif);
+        return t ? Qt.formatDateTime(t, "HH:mm") : "";
     }
 
     function hidePopup(notif) {
@@ -134,9 +150,18 @@ Singleton {
         persistenceSupported: true
 
         onNotification: notif => {
-            notif.tracked = true;
-            notif.closed.connect(() => root.hidePopup(notif));
-            if (!root.dnd)
+            // `transient` means "show it, don't keep it" (progress bars, volume
+            // popups from other apps). Tracking those filled history with noise.
+            notif.tracked = !notif.transient;
+            root.seenAt.set(notif, new Date());
+            notif.closed.connect(() => {
+                root.hidePopup(notif);
+                root.seenAt.delete(notif);
+            });
+            // DND hides popups, but a critical notification is exactly the kind
+            // you must not miss, so it bypasses — it still lands in history
+            // either way.
+            if (!root.dnd || notif.urgency === NotificationUrgency.Critical)
                 root.popups = root.popups.concat([notif]);
         }
     }

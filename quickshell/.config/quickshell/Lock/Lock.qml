@@ -107,7 +107,8 @@ Scope {
             Image {
                 id: bg
                 anchors.fill: parent
-                source: Quickshell.env("HOME") + "/Pictures/wallpapers/cat-waves.png"
+                // same source as the desktop behind it (per output)
+                source: Wallpapers.forOutput(surface.screen?.name ?? "")
                 fillMode: Image.PreserveAspectCrop
                 visible: false
             }

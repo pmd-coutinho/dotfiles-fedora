@@ -7,7 +7,6 @@ import Quickshell.Widgets
 import Quickshell.Networking
 import Quickshell.Bluetooth
 import Quickshell.Services.Pipewire
-import Quickshell.Services.Mpris
 import qs.Services
 import qs.Theme
 
@@ -38,15 +37,19 @@ Scope {
         }
     }
 
+    // `enabled` reflects the player's can* capability: a greyed-out button beats
+    // one that silently does nothing (not every player supports every control)
     component MediaBtn: Text {
         id: mbtn
         signal tapped()
+        property bool available: true
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize + 4
-        color: Theme.pink
+        color: available ? Theme.pink : Theme.overlay0
         MouseArea {
             anchors.fill: parent
             anchors.margins: -4
+            enabled: mbtn.available
             onClicked: mbtn.tapped()
         }
     }
@@ -173,7 +176,8 @@ Scope {
 
                     // ── mpris ──
                     Rectangle {
-                        readonly property var player: Mpris.players.values[0] ?? null
+                        // the shared current player (Services/Media.qml)
+                        readonly property var player: Media.player
 
                         id: mpris
                         width: parent.width
@@ -227,15 +231,28 @@ Scope {
 
                                     MediaBtn {
                                         text: "󰒮"
+                                        available: mpris.player?.canGoPrevious ?? false
                                         onTapped: mpris.player?.previous()
                                     }
                                     MediaBtn {
                                         text: mpris.player?.isPlaying ? "󰏤" : "󰐊"
+                                        available: mpris.player?.canTogglePlaying ?? false
                                         onTapped: mpris.player?.togglePlaying()
                                     }
                                     MediaBtn {
                                         text: "󰒭"
+                                        available: mpris.player?.canGoNext ?? false
                                         onTapped: mpris.player?.next()
+                                    }
+
+                                    // only shown when more than one player is
+                                    // around; the card otherwise silently picked
+                                    // an arbitrary one
+                                    MediaBtn {
+                                        visible: Media.players.length > 1
+                                        text: "󰲸"
+                                        font.pixelSize: Theme.fontSize + 1
+                                        onTapped: Media.cycle()
                                     }
                                 }
                             }

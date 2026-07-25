@@ -25,7 +25,7 @@ dnf -y install \
     fzf zsh-autosuggestions zsh-syntax-highlighting \
     stow papirus-icon-theme adw-gtk3-theme cliphist \
     brightnessctl pavucontrol network-manager-applet blueman \
-    mate-polkit gnome-keyring grim slurp \
+    gnome-keyring grim slurp \
     jetbrains-mono-fonts greetd tuigreet \
     ghostty starship \
     || { warn "main dnf transaction failed — fix and re-run"; exit 1; }

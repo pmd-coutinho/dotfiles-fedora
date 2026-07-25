@@ -95,7 +95,8 @@ spawn-at-startup "qs"    // quickshell: bar, notifications, OSD, wallpaper, idle
 spawn-sh-at-startup "swayidle -w before-sleep 'qs ipc call lock lock'"
 // night light is a manual switch: the quickshell 󰖔 module owns wlsunset
 // (pinned ~4000K, no schedule) — nothing to spawn at startup
-// PolicyKit authentication is supervised by polkit-mate-agent.service.
+// PolicyKit prompts come from quickshell itself (Polkit/Polkit.qml) — nothing
+// to spawn, and nothing else may register an agent for this session.
 spawn-at-startup "nm-applet"
 spawn-at-startup "blueman-applet"
 // walker launcher daemon (elephant backend runs as a user service)
