@@ -152,6 +152,18 @@ window-rule {
     open-floating true
 }
 
+// Voxide dictation overlay → float, pinned bottom-center. On Wayland the app
+// can't place its own window (niri ignores set_position), so Voxide's own
+// Top/Bottom overlay setting is a no-op and niri floats it dead-center. niri
+// owns placement here. Main window is titled "Voxide"; the overlay is
+// "Voxide Dictation" — match the title so only the overlay is pinned.
+window-rule {
+    match app-id=r#"^voxide$"# title=r#"^Voxide Dictation$"#
+    open-floating true
+    default-floating-position x=0 y=50 relative-to="bottom"
+    open-focused false
+}
+
 // ── App → workspace routing ───────────────────────────────────────────
 // open-focused true → switch to the workspace when the app opens.
 // open-maximized true → open as a full-width (maximized) column.
@@ -179,7 +191,10 @@ binds {
     Mod+E hotkey-overlay-title="Emoji / symbol picker" { spawn "walker" "-m" "symbols"; }
     Mod+Slash hotkey-overlay-title="File search" { spawn "walker" "-m" "files"; }
     Mod+P hotkey-overlay-title="KeePassXC lookup (copy/type password, user, TOTP)" { spawn-sh "~/.local/bin/kp-walker"; }
-    Mod+Shift+D hotkey-overlay-title="Dictation: toggle, translate (speak PT/EN -> types English)" { spawn-sh "~/.local/share/dictation/dictate.sh translate"; }
+    // Voxide (~/dev/dictation-app): --trigger taps the already-running instance
+    // over its $XDG_RUNTIME_DIR socket. Swap the path for bare "voxide" once installed.
+    Mod+Shift+D hotkey-overlay-title="Dictation: Voxide toggle" { spawn-sh "~/dev/dictation-app/src-tauri/target/release/voxide --trigger dictate"; }
+    Mod+Shift+Escape hotkey-overlay-title="Dictation: Voxide cancel" { spawn-sh "~/dev/dictation-app/src-tauri/target/release/voxide --trigger cancel"; }
     Mod+Alt+D hotkey-overlay-title="Dictation: toggle, verbatim (types the spoken language, e.g. Portuguese)" { spawn-sh "~/.local/share/dictation/dictate.sh transcribe"; }
 
     Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
