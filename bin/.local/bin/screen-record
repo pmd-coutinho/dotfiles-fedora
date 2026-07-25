@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# screen-record — start/stop a screen recording (niri/Wayland).
+#
+# Run it once to pick a region (or single-click a monitor for that whole output,
+# same trick as screenshot-region) and start recording; run it again to stop.
+# One pidfile in $XDG_RUNTIME_DIR is the whole state machine, so the same
+# keybind toggles.
+#
+# Recorder: wl-screenrec (VAAPI-encoded, cheap on CPU) with wf-recorder as the
+# fallback. Both finalise the container on SIGINT — SIGKILL leaves a corrupt
+# file, so never kill -9 this.
+#
+# Tells quickshell so the bar can show a recording indicator; the ipc call is
+# best-effort so the script still works with the shell stopped.
+set -euo pipefail
+
+outdir="${SCREENREC_DIR:-$HOME/Videos/Screencasts}"
+pidfile="${XDG_RUNTIME_DIR:-/tmp}/screen-record.pid"
+
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send -a screen-record "$@" || true; }
+shell_ipc() { qs ipc call recorder "$1" >/dev/null 2>&1 || true; }
+
+# ── stop an in-flight recording ───────────────────────────────────────────
+# pidfile holds two lines: the encoder pid and the file it is writing, so the
+# stop path can name the exact file instead of guessing at the newest one
+if [ -s "$pidfile" ]; then
+    { read -r pid; read -r recfile || recfile=""; } < "$pidfile"
+    if kill -0 "$pid" 2>/dev/null; then
+        # SIGINT, not SIGTERM: wf-recorder only writes the moov atom on SIGINT
+        kill -INT "$pid" 2>/dev/null || true
+        # give the encoder a moment to flush before we claim it's saved
+        for _ in $(seq 1 50); do
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 0.1
+        done
+    fi
+    rm -f "$pidfile"
+    shell_ipc stopped
+    if [ -n "$recfile" ]; then
+        notify "Recording saved" "$(basename "$recfile")"
+    else
+        notify "Recording saved" "check $outdir"
+    fi
+    exit 0
+fi
+
+# ── start a new one ───────────────────────────────────────────────────────
+command -v slurp >/dev/null 2>&1 || { notify "screen-record" "slurp is not installed"; exit 1; }
+
+if command -v wl-screenrec >/dev/null 2>&1; then
+    recorder=wl-screenrec
+elif command -v wf-recorder >/dev/null 2>&1; then
+    recorder=wf-recorder
+else
+    notify "screen-record" "install wl-screenrec (or wf-recorder)"
+    exit 1
+fi
+
+# Monitor rectangles in the logical coordinate space slurp uses, so a single
+# click grabs a whole output. Mirrors the jq in screenshot-region — kept inline
+# because scripts on PATH should not depend on each other.
+boxes=$(niri msg --json outputs \
+  | jq -r 'to_entries[] | .value.logical | "\(.x),\(.y) \(.width)x\(.height)"')
+
+# slurp exits non-zero on cancel → quit quietly, nothing started
+geom=$(printf '%s\n' "$boxes" | slurp -d) || exit 0
+
+mkdir -p "$outdir"
+file="$outdir/$(date +%Y-%m-%d_%H-%M-%S).mp4"
+
+# --audio needs a running pipewire; pass -a/--audio through to opt in
+audio=""
+[ "${1:-}" = "-a" ] && audio="--audio"
+
+# setsid so the recorder outlives this shell, and so the pid we store is the
+# encoder itself (not a wrapper) for the SIGINT above to reach
+# shellcheck disable=SC2086  # $audio is a deliberate single optional flag
+setsid -f "$recorder" -g "$geom" -f "$file" $audio >/dev/null 2>&1
+
+# setsid -f detaches, so find the pid by matching the output file we just chose
+sleep 0.4
+pid=$(pgrep -n -f "$recorder.*$file" || true)
+if [ -z "$pid" ]; then
+    notify "screen-record" "$recorder failed to start — try running it by hand"
+    exit 1
+fi
+printf '%s\n%s\n' "$pid" "$file" > "$pidfile"
+
+shell_ipc started
+notify "Recording started" "$(basename "$file")${audio:+  (with audio)}"

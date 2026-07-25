@@ -74,6 +74,18 @@ ShellRoot {
         }
     }
 
+    // bin/screen-record pushes its state here (it owns the encoder process)
+    IpcHandler {
+        target: "recorder"
+
+        function started(): void {
+            Recorder.active = true;
+        }
+        function stopped(): void {
+            Recorder.active = false;
+        }
+    }
+
     IpcHandler {
         target: "wallpaper"
 

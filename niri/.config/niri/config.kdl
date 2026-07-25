@@ -353,6 +353,16 @@ binds {
     Alt+Print hotkey-overlay-title="Quick screenshot (window)" { screenshot-window; }
     Ctrl+Print hotkey-overlay-title="Quick screenshot (screen)" { screenshot-screen; }
 
+    // ── Screen toolkit (bin/, all region-select via slurp) ────────────────
+    // Same key as the region screenshot, one modifier along. screen-record is a
+    // toggle: the first press picks a region and starts, the second stops (the
+    // bar shows a pulsing red indicator meanwhile, click it to stop too).
+    Mod+Shift+Print hotkey-overlay-title="Screen record: start/stop (region or monitor)" { spawn-sh "~/.local/bin/screen-record"; }
+    Mod+Alt+Print hotkey-overlay-title="Screen record: start/stop with audio" { spawn-sh "~/.local/bin/screen-record -a"; }
+    Mod+Shift+T hotkey-overlay-title="OCR a region → clipboard (eng+por)" { spawn-sh "~/.local/bin/screen-ocr"; }
+    Mod+Shift+C hotkey-overlay-title="Pick a colour → hex on clipboard" { spawn-sh "~/.local/bin/color-pick"; }
+    Mod+Shift+Q hotkey-overlay-title="Scan a QR/barcode → clipboard" { spawn-sh "~/.local/bin/qr-scan"; }
+
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
     Mod+Shift+E hotkey-overlay-title="Session Menu" { spawn "qs" "ipc" "call" "session" "toggle"; }

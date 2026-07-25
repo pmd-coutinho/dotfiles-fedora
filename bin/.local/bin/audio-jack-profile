@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+"""audio-jack-profile — follow the headphone jack across card profiles.
+
+On this laptop's SOF/UCM card (skl_hda_dsp_generic) the analog outputs live in
+two MUTUALLY EXCLUSIVE profiles:
+
+    HiFi (HDMI1, HDMI2, HDMI3, Headphones, Mic1, Mic2)   priority 10300
+    HiFi (HDMI1, HDMI2, HDMI3, Mic1, Mic2, Speaker)      priority 10200
+
+WirePlumber picks the highest-priority profile and does not reconsider when the
+jack state changes, so the machine happily sits in the Headphones profile with
+nothing plugged in. There is then no Speaker sink at all, and when a bluetooth
+headset disconnects audio falls through to an HDMI output — i.e. a monitor.
+Node priorities cannot fix this: the speaker node does not exist to be ranked.
+
+So: watch the jack and switch the profile to match. The jack state is read from
+the port's `availability`, which pipewire reports even while the port's profile
+is inactive (verified on wireplumber 0.5.14) — no udev rule and no root needed.
+
+  audio-jack-profile           apply once and exit
+  audio-jack-profile --watch   apply, then follow changes (the systemd unit)
+"""
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+
+# a profile is "the speaker one" / "the headphones one" if it exposes that port;
+# matched by substring so a UCM naming change doesn't need a code change here
+SPEAKER_PORT = "Speaker"
+HEADPHONE_PORT = "Headphones"
+
+
+def pactl_json(*args: str):
+    out = subprocess.run(
+        ["pactl", "-f", "json", *args], capture_output=True, text=True, check=True
+    ).stdout
+    return json.loads(out)
+
+
+def find_card():
+    """The card that splits Speaker and Headphones across separate profiles.
+
+    Discovered rather than hardcoded, for the same reason niri matches monitors
+    by make/model instead of connector name.
+    """
+    for card in pactl_json("list", "cards"):
+        profiles = card.get("profiles") or {}
+        # only consider profiles that are actually selectable right now
+        usable = [
+            name
+            for name, p in profiles.items()
+            if (p or {}).get("available", True) is not False
+        ]
+        spk = [n for n in usable if SPEAKER_PORT in n]
+        hp = [n for n in usable if HEADPHONE_PORT in n]
+        if spk and hp:
+            # highest-priority match in each group, mirroring pipewire's own choice
+            key = lambda n: (profiles[n] or {}).get("priority", 0)  # noqa: E731
+            return card, max(spk, key=key), max(hp, key=key)
+    return None, None, None
+
+
+def jack_plugged(card) -> bool | None:
+    """True/False from the Headphones port, or None if it can't be read."""
+    for name, port in (card.get("ports") or {}).items():
+        if HEADPHONE_PORT not in name:
+            continue
+        avail = (port or {}).get("availability", "")
+        if avail == "available":
+            return True
+        if avail == "not available":
+            return False
+        return None  # "availability unknown" — the card can't tell us
+    return None
+
+
+def apply_once(verbose: bool = True) -> bool:
+    card, speaker_profile, headphone_profile = find_card()
+    if card is None:
+        if verbose:
+            print("no card with split Speaker/Headphones profiles — nothing to do")
+        return False
+
+    plugged = jack_plugged(card)
+    if plugged is None:
+        # Never guess: forcing a profile on an unknown jack state is how you end
+        # up with silent speakers or a dead jack.
+        if verbose:
+            print("jack state unknown — leaving the profile alone")
+        return False
+
+    want = headphone_profile if plugged else speaker_profile
+    if card.get("active_profile") == want:
+        return False
+
+    subprocess.run(
+        ["pactl", "set-card-profile", card["name"], want],
+        check=False,
+    )
+    if verbose:
+        print(f"jack {'in' if plugged else 'out'} → {want}")
+    return True
+
+
+def watch() -> int:
+    apply_once()
+    # `pactl subscribe` emits a line per event; card events cover jack changes.
+    # Re-query rather than parse the event: the state is cheap to read and the
+    # event text carries no jack detail.
+    proc = subprocess.Popen(
+        ["pactl", "subscribe"], stdout=subprocess.PIPE, text=True, bufsize=1
+    )
+    assert proc.stdout is not None
+    try:
+        for line in proc.stdout:
+            if "card" in line:
+                apply_once()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        proc.terminate()
+    return 0
+
+
+if __name__ == "__main__":
+    if "--watch" in sys.argv[1:]:
+        sys.exit(watch())
+    apply_once()

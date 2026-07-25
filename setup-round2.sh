@@ -4,9 +4,7 @@
 # Run as: sudo bash ~/dotfiles/setup-round2.sh
 # Idempotent where practical; written to never hang.
 set -uo pipefail
-step() { echo -e "\n\033[1;35m==> $*\033[0m"; }
-warn() { echo -e "\033[1;33m!!  $*\033[0m"; }
-ok()   { echo -e "\033[1;32m$*\033[0m"; }
+. "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo"; exit 1; }
 
 ZSWAP_ARGS="zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc zswap.max_pool_percent=25"

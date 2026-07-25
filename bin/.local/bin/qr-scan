@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# qr-scan — select a region containing a QR (or barcode), decode it to the
+# clipboard. For the 2FA-enrolment and "scan to continue on mobile" codes that
+# turn up on a desktop where there is no camera pointed at the screen.
+set -euo pipefail
+
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send -a qr-scan "$@" || true; }
+
+command -v zbarimg >/dev/null 2>&1 || { notify "qr-scan" "install zbar"; exit 1; }
+
+# slurp exits non-zero on cancel → quit quietly
+geom=$(slurp -d) || exit 0
+
+tmp=$(mktemp -t qr-scan-XXXXXX.png)
+# the capture may hold a TOTP secret — remove it whatever happens
+trap 'rm -f "$tmp"' EXIT
+
+grim -g "$geom" "$tmp"
+
+# -q quiet, --raw prints just the payload (no "QR-Code:" prefix)
+# zbarimg exits 4 when it finds nothing, which is not an error worth a trace
+payload=$(zbarimg -q --raw "$tmp" 2>/dev/null || true)
+payload=${payload%$'\n'}
+
+if [ -z "$payload" ]; then
+    notify "qr-scan" "no code found in that region"
+    exit 0
+fi
+
+# --sensitive keeps it out of clipboard-manager history: these are very often
+# otpauth:// URIs with a shared secret in them
+if printf '%s' "$payload" | grep -qiE '^otpauth:|secret='; then
+    printf '%s' "$payload" | wl-copy --sensitive
+    notify "QR → clipboard (sensitive)" "looks like a 2FA secret — not saved to clipboard history"
+else
+    printf '%s' "$payload" | wl-copy
+    notify "QR → clipboard" "$(printf '%s' "$payload" | cut -c1-80)"
+fi

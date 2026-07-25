@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# color-pick — click a pixel, get its hex on the clipboard.
+#
+# Deliberately grim+slurp rather than hyprpicker: hyprpicker is part of the
+# Hyprland stack, and this desktop is niri. grim reads from the compositor's
+# screencopy the same way, and works anywhere.
+#
+# The notification carries a generated swatch as its icon, so you see the colour
+# you actually got rather than trusting the hex.
+set -euo pipefail
+
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send -a color-pick "$@" || true; }
+
+command -v magick >/dev/null 2>&1 || { notify "color-pick" "install ImageMagick"; exit 1; }
+
+# -p picks a single point; exits non-zero on cancel → quit quietly
+pos=$(slurp -p -f '%x,%y') || exit 0
+x=${pos%,*}
+y=${pos#*,}
+
+tmp=$(mktemp -t color-pick-XXXXXX.png)
+swatch=$(mktemp -t color-swatch-XXXXXX.png)
+trap 'rm -f "$tmp" "$swatch"' EXIT
+
+# grab exactly the one pixel under the cursor
+grim -g "${x},${y} 1x1" "$tmp"
+
+# %[hex:p{0,0}] gives the pixel as RRGGBB — uppercase, and 8 digits when the PNG
+# carries an alpha channel, so trim to 6 and lowercase to match how hexes are
+# written everywhere else here (palette/catppuccin-mocha.env, CSS, KDL).
+hex=$(magick "$tmp" -format '%[hex:p{0,0}]' info: 2>/dev/null || true)
+[ -n "$hex" ] || { notify "color-pick" "could not read the pixel"; exit 1; }
+hex="#$(printf '%s' "${hex:0:6}" | tr '[:upper:]' '[:lower:]')"
+
+printf '%s' "$hex" | wl-copy
+
+magick -size 64x64 "xc:$hex" "$swatch" 2>/dev/null || true
+notify -i "$swatch" "$hex" "copied to clipboard"

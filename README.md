@@ -22,10 +22,11 @@ COPRs/RPMFusion → packages → fonts/fzf-tab/wallpaper → `stow` → gsetting
 mise → dictation venv → services → then calls the other scripts in this order:
 `setup-root.sh` → `setup-round2.sh` → `fix-igpu.sh` → `setup-round3.sh` →
 `install-toolbox.sh` → `setup-editors.sh` → `setup-round6.sh` →
-`setup-round7.sh` → `setup-round8.sh` → `setup-round4.sh`. Note the run order
-is **not** the numeric order (round4's OS hardening runs last) and there is no
-round5. The redundant `dnf` lines across scripts are intentional and harmless
-(no-ops on re-run).
+`setup-round7.sh` → `setup-round8.sh` → `setup-round10.sh` → `setup-round4.sh`.
+Note the run order is **not** the numeric order (round4's OS hardening runs
+last) and there is no round5 or round9. The redundant `dnf` lines across scripts
+are intentional and harmless (no-ops on re-run). Every script sources
+`lib/common.sh` for `step`/`warn`/`ok` (and `asuser`/`fetch_bin` when root).
 
 ## What's here
 
@@ -42,20 +43,21 @@ round5. The redundant `dnf` lines across scripts are intentional and harmless
 | `setup-round6.sh` | Workflow tooling: git+delta (Catppuccin) + aliases, dotnet-ef, Azure CLI, modern CLI (tldr/duf/procs/difftastic/just + dust/xh/watchexec binaries), neovim/LazyVim with C# (Roslyn) LSP. See [`docs/CLI-WORKFLOW.md`](docs/CLI-WORKFLOW.md) for how to use it all. |
 | `setup-round7.sh` | CLI gap-fillers: sd, hyperfine, uv, glow, yq. |
 | `setup-round8.sh` | Dev/ops TUIs + helpers: hurl, lnav, gum (dnf/COPR); mergiraf (git merge driver), trippy, kondo, ouch, pay-respects (pinned binaries); csharprepl (dotnet tool), posting + isd (uv tools). |
+| `setup-round10.sh` | Audit gap-fillers: restic (**installed, not configured** — nothing in `~`/`~/dev` is backed up off-machine yet), git-absorb, hexyl, tokei; ast-grep (pinned binary, invoke as `ast-grep` — `sg` collides with shadow-utils). |
 | `archive/` | Superseded one-offs (kernel-modules half-install fix, old walker/bt script) kept for history; **not** run by bootstrap. |
 | `docs/DICTATION.md` | **GPU voice dictation** (offline faster-whisper): `Mod+Shift+D` speak→English, `Mod+Alt+D` verbatim. Stow pkg `dictation` + `setup.sh` venv. |
-| `*/` | stow packages: alacritty, atuin, autostart, bin, btop, dictation, environment, gh-dash, ghostty, git, gtk, jj, lazygit, niri, nvim, quickshell, satty, starship, systemd, walker, yazi, zellij, zsh. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
+| `*/` | stow packages: alacritty, atuin, autostart, bin, btop, dictation, environment, gh-dash, ghostty, git, gtk, jj, lazygit, mise, niri, nvim, quickshell, satty, starship, systemd, walker, yazi, zellij, zsh. (VS Code is **not** stowed — `setup-editors.sh` seeds `~/.config/Code/User/settings.json` from `vscode/.../settings.dist.json`; the live file is gitignored, see security note.) |
 
 ## The stack
 
-- **Compositor**: niri, rendering on the **NVIDIA dGPU** (`debug { render-drm-device }` by-path). 3 monitors: Huawei top-left, laptop below it, Gigabyte (4K@144 via DSC) right.
+- **Compositor**: niri, on niri's **default render device** — the `debug { render-drm-device }` dGPU pin is commented out in `config.kdl` (kept with its rationale) since the 4K monitor moved to the Intel iGPU. 3 monitors: Huawei top-left, laptop below it, Gigabyte (4K@144 via DSC) right.
 - **Bars/UI**: **quickshell** (`quickshell/` stow pkg, one QML process) owns the bar (per output), notifications (server + popups + Mod+Shift+N panel), volume/brightness OSD, wallpaper, idle timeouts (lock 10m / screens-off 15m), the Mod+Shift+E session menu and the **lockscreen** (ext-session-lock + PAM). Colors come from the palette via `Theme.qml.in`. walker launcher (+ elephant backend) stays. All lock paths — Super+Alt+L, the 10m idle timeout, the session menu and the notification panel — go through `Services/Session.qml`; a minimal `swayidle -w before-sleep 'qs ipc call lock lock'` holds the logind sleep inhibitor for lock-before-sleep. waybar/swaync configs retired to `archive/`; hyprlock/waybar/swaync/swaybg/wlogout are no longer installed.
 - **Login**: greetd + tuigreet (GDM kept installed as rescue).
 - **Terminal/shell**: Ghostty (CaskaydiaCove Nerd Font) · zsh (autosuggestions, syntax-highlighting, fzf-tab) + starship + atuin + zoxide + mise · zellij (sessions/multiplexing; tmux + fuzzel configs retired to `archive/`).
 - **Kernel**: CachyOS (BORE scheduler) via `bieszczaders/kernel-cachyos`; stock Fedora kernel is the GRUB fallback.
 - **Swap**: 32G btrfs swapfile + **zswap** (zstd/zsmalloc) — zram disabled. For large .NET builds.
 - **Power**: tuned + tuned-ppd; udev auto-switch AC→performance / battery→balanced; the quickshell bar module uses the native `PowerProfiles` D-Bus binding, event-driven (there is **no** `powerprofilesctl` — that ships with the conflicting power-profiles-daemon).
-- **Screenshots**: `Print` → grim+satty annotate; native niri grabs on Mod/Alt/Ctrl+Print.
+- **Screenshots + screen tools**: `Print` → grim+satty annotate; native niri grabs on Mod/Alt/Ctrl+Print. The rest of the toolkit lives in `bin/` and is region-selected with slurp: `Mod+Shift+Print` screen record (toggle; `Mod+Alt+Print` with audio, and the bar shows a pulsing indicator), `Mod+Shift+T` OCR → clipboard, `Mod+Shift+C` colour picker → hex, `Mod+Shift+Q` QR/barcode scan.
 - **Passwords**: KeePassXC (`~/vault/Passwords.kdbx`) two-way synced to Google Drive via `rclone bisync` (systemd `.path` + `.timer` units, `systemd/` stow pkg). On a fresh install the rclone Drive OAuth (`rclone config`) and the first `rclone bisync --resync` are manual — see [`docs/SECURITY.md`](docs/SECURITY.md) for the safety flags and recovery commands.
 
 ## Post-reboot verification
@@ -85,7 +87,7 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **quickshell breaks on Qt updates**: it's built against a specific Qt minor (COPR `errornointernet/quickshell`); after a `dnf upgrade` that bumps Qt, the shell may fail to start until the COPR rebuilds. Fallback: `dnf downgrade qt6-qtbase` or wait it out — niri itself is unaffected.
 - **quickshell hot-reload goes stale**: after many file edits the running instance sometimes silently stops applying reloads — if a change doesn't show up, restart it, don't debug ghosts.
 - **restarting quickshell**: the process name varies between `qs` and `quickshell` depending on how it was launched, and stale instances keep drawing their old windows (duplicate bars/menus, wrong-monitor popups). Restart with `pkill -x qs; pkill -x quickshell; qs -d`.
-- **swaync must stay masked while installed**: dbus-broker re-spawns it via D-Bus activation (`SystemdService=`) even when disabled — `systemctl --user mask swaync.service` (bootstrap no longer installs it; remove the package and the mask + `~/.local/share/dbus-1/services/org.freedesktop.Notifications.service` override become moot).
+- **swaync/waybar/swaybg/wlogout/hyprlock are gone** — quickshell owns notifications, the bar, wallpaper, the session menu and the lockscreen. Nothing installs them any more. (Historic trap, in case one comes back: while swaync is *installed* it must stay masked, because dbus-broker re-spawns it via D-Bus activation even when disabled.)
 - **console.log in QML is filtered** from quickshell's default log level — use `console.warn` when debugging the shell, and read logs with `qs log`.
 - **lazydocker** talks to **podman** via `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` (zshrc) + `systemctl --user enable --now podman.socket`.
 - **Rider + mise .NET**: GUI-launched Rider doesn't inherit mise's shell PATH — point Rider at the mise dotnet SDK path or export `DOTNET_ROOT` where the graphical session sees it. `mise use -g dotnet@9` (not `@latest`, which is currently a .NET 11 preview).
@@ -97,9 +99,17 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 - **`app-nvidia\x2dsettings\x2duser@autostart.service`** fails on login (nvidia-settings autostart under niri). Masked by the **escaped** unit name — the un-escaped `app-nvidia-settings-user@…` form never matched, which is why it kept showing up.
 - **chezmoi is unused** — stow is the dotfiles system. `~/.config/chezmoi/key.txt` is an **age key** kept intentionally; don't delete it without checking what it decrypts.
 - **Security — VS Code settings are NOT tracked**: VS Code rewrites `settings.json` with machine state (mssql connection profiles → server FQDNs, DB names, tokens). The repo is public, so that file is **gitignored**; only `settings.dist.json` (theme/UI, no connections) is tracked and seeded by `setup-editors.sh`. Never `git add -f` the live settings. (History was scrubbed once to remove previously-committed connection metadata.)
-- **Click a notification → focus its app**: the `niri-notify-click.service` user unit (`bin/niri-notify-click`, a passive D-Bus monitor) maps each notification to its `desktop-entry` and focuses that app's niri window on click. Needed because some apps (e.g. Slack) don't act on their own notification action under Wayland.
+- **Click a notification → focus its app**: quickshell *is* the notification server, so `Services/Notifs.qml` maps each notification's `desktop-entry` to a niri window and focuses it (`focusSource()`). This replaced the `niri-notify-click` D-Bus-eavesdropping daemon entirely. Still needed because some apps (e.g. Slack) don't act on their own notification action under Wayland.
+- **Speakers vanish after a bluetooth headset disconnects**: this laptop's SOF card puts `Speaker` and `Headphones` in *mutually exclusive* profiles and WirePlumber picks by static priority, so it can sit in the Headphones profile with nothing plugged in — no Speaker sink exists and audio falls through to an HDMI output. `audio-jack-profile.service` (in `systemd/`) watches the jack and switches the profile to match. Run `audio-jack-profile` by hand to force a re-check.
 
 ## TODO
 
-(nothing pending — the repo lives at `github.com/pmd-coutinho/dotfiles-fedora`,
-branch `master`)
+- **Screen toolkit is untested end-to-end** — `screen-record`, `screen-ocr`,
+  `color-pick` and `qr-scan` are written and their dependency guards work, but
+  they need `wl-screenrec`/`tesseract`/`zbar` installed before a real run.
+- **qmllint in `hooks/pre-commit` is advisory** (it reports, never blocks).
+  quickshell synthesizes the `qs.*` modules at runtime so imports can't resolve;
+  the categories downstream of that are disabled. Consider making it blocking
+  once it has been quiet for a while.
+
+The repo lives at `github.com/pmd-coutinho/dotfiles-fedora`, branch `master`.

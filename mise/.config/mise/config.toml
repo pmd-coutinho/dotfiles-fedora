@@ -1,0 +1,27 @@
+# mise global tool versions.
+#
+# Tracked because bootstrap.sh runs `mise install` against this file: without it
+# a rebuilt machine gets no .NET SDK and none of the AI CLIs, which was the
+# largest un-reproducible gap left in this repo.
+#
+# NOTE: `mise use -g <tool>` REWRITES this file and will drop these comments —
+# same hazard as zellij's config UI. If that happens, re-add the header.
+#
+# dotnet is pinned to 10 (not "latest"): latest tracks a preview.
+# The AI CLIs release constantly, so they opt out of mise's release-age delay.
+
+[settings]
+minimum_release_age_excludes = ["claude", "opencode", "codex", "pi"]
+
+[tools]
+claude = "latest"
+opencode = "latest"
+codex = "latest"
+dotnet = "10"
+"github:can1357/oh-my-pi" = "latest"
+node = "lts"
+pnpm = "latest"
+yarn = "latest"
+rust = "latest"
+cargo-binstall = "latest"
+pi = "latest"

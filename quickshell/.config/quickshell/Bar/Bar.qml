@@ -100,6 +100,7 @@ Scope {
                     height: parent.height
                     spacing: 8
 
+                    RecordingWidget { bar: panel }
                     MediaWidget { bar: panel }
                     TrayWidget { bar: panel }
                     Divider {}

@@ -1,0 +1,24 @@
+[Unit]
+# Keeps the analog card profile matching the headphone jack. Without it the
+# machine sits in the Headphones profile with nothing plugged in, no Speaker sink
+# exists, and a disconnecting bluetooth headset drops audio onto an HDMI output
+# (i.e. a monitor). See bin/audio-jack-profile for why node priorities can't fix
+# this.
+Description=Follow the headphone jack across ALSA card profiles
+After=pipewire.service pipewire-pulse.service
+Wants=pipewire-pulse.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+# python buffers stdout when it isn't a tty, so without this the "jack in/out →
+# profile" lines never reach journalctl and the unit looks silent
+Environment=PYTHONUNBUFFERED=1
+ExecStart=%h/.local/bin/audio-jack-profile --watch
+# Restart=always, not on-failure: `pactl subscribe` exits 0 when the pipewire
+# daemon restarts, and the watch has to come back with it.
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

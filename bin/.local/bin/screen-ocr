@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# screen-ocr — select a region, OCR it, put the text on the clipboard.
+#
+# For grabbing text out of things that won't give it to you: screenshots in
+# Slack, error dialogs, PDFs in a viewer, a Rider tooltip.
+#
+# Languages: eng+por by default (tesseract-langpack-{eng,por}); override with
+# OCR_LANG. `tesseract --list-langs` shows what is installed.
+set -euo pipefail
+
+lang="${OCR_LANG:-eng+por}"
+
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send -a screen-ocr "$@" || true; }
+
+command -v tesseract >/dev/null 2>&1 || { notify "screen-ocr" "install tesseract"; exit 1; }
+
+# slurp exits non-zero on cancel → quit quietly
+geom=$(slurp -d) || exit 0
+
+tmp=$(mktemp -t screen-ocr-XXXXXX.png)
+# always clean the image up, even on OCR failure or Ctrl-C — it may contain
+# whatever was on screen
+trap 'rm -f "$tmp"' EXIT
+
+grim -g "$geom" "$tmp"
+
+# -c preserve_interword_spaces keeps table-ish text readable; stdout via "-"
+text=$(tesseract "$tmp" - -l "$lang" -c preserve_interword_spaces=1 2>/dev/null || true)
+# collapse the trailing blank lines tesseract likes to add
+text=$(printf '%s' "$text" | sed -e 's/[[:space:]]*$//' -e '/./,$!d' | awk 'NF{p=1} p')
+
+if [ -z "$text" ]; then
+    notify "screen-ocr" "no text found"
+    exit 0
+fi
+
+printf '%s' "$text" | wl-copy
+# first line as the preview, so the toast stays one line for a long capture
+notify "OCR → clipboard" "$(printf '%s' "$text" | head -1 | cut -c1-80)"

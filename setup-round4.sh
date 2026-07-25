@@ -2,9 +2,7 @@
 # Round 4 — OS hardening: NVIDIA suspend, journald cap, inotify, snapshots.
 # Run as: sudo bash ~/dotfiles/setup-round4.sh
 set -uo pipefail
-step() { echo -e "\n\033[1;35m==> $*\033[0m"; }
-warn() { echo -e "\033[1;33m!!  $*\033[0m"; }
-ok()   { echo -e "\033[1;32m$*\033[0m"; }
+. "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo"; exit 1; }
 
 # ── 1. NVIDIA: preserve VRAM across suspend/resume ───────────────────────

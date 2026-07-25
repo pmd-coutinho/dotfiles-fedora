@@ -10,9 +10,7 @@
 # ============================================================================
 set -uo pipefail
 DOTS="$HOME/dotfiles"
-step() { echo -e "\n\033[1;35m==> $*\033[0m"; }
-warn() { echo -e "\033[1;33m!!  $*\033[0m"; }
-ok()   { echo -e "\033[1;32m$*\033[0m"; }
+. "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # ── 0. RPMFusion + COPRs ─────────────────────────────────────────────────
 step "Enabling RPMFusion (free + nonfree) and COPRs"
@@ -35,6 +33,7 @@ sudo dnf -y install \
   zsh zsh-autosuggestions zsh-syntax-highlighting fzf fd-find \
   bat ripgrep eza btop ShellCheck gettext unzip \
   qt6-qtdeclarative-devel \
+  jq \
   yazi jujutsu \
   starship atuin zoxide stow zellij mosh \
   swayidle wlsunset \
@@ -49,12 +48,22 @@ sudo dnf -y install \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
   cups printer-driver-brlaser \
   wtype ffmpeg \
+  wl-screenrec tesseract tesseract-langpack-eng tesseract-langpack-por zbar ImageMagick \
   gnome-keyring tuned tuned-ppd \
   greetd tuigreet \
   kernel-cachyos kernel-cachyos-devel-matched
 # NOTE: install the GCC kernel-cachyos, NOT kernel-cachyos-lto (breaks akmods).
 
 # ── 2. Manual fetches (fonts, zsh plugins, wallpaper) ────────────────────
+# ~/.local/bin must exist as a REAL directory before anything writes into it,
+# for two separate reasons:
+#   1. `install`/`curl -o` do not create parent dirs, so the jjui fetch below and
+#      setup-round3's devtunnel download fail outright on a fresh box.
+#   2. if it does not exist when `stow bin` runs, stow tree-folds it into a
+#      symlink to dotfiles/bin/.local/bin/ — and then mise plus every fetch_bin
+#      in rounds 6/7/8 writes its binaries INTO THE GIT REPO.
+mkdir -p ~/.local/bin
+
 step "Nerd fonts (CaskaydiaCove + JetBrainsMono)"
 mkdir -p ~/.local/share/fonts
 for f in CascadiaCode JetBrainsMono; do
@@ -105,8 +114,17 @@ cd "$DOTS"
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
 for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk \
-           jj lazygit niri nvim quickshell satty starship systemd walker yazi zellij zsh; do
-    stow -v "$pkg" 2>&1 | grep -i conflict && warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
+           jj lazygit mise niri nvim quickshell satty starship systemd walker yazi zellij zsh; do
+    # capture instead of piping straight to grep: `stow | grep -i conflict` threw
+    # away every failure whose wording wasn't "conflict", so real errors passed
+    # silently. PIPESTATUS is unavailable here (no pipe), so test stow directly.
+    if ! out=$(stow -v "$pkg" 2>&1); then
+        warn "stow $pkg failed:"
+        printf '%s\n' "$out" >&2
+    elif grep -qi conflict <<< "$out"; then
+        warn "conflict in $pkg — resolve then re-run 'stow $pkg'"
+        printf '%s\n' "$out" | grep -i conflict >&2
+    fi
 done
 
 # Tracked git hooks: pre-commit validates shell/zsh/zellij configs before commit
@@ -166,6 +184,8 @@ systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 # mask the nvidia-settings autostart that fails under niri.
 systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
+# keep the analog card profile matching the headphone jack (see the unit)
+systemctl --user enable --now audio-jack-profile.service 2>/dev/null || true
 # NOTE: no polkit agent unit — quickshell registers one itself (Polkit/Polkit.qml).
 # Only one agent may own a session, so nothing else may claim it.
 # ssh-agent socket at $XDG_RUNTIME_DIR/ssh-agent.socket — KeePassXC loads keys
@@ -210,6 +230,9 @@ sudo bash "$DOTS/setup-round7.sh" || warn "run setup-round7.sh manually later"
 
 step "Dev/ops TUIs + helpers (hurl, mergiraf, lnav, gum, posting, isd, csharprepl…)"
 sudo bash "$DOTS/setup-round8.sh" || warn "run setup-round8.sh manually later"
+
+step "Audit gap-fillers (restic, git-absorb, hexyl, tokei, ast-grep)"
+sudo bash "$DOTS/setup-round10.sh" || warn "run setup-round10.sh manually later"
 
 echo "  .NET SDK: run 'mise use -g dotnet@9' (or the version your solutions target)."
 echo "  Note: GUI-launched Rider won't inherit mise PATH — set its SDK path or DOTNET_ROOT."

@@ -1,6 +1,23 @@
 # VS Code rewrites this with machine state (mssql connections/tokens) — never track it
 vscode/.config/Code/User/settings.json
 
+# Belt-and-braces against the stow tree-fold trap: if ~/.local/bin does not
+# exist when `stow bin` runs, stow turns it into a symlink INTO this repo, and
+# every fetched binary (mise, dust, xh, watchexec, sd, hurl, mergiraf, trip,
+# kondo, ouch, pay-respects…) lands here. bootstrap.sh now mkdir -p's it first;
+# this makes sure an accidental `git add -A` can't commit 20 binaries either.
+# The real scripts are force-added and stay tracked.
+bin/.local/bin/*
+!bin/.local/bin/audio-jack-profile
+!bin/.local/bin/color-pick
+!bin/.local/bin/kp-walker
+!bin/.local/bin/niri-vivaldi-private-watch
+!bin/.local/bin/qr-scan
+!bin/.local/bin/screen-ocr
+!bin/.local/bin/screen-record
+!bin/.local/bin/screenshot-region
+!bin/.local/bin/zellij-sessions
+
 # Dictation venv is machine-built by setup.sh (faster-whisper + CUDA wheels + model cache)
 dictation/.local/share/dictation/venv/
 

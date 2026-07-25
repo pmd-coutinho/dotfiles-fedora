@@ -65,7 +65,9 @@ flatpak remote-modify --no-filter flathub 2>/dev/null || true
 # Install each separately so one failure doesn't abort the rest.
 # Slack is installed natively above (rpm); drop any old Flatpak copy.
 asuser flatpak uninstall -y com.slack.Slack 2>/dev/null || true
-asuser flatpak install -y --noninteractive flathub md.obsidian.Obsidian || warn "Obsidian flatpak failed"
+# --user on both flatpaks: that is where they actually end up on this machine,
+# and being explicit avoids a mid-bootstrap polkit prompt for a system install
+asuser flatpak install --user -y --noninteractive flathub md.obsidian.Obsidian || warn "Obsidian flatpak failed"
 # Telegram (official) from Flathub. Replaced AyuGram Jul 2026 — its
 # sideloaded bundle (0FL01 repo) had no flatpak remote, so it could never update.
 asuser flatpak install --user -y --noninteractive flathub org.telegram.desktop || warn "Telegram flatpak failed"
@@ -77,6 +79,10 @@ step "Microsoft Dev Tunnels CLI (devtunnel → ~/.local/bin)"
 # Official installer dumps to ~/bin + edits .zshrc + apt-get; we just grab
 # the binary into ~/.local/bin (already on PATH). Run 'devtunnel user login' after.
 RHOME="$UHOME"
+# curl -o will not create the parent: on a fresh box this runs before anything
+# else has made ~/.local/bin (bootstrap does, but this script is also runnable
+# standalone)
+asuser mkdir -p "$RHOME/.local/bin"
 asuser curl -fsSL -o "$RHOME/.local/bin/devtunnel" \
   "https://tunnelsassetsprod.blob.core.windows.net/cli/linux-x64-devtunnel" \
   && chmod +x "$RHOME/.local/bin/devtunnel" && echo "  devtunnel installed" \

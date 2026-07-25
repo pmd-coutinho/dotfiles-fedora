@@ -5,9 +5,7 @@
 #     bash ~/dotfiles/setup-editors.sh
 # ============================================================================
 set -uo pipefail
-step() { echo -e "\n\033[1;35m==> $*\033[0m"; }
-warn() { echo -e "\033[1;33m!!  $*\033[0m"; }
-ok()   { echo -e "\033[1;32m$*\033[0m"; }
+. "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
 # ── VS Code: Catppuccin theme + icons ────────────────────────────────────
 if command -v code >/dev/null; then

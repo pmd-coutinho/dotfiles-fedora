@@ -8,7 +8,7 @@ setopt SHARE_HISTORY          # share across sessions
 setopt HIST_IGNORE_ALL_DUPS   # no duplicate entries
 setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY            # expand !! before running
-setopt INC_APPEND_HISTORY
+# (no INC_APPEND_HISTORY — SHARE_HISTORY already implies it)
 
 # ── Options ───────────────────────────────────────────────────────────
 setopt AUTO_CD                # `..` instead of `cd ..`
@@ -75,6 +75,12 @@ alias ip='ip -color=auto'
 alias lg='lazygit'
 alias lzd='lazydocker'
 command -v nvim >/dev/null && alias v='nvim'
+# btop for an interactive `top` (raw top still available as \top).
+# Deliberately NOT aliasing du→dust, ps→procs or man→tldr: their flags aren't
+# compatible where it matters (`du -sh *`, `ps aux`) and tldr has no entry for
+# most of what you'd actually reach for `man` to read. They're all on PATH under
+# their own names.
+command -v btop >/dev/null && alias top='btop'
 
 # zsh-abbr session abbreviations — expand in place on SPACE, so atuin/history
 # record the REAL command (not the abbr). Declarative (not a state file); grow
@@ -339,6 +345,8 @@ zs() {
     zellij attach -f "$name"
 }
 # Ctrl-f at the prompt → zs (saves any half-typed line, restores it after).
+# NOTE: this deliberately takes Ctrl-f from forward-char, which in emacs mode is
+# also "accept one char of the autosuggestion". Use →/Ctrl-e for that instead.
 _zs_widget() { zle push-line; BUFFER='zs'; zle accept-line; }
 zle -N _zs_widget
 bindkey '^F' _zs_widget
