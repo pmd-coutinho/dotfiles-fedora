@@ -7,4 +7,5 @@ import Quickshell
 Singleton {
     property var trayMenu: null
     property var audioMenu: null
+    property var screenToolsMenu: null
 }

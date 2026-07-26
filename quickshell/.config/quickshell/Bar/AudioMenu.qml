@@ -3,24 +3,16 @@ pragma ComponentBehavior: Bound
 // pavucontrol. Fully native: Pipewire.preferredDefaultAudioSink is writable, so
 // this is a property assignment, not a `wpctl set-default` shell-out.
 //
-// Same shape as TrayMenu.qml and for the same reasons: ONE global window that
-// moves to the clicked widget's screen on open (a per-bar window nested in the
-// Variants delegate ends up mapped on the wrong output), with a transparent
-// scrim below the bar to catch outside clicks.
+// Window placement, the dismiss scrim and the menu box come from MenuWindow.qml.
 import QtQuick
-import Quickshell
-import Quickshell.Wayland
 import Quickshell.Services.Pipewire
 import qs.Services
 import qs.Theme
 
-PanelWindow {
+MenuWindow {
     id: menuWin
 
-    property var anchorSlot: null
-    property real menuX: 0
-
-    readonly property int boxWidth: 320
+    boxWidth: 320
 
     // Real devices only: `isStream` excludes per-application playback/record
     // streams, and requiring `audio` drops the webcam (a non-audio Source).
@@ -35,25 +27,8 @@ PanelWindow {
         .filter(n => n.audio && !n.isSink && !n.isStream)
         .sort((a, b) => label(a).localeCompare(label(b)))
 
-    function openFor(item, scr) {
-        // clicking the same widget again closes the menu
-        if (visible && anchorSlot === item) {
-            close();
-            return;
-        }
-        // card profiles come from pactl, so only pay for them when opening
-        AudioCards.refresh();
-        screen = scr;
-        const centerX = Theme.barMarginSide + item.mapToItem(null, item.width / 2, 0).x;
-        menuX = Math.min(Math.max(8, centerX - boxWidth / 2), scr.width - boxWidth - 8);
-        anchorSlot = item;
-        visible = true;
-    }
-
-    function close() {
-        visible = false;
-        anchorSlot = null;
-    }
+    // card profiles come from pactl, so only pay for them when opening
+    onAboutToOpen: AudioCards.refresh()
 
     function label(node) {
         return node.description !== "" ? node.description
@@ -61,27 +36,10 @@ PanelWindow {
             : node.name;
     }
 
-    visible: false
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
-    }
-    // scrim starts below the bar, so the bar stays interactive while open
-    exclusionMode: ExclusionMode.Normal
-    WlrLayershell.layer: WlrLayer.Overlay
-    color: "transparent"
-
     // without this the listed nodes report empty descriptions and null audio —
     // pipewire object metadata is only bound while something tracks it
     PwObjectTracker {
         objects: menuWin.sinks.concat(menuWin.sources)
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: menuWin.close()
     }
 
     component DeviceRow: Rectangle {
@@ -151,117 +109,99 @@ PanelWindow {
         color: Theme.mauve
     }
 
-    Rectangle {
-        x: menuWin.menuX
-        y: 4
-        width: menuWin.boxWidth
-        height: list.implicitHeight + 12
-        radius: Theme.islandRadius
-        color: Theme.alpha(Theme.mantle, 0.98)
-        border.width: 1
-        border.color: Theme.surface0
+
+    SectionHeader { text: "output" }
+
+    Repeater {
+        model: menuWin.sinks
+
+        DeviceRow {
+            required property var modelData
+            node: modelData
+            isDefault: Pipewire.defaultAudioSink === modelData
+            onPick: n => Pipewire.preferredDefaultAudioSink = n
+        }
+    }
+
+    SectionHeader { text: "input" }
+
+    Repeater {
+        model: menuWin.sources
+
+        DeviceRow {
+            required property var modelData
+            node: modelData
+            isDefault: Pipewire.defaultAudioSource === modelData
+            onPick: n => Pipewire.preferredDefaultAudioSource = n
+        }
+    }
+
+    // ── card profiles ──
+    // The lists above can only show sinks that EXIST, and a sink behind
+    // an inactive card profile doesn't. This is the escape hatch for
+    // "my speakers aren't in the list at all".
+    Repeater {
+        model: AudioCards.cards
 
         Column {
-            id: list
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: 6
+            id: cardEntry
 
-            SectionHeader { text: "output" }
+            required property var modelData
 
-            Repeater {
-                model: menuWin.sinks
+            width: parent.width
 
-                DeviceRow {
-                    required property var modelData
-                    node: modelData
-                    isDefault: Pipewire.defaultAudioSink === modelData
-                    onPick: n => Pipewire.preferredDefaultAudioSink = n
-                }
+            SectionHeader {
+                width: parent.width
+                elide: Text.ElideRight
+                text: "profile · " + cardEntry.modelData.description
             }
 
-            SectionHeader { text: "input" }
-
             Repeater {
-                model: menuWin.sources
+                model: cardEntry.modelData.profiles
 
-                DeviceRow {
-                    required property var modelData
-                    node: modelData
-                    isDefault: Pipewire.defaultAudioSource === modelData
-                    onPick: n => Pipewire.preferredDefaultAudioSource = n
-                }
-            }
-
-            // ── card profiles ──
-            // The lists above can only show sinks that EXIST, and a sink behind
-            // an inactive card profile doesn't. This is the escape hatch for
-            // "my speakers aren't in the list at all".
-            Repeater {
-                model: AudioCards.cards
-
-                Column {
-                    id: cardEntry
+                Rectangle {
+                    id: prow
 
                     required property var modelData
+                    // reached by id, not a parent.parent chain: the
+                    // delegate's parent is the Column, not this Repeater
+                    readonly property var card: cardEntry.modelData
+                    readonly property bool isActive: card.active === modelData.name
 
-                    width: parent.width
+                    width: cardEntry.width
+                    height: 26
+                    radius: Theme.radiusSmall
+                    color: parea.containsMouse ? Theme.surface0 : "transparent"
 
-                    SectionHeader {
-                        width: parent.width
-                        elide: Text.ElideRight
-                        text: "profile · " + cardEntry.modelData.description
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: 8
+                        width: 16
+                        text: prow.isActive ? Icons.checked : Icons.unchecked
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSmall
+                        color: prow.isActive ? Theme.mauve : Theme.overlay0
                     }
 
-                    Repeater {
-                        model: cardEntry.modelData.profiles
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: 30
+                        width: parent.width - 38
+                        elide: Text.ElideRight
+                        text: menuWin.profileLabel(prow.modelData.name)
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontSmall
+                        font.weight: prow.isActive ? Font.Bold : Font.Normal
+                        color: prow.isActive ? Theme.text : Theme.subtext0
+                    }
 
-                        Rectangle {
-                            id: prow
-
-                            required property var modelData
-                            // reached by id, not a parent.parent chain: the
-                            // delegate's parent is the Column, not this Repeater
-                            readonly property var card: cardEntry.modelData
-                            readonly property bool isActive: card.active === modelData.name
-
-                            width: cardEntry.width
-                            height: 26
-                            radius: Theme.radiusSmall
-                            color: parea.containsMouse ? Theme.surface0 : "transparent"
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                x: 8
-                                width: 16
-                                text: prow.isActive ? Icons.checked : Icons.unchecked
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSmall
-                                color: prow.isActive ? Theme.mauve : Theme.overlay0
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                x: 30
-                                width: parent.width - 38
-                                elide: Text.ElideRight
-                                text: menuWin.profileLabel(prow.modelData.name)
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSmall
-                                font.weight: prow.isActive ? Font.Bold : Font.Normal
-                                color: prow.isActive ? Theme.text : Theme.subtext0
-                            }
-
-                            MouseArea {
-                                id: parea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: {
-                                    AudioCards.setProfile(prow.card.name, prow.modelData.name);
-                                    menuWin.close();
-                                }
-                            }
+                    MouseArea {
+                        id: parea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            AudioCards.setProfile(prow.card.name, prow.modelData.name);
+                            menuWin.close();
                         }
                     }
                 }

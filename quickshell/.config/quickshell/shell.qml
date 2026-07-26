@@ -37,9 +37,15 @@ ShellRoot {
         id: audioMenu
     }
 
+    // screenshot / record / OCR / colour / QR, ditto
+    ScreenToolsMenu {
+        id: screenToolsMenu
+    }
+
     Component.onCompleted: {
         Bus.trayMenu = trayMenu;
         Bus.audioMenu = audioMenu;
+        Bus.screenToolsMenu = screenToolsMenu;
     }
 
     // the session locker (idle, before-sleep and Super+Alt+L all route here

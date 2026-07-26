@@ -1,63 +1,37 @@
 pragma ComponentBehavior: Bound
-// QML-rendered tray context menu — platform menus under Qt come up unthemed
-// and mispositioned on niri. ONE global window that jumps to the clicked
-// icon's screen on open (a persistent per-bar window nested in the Variants
-// delegate mapped on the wrong output). The transparent overlay below the
-// bar catches outside clicks to dismiss; submenus navigate with a back row.
+// QML-rendered tray context menu — platform menus under Qt come up unthemed and
+// mispositioned on niri, so the entries are drawn here from the item's DBus menu
+// and submenus navigate with a back row.
+//
+// Window placement, the dismiss scrim and the menu box come from MenuWindow.qml.
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Theme
 
-PanelWindow {
+MenuWindow {
     id: menuWin
 
     property var rootHandle: null
-    property var anchorSlot: null
     // submenu navigation stack of QsMenuEntry handles
     property var stack: []
-    property real menuX: 0
 
-    function openFor(item, handle, scr) {
-        // clicking the same tray icon again closes the menu
-        if (visible && anchorSlot === item) {
-            close();
-            return;
-        }
-        screen = scr;
-        const centerX = Theme.barMarginSide + item.mapToItem(null, item.width / 2, 0).x;
-        menuX = Math.min(Math.max(8, centerX - 120), scr.width - 248);
-        anchorSlot = item;
+    boxWidth: 240
+
+    // Not called openFor: that would shadow MenuWindow's and recurse. Callers
+    // use this, which records the handle and delegates placement to the base.
+    function openMenu(item, handle, scr) {
         rootHandle = handle;
         stack = [];
-        visible = true;
+        openFor(item, scr);
     }
 
-    function close() {
-        visible = false;
-        anchorSlot = null;
-        rootHandle = null;
-        stack = [];
-    }
-
-    visible: false
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
-    }
-    // respect the bar's exclusive zone: the scrim starts below the bar, so
-    // the bar itself stays interactive while a menu is open
-    exclusionMode: ExclusionMode.Normal
-    WlrLayershell.layer: WlrLayer.Overlay
-    color: "transparent"
-
-    // click anywhere outside the menu box dismisses it
-    MouseArea {
-        anchors.fill: parent
-        onClicked: menuWin.close()
+    // dropping the handle on close matters — it holds the app's DBus menu open
+    onVisibleChanged: {
+        if (!visible) {
+            rootHandle = null;
+            stack = [];
+        }
     }
 
     QsMenuOpener {
@@ -65,130 +39,111 @@ PanelWindow {
         menu: menuWin.stack.length > 0 ? menuWin.stack[menuWin.stack.length - 1] : menuWin.rootHandle
     }
 
+
+    // back row while inside a submenu
     Rectangle {
-        id: box
-        x: menuWin.menuX
-        y: 4
-        width: 240
-        height: list.implicitHeight + 12
-        radius: Theme.islandRadius
-        color: Theme.alpha(Theme.mantle, 0.98)
-        border.width: 1
-        border.color: Theme.surface0
+        visible: menuWin.stack.length > 0
+        width: parent.width
+        height: 28
+        radius: Theme.radiusSmall
+        color: backArea.containsMouse ? Theme.surface0 : "transparent"
 
-        Column {
-            id: list
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: 6
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            x: 8
+            text: "󰅁 back"
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontLabel
+            color: Theme.subtext0
+        }
+        MouseArea {
+            id: backArea
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: menuWin.stack = menuWin.stack.slice(0, -1)
+        }
+    }
 
-            // back row while inside a submenu
+    Repeater {
+        model: opener.children
+
+        Rectangle {
+            id: row
+
+            required property var modelData
+            readonly property bool isSep: modelData.isSeparator
+
+            width: parent.width
+            height: isSep ? 9 : 28
+            radius: Theme.radiusSmall
+            color: !isSep && rowArea.containsMouse && modelData.enabled
+                ? Theme.surface0 : "transparent"
+
             Rectangle {
-                visible: menuWin.stack.length > 0
-                width: parent.width
-                height: 28
-                radius: Theme.radiusSmall
-                color: backArea.containsMouse ? Theme.surface0 : "transparent"
+                visible: row.isSep
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - 16
+                x: 8
+                height: 1
+                color: Theme.surface0
+            }
+
+            Row {
+                visible: !row.isSep
+                anchors.verticalCenter: parent.verticalCenter
+                x: 8
+                spacing: Theme.spacingSm
+
+                Text {
+                    visible: row.modelData.buttonType !== 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: row.modelData.checkState === Qt.Checked ? Icons.checked : Icons.unchecked
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fontLabel
+                    color: row.modelData.checkState === Qt.Checked ? Theme.mauve : Theme.overlay0
+                }
+
+                IconImage {
+                    visible: row.modelData.icon !== ""
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 14
+                    height: 14
+                    source: row.modelData.icon
+                }
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    x: 8
-                    text: "󰅁 back"
+                    text: row.modelData.text
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontLabel
-                    color: Theme.subtext0
-                }
-                MouseArea {
-                    id: backArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: menuWin.stack = menuWin.stack.slice(0, -1)
+                    color: row.modelData.enabled ? Theme.text : Theme.overlay0
                 }
             }
 
-            Repeater {
-                model: opener.children
+            Text {
+                visible: !row.isSep && row.modelData.hasChildren
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                text: "󰅂"
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontLabel
+                color: Theme.overlay0
+            }
 
-                Rectangle {
-                    id: row
-
-                    required property var modelData
-                    readonly property bool isSep: modelData.isSeparator
-
-                    width: parent.width
-                    height: isSep ? 9 : 28
-                    radius: Theme.radiusSmall
-                    color: !isSep && rowArea.containsMouse && modelData.enabled
-                        ? Theme.surface0 : "transparent"
-
-                    Rectangle {
-                        visible: row.isSep
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 16
-                        x: 8
-                        height: 1
-                        color: Theme.surface0
-                    }
-
-                    Row {
-                        visible: !row.isSep
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: 8
-                        spacing: Theme.spacingSm
-
-                        Text {
-                            visible: row.modelData.buttonType !== 0
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: row.modelData.checkState === Qt.Checked ? Icons.checked : Icons.unchecked
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontLabel
-                            color: row.modelData.checkState === Qt.Checked ? Theme.mauve : Theme.overlay0
-                        }
-
-                        IconImage {
-                            visible: row.modelData.icon !== ""
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 14
-                            height: 14
-                            source: row.modelData.icon
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: row.modelData.text
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontLabel
-                            color: row.modelData.enabled ? Theme.text : Theme.overlay0
-                        }
-                    }
-
-                    Text {
-                        visible: !row.isSep && row.modelData.hasChildren
-                        anchors.right: parent.right
-                        anchors.rightMargin: 8
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "󰅂"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontLabel
-                        color: Theme.overlay0
-                    }
-
-                    MouseArea {
-                        id: rowArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        enabled: !row.isSep
-                        onClicked: {
-                            if (!row.modelData.enabled)
-                                return;
-                            if (row.modelData.hasChildren) {
-                                menuWin.stack = menuWin.stack.concat([row.modelData]);
-                            } else {
-                                row.modelData.triggered();
-                                menuWin.close();
-                            }
-                        }
+            MouseArea {
+                id: rowArea
+                anchors.fill: parent
+                hoverEnabled: true
+                enabled: !row.isSep
+                onClicked: {
+                    if (!row.modelData.enabled)
+                        return;
+                    if (row.modelData.hasChildren) {
+                        menuWin.stack = menuWin.stack.concat([row.modelData]);
+                    } else {
+                        row.modelData.triggered();
+                        menuWin.close();
                     }
                 }
             }

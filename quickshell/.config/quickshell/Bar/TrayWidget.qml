@@ -42,7 +42,7 @@ Row {
                 onClicked: mouse => {
                     if (mouse.button === Qt.RightButton || slot.modelData.onlyMenu) {
                         if (slot.modelData.hasMenu)
-                            Bus.trayMenu?.openFor(slot, slot.modelData.menu, root.bar.screen);
+                            Bus.trayMenu?.openMenu(slot, slot.modelData.menu, root.bar.screen);
                     } else if (mouse.button === Qt.LeftButton) {
                         slot.modelData.activate();
                     } else {

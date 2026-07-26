@@ -135,6 +135,7 @@ Scope {
 
                     RecordingWidget { bar: panel }
                     MicWidget { bar: panel }
+                    ScreenToolsWidget { bar: panel }
                     MediaWidget {
                         id: media
                         bar: panel
