@@ -45,10 +45,16 @@ if [ -s "$pidfile" ]; then
     fi
     rm -f "$pidfile"
     shell_ipc stopped
-    if [ -n "$recfile" ]; then
-        notify "Recording saved" "$(basename "$recfile")"
+    # Don't claim success blindly: wf-recorder only writes frames when the
+    # captured region CHANGES, so recording something static produces no file at
+    # all. Saying "saved" and leaving nothing behind is the worst outcome.
+    if [ -n "$recfile" ] && [ -s "$recfile" ]; then
+        notify "Recording saved" "$(basename "$recfile")  ($(du -h "$recfile" | cut -f1))"
+    elif [ -n "$recfile" ]; then
+        rm -f "$recfile"
+        notify "Recording produced nothing" "nothing on screen changed in that region"
     else
-        notify "Recording saved" "check $outdir"
+        notify "Recording stopped" "check $outdir"
     fi
     exit 0
 fi
@@ -83,10 +89,26 @@ file="$outdir/$(date +%Y-%m-%d_%H-%M-%S).mp4"
 audio=""
 [ "${1:-}" = "-a" ] && audio="--audio"
 
+# Codec, for wf-recorder only (wl-screenrec picks its own).
+#
+# Fedora ships ffmpeg-free, which has NO libx264 — wf-recorder's default lands
+# on VP9, and VP9 inside .mp4 is legal but awkward to share. h264_nvenc encodes
+# on the RTX 4080 for near-zero CPU, with libopenh264 as the software fallback
+# (much smaller files at the default bitrate, but it works anywhere).
+codec=""
+if [ "$(basename "$recorder")" = "wf-recorder" ] && command -v ffmpeg >/dev/null 2>&1; then
+    encoders=$(ffmpeg -hide_banner -encoders 2>/dev/null)
+    if grep -q ' h264_nvenc' <<< "$encoders"; then
+        codec="h264_nvenc"
+    elif grep -q ' libopenh264' <<< "$encoders"; then
+        codec="libopenh264"
+    fi
+fi
+
 # setsid so the recorder outlives this shell, and so the pid we store is the
 # encoder itself (not a wrapper) for the SIGINT above to reach
-# shellcheck disable=SC2086  # $audio is a deliberate single optional flag
-setsid -f "$recorder" -g "$geom" -f "$file" $audio >/dev/null 2>&1
+# shellcheck disable=SC2086  # $audio/$codec are deliberate optional flags
+setsid -f "$recorder" -g "$geom" -f "$file" ${codec:+-c "$codec"} $audio >/dev/null 2>&1
 
 # setsid -f detaches, so find the pid by matching the output file we just chose
 sleep 0.4

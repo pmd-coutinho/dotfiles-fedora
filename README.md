@@ -110,9 +110,10 @@ Interactive: `Print`→satty, `Mod+E`/`Mod+Slash` walker pickers, tuigreet + F12
 
 ## TODO
 
-- **Screen toolkit is untested end-to-end** — `screen-record`, `screen-ocr`,
-  `color-pick` and `qr-scan` are written and their dependency guards work, but
-  they need `wl-screenrec`/`tesseract`/`zbar` installed before a real run.
+- **Screen toolkit**: recording (wf-recorder → h264_nvenc), OCR (eng+por,
+  accents intact) and the colour picker are verified. **QR decode is not** —
+  `zbarimg` runs and its no-code-found path is handled, but no QR was ever
+  decoded here. Point `Mod+Shift+Q` at a real code once to close this out.
 - **qmllint in `hooks/pre-commit` is advisory** (it reports, never blocks).
   quickshell synthesizes the `qs.*` modules at runtime so imports can't resolve;
   the categories downstream of that are disabled. Consider making it blocking
