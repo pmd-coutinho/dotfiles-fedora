@@ -1,8 +1,11 @@
 pragma ComponentBehavior: Bound
-// Popup toasts — top-right of the FOCUSED output on the overlay layer, like the
-// old swaync notification window. (These used to be pinned to a hardcoded
-// "eDP-1", which is both a connector name in a portable dotfiles repo and a
-// guarantee you miss toasts while working on another monitor.)
+// Popup toasts — top-right, on the overlay layer, like the old swaync window.
+//
+// Pinned to ONE output on purpose: toasts that follow focus move around while
+// you work, and glancing at a fixed corner is easier than hunting for them.
+// Falls back to the focused output when that monitor isn't connected, so
+// undocking doesn't silently swallow every notification — which is what a bare
+// hardcoded connector name would do.
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -10,8 +13,14 @@ import qs.Services
 import qs.Theme
 
 Scope {
+    id: root
+
+    // connector name; `niri msg outputs` lists them
+    readonly property string preferredOutput: "eDP-1"
+
     PanelWindow {
-        screen: Niri.focusedScreen
+        screen: Quickshell.screens.find(s => s.name === root.preferredOutput)
+            ?? Niri.focusedScreen
         visible: Notifs.popups.length > 0
 
         anchors {

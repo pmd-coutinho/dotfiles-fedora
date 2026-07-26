@@ -6,9 +6,18 @@
 # One pidfile in $XDG_RUNTIME_DIR is the whole state machine, so the same
 # keybind toggles.
 #
-# Recorder: wl-screenrec (VAAPI-encoded, cheap on CPU) with wf-recorder as the
-# fallback. Both finalise the container on SIGINT — SIGKILL leaves a corrupt
-# file, so never kill -9 this.
+# Recorder: wf-recorder first, wl-screenrec second. That order is deliberate and
+# machine-specific — wl-screenrec is the better tool (GPU-encoded, cheap on CPU)
+# but it ALWAYS builds a VAAPI filter chain, even with --no-hw, and VAAPI encode
+# is unavailable on this laptop:
+#   * libva can't auto-select a driver at all
+#   * LIBVA_DRIVER_NAME=iHD connects to the Intel iGPU but reports
+#     "No usable encoding profile found"
+#   * the NVIDIA render node isn't supported by iHD
+# so every wl-screenrec run dies in Parsed_scale_vaapi. wf-recorder encodes with
+# software x264 through ffmpeg and works. Set SCREENREC_BIN to force one.
+# Both finalise the container on SIGINT — SIGKILL leaves a corrupt file, so
+# never kill -9 this.
 #
 # Tells quickshell so the bar can show a recording indicator; the ipc call is
 # best-effort so the script still works with the shell stopped.
@@ -47,12 +56,14 @@ fi
 # ── start a new one ───────────────────────────────────────────────────────
 command -v slurp >/dev/null 2>&1 || { notify "screen-record" "slurp is not installed"; exit 1; }
 
-if command -v wl-screenrec >/dev/null 2>&1; then
-    recorder=wl-screenrec
+if [ -n "${SCREENREC_BIN:-}" ]; then
+    recorder="$SCREENREC_BIN"
 elif command -v wf-recorder >/dev/null 2>&1; then
     recorder=wf-recorder
+elif command -v wl-screenrec >/dev/null 2>&1; then
+    recorder=wl-screenrec
 else
-    notify "screen-record" "install wl-screenrec (or wf-recorder)"
+    notify "screen-record" "install wf-recorder"
     exit 1
 fi
 

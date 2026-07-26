@@ -48,7 +48,7 @@ sudo dnf -y install \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
   cups printer-driver-brlaser \
   wtype ffmpeg \
-  wl-screenrec tesseract tesseract-langpack-eng tesseract-langpack-por zbar ImageMagick \
+  wf-recorder tesseract tesseract-langpack-eng tesseract-langpack-por zbar ImageMagick \
   gnome-keyring tuned tuned-ppd \
   greetd tuigreet \
   kernel-cachyos kernel-cachyos-devel-matched
@@ -118,7 +118,7 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin autostart bin btop dictation environment gh-dash ghostty git gtk \
+for pkg in alacritty atuin autostart bin btop dictation elephant environment gh-dash ghostty git gtk \
            jj lazygit mise niri nvim quickshell satty starship systemd walker yazi zellij zsh; do
     # capture instead of piping straight to grep: `stow | grep -i conflict` threw
     # away every failure whose wording wasn't "conflict", so real errors passed
