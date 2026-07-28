@@ -10,6 +10,9 @@ import qs.Theme
 Rectangle {
     id: card
 
+    // The server destroys a notification the moment it closes, so every read
+    // below is null-tolerant: bindings get one last evaluation before the
+    // delegate holding them is torn down.
     required property var notif
     // popups auto-hide on a timer; panel cards persist
     property bool isPopup: false
@@ -21,7 +24,7 @@ Rectangle {
     radius: Theme.islandRadius
     color: Theme.alpha(Theme.base, 0.98)
     border.width: 1
-    border.color: notif.urgency === NotificationUrgency.Critical ? Theme.red : Theme.surface0
+    border.color: notif?.urgency === NotificationUrgency.Critical ? Theme.red : Theme.surface0
 
     MouseArea {
         anchors.fill: parent
@@ -52,8 +55,8 @@ Rectangle {
                 height: 40
                 anchors.verticalCenter: parent.verticalCenter
                 visible: source.toString() !== ""
-                source: card.notif.image !== "" ? card.notif.image
-                      : card.notif.appIcon !== "" ? Quickshell.iconPath(card.notif.appIcon, true)
+                source: (card.notif?.image ?? "") !== "" ? card.notif.image
+                      : (card.notif?.appIcon ?? "") !== "" ? Quickshell.iconPath(card.notif.appIcon, true)
                       : ""
             }
 
@@ -67,7 +70,7 @@ Rectangle {
 
                     Text {
                         width: parent.width - (countBadge.visible ? countBadge.width + 6 : 0)
-                        text: card.notif.summary
+                        text: card.notif?.summary ?? ""
                         elide: Text.ElideRight
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSize
@@ -98,7 +101,7 @@ Rectangle {
                 Text {
                     width: parent.width
                     visible: text !== ""
-                    text: card.notif.body
+                    text: card.notif?.body ?? ""
                     textFormat: Text.StyledText
                     wrapMode: Text.Wrap
                     maximumLineCount: 4
@@ -112,10 +115,10 @@ Rectangle {
                 // obviously "now", but history without times is hard to read
                 Text {
                     readonly property string at: card.isPopup ? "" : Notifs.timeOf(card.notif)
+                    readonly property string app: card.notif?.appName ?? ""
 
                     visible: text !== ""
-                    text: card.notif.appName
-                        + (at !== "" ? (card.notif.appName !== "" ? " · " : "") + at : "")
+                    text: app + (at !== "" ? (app !== "" ? " · " : "") + at : "")
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSmall
                     color: Theme.overlay0
@@ -133,7 +136,7 @@ Rectangle {
                     anchors.fill: parent
                     anchors.margins: -6
                     hoverEnabled: true
-                    onClicked: card.group ? Notifs.dismissGroup(card.group) : card.notif.dismiss()
+                    onClicked: card.group ? Notifs.dismissGroup(card.group) : card.notif?.dismiss()
                 }
             }
         }
@@ -145,7 +148,7 @@ Rectangle {
 
             Repeater {
                 id: actionRepeater
-                model: card.notif.actions.filter(a => a.identifier !== "default")
+                model: (card.notif?.actions ?? []).filter(a => a.identifier !== "default")
 
                 Rectangle {
                     id: actionBtn

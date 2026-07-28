@@ -28,13 +28,19 @@ Singleton {
     // server.trackedNotifications until dismissed/cleared)
     property var popups: []
 
-    readonly property int count: server.trackedNotifications.values.length
+    // History excludes transient notifications: they're toast-only, and while
+    // their toast is up they have to stay tracked (see dropIfTransient).
+    readonly property var history: server.trackedNotifications.values.filter(n => n && !n.transient)
+
+    readonly property int count: history.length
 
     // Timeout for a popup. A client may ask for a specific one via
     // expireTimeout (seconds; -1 means "you decide", 0 means "never expire") —
     // that used to be discarded in favour of the urgency ramp below. Critical
     // still overrides everything and sticks until acted on, matching swaync.
     function timeoutFor(notif) {
+        if (!notif)
+            return 0;
         if (notif.urgency === NotificationUrgency.Critical)
             return 0;
         const asked = notif.expireTimeout ?? -1;
@@ -57,6 +63,19 @@ Singleton {
 
     function hidePopup(notif) {
         popups = popups.filter(n => n !== notif);
+        dropIfTransient(notif);
+    }
+
+    // `transient` means "show it, don't keep it". That used to be implemented by
+    // untracking on arrival — but untracking destroys the notification, and the
+    // toast was still holding the dead object: a blank card whose every binding
+    // read from null and whose close button called dismiss() on null, so it
+    // could never be cleared. Keep transient notifications tracked (alive)
+    // while their toast is up and drop them once it's gone; history filters
+    // them out in the meantime.
+    function dropIfTransient(notif) {
+        if (notif && notif.transient)
+            notif.dismiss();
     }
 
     // ── grouping: collapse same app + summary (e.g. consecutive Slack
@@ -65,6 +84,8 @@ Singleton {
         const groups = [];
         const idx = new Map();
         for (const n of arr) {
+            if (!n)
+                continue;
             const key = (n.desktopEntry !== "" ? n.desktopEntry : n.appName) + "|" + n.summary;
             if (idx.has(key)) {
                 const g = groups[idx.get(key)];
@@ -80,33 +101,41 @@ Singleton {
     }
 
     readonly property var popupGroups: groupList(popups)
-    readonly property var historyGroups: groupList(server.trackedNotifications.values.slice().reverse())
+    readonly property var historyGroups: groupList(history.slice().reverse())
 
     function hideGroupPopup(group) {
         popups = popups.filter(n => !group.notifs.includes(n));
+        for (const n of group.notifs)
+            dropIfTransient(n);
     }
 
     function dismissGroup(group) {
+        // drop the toast first, so the card always leaves the screen even if the
+        // notifications behind it are already gone
+        popups = popups.filter(n => !group.notifs.includes(n));
         for (const n of group.notifs.slice())
-            n.dismiss();
+            if (n)
+                n.dismiss();
     }
 
     function clearAll() {
         for (const n of server.trackedNotifications.values.slice())
-            n.dismiss();
+            if (n)
+                n.dismiss();
     }
 
     // click → invoke the default action (if any) and raise the source window
     function activate(notif, group) {
-        const def = notif.actions.find(a => a.identifier === "default") ?? null;
+        const def = notif ? notif.actions.find(a => a.identifier === "default") ?? null : null;
         if (def)
             def.invoke();
-        focusSource(notif);
+        if (notif)
+            focusSource(notif);
         if (group)
             hideGroupPopup(group);   // swaync hide-on-action
         else
             hidePopup(notif);
-        if (!def)
+        if (notif && !def)
             notif.dismiss();
     }
 
@@ -150,12 +179,15 @@ Singleton {
         persistenceSupported: true
 
         onNotification: notif => {
-            // `transient` means "show it, don't keep it" (progress bars, volume
-            // popups from other apps). Tracking those filled history with noise.
-            notif.tracked = !notif.transient;
+            // Track everything, transient included: an untracked notification is
+            // destroyed on the spot, and anything we hold a reference to has to
+            // outlive that reference. History filters transient out instead.
+            notif.tracked = true;
             root.seenAt.set(notif, new Date());
+            // Removal here is deliberately raw rather than hidePopup(): the
+            // notification is already closing, so there is nothing left to drop.
             notif.closed.connect(() => {
-                root.hidePopup(notif);
+                root.popups = root.popups.filter(n => n !== notif);
                 root.seenAt.delete(notif);
             });
             // DND hides popups, but a critical notification is exactly the kind
@@ -163,6 +195,8 @@ Singleton {
             // either way.
             if (!root.dnd || notif.urgency === NotificationUrgency.Critical)
                 root.popups = root.popups.concat([notif]);
+            else
+                root.dropIfTransient(notif);   // suppressed and not kept: gone
         }
     }
 }
