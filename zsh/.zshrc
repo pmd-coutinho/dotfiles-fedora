@@ -398,6 +398,22 @@ export MANROFFOPT="-c"
 path=(~/.local/bin ~/.dotnet/tools $path)
 export PATH
 
+# ── CUDA ──────────────────────────────────────────────────────────────
+# The cuda-toolkit rpms drop everything under /usr/local/cuda but never touch
+# PATH, so nvcc looks "missing" despite being installed. Libraries are already
+# handled by /etc/ld.so.conf.d/000_cuda.conf — PATH is the only gap.
+if [[ -d /usr/local/cuda/bin ]]; then
+    path=(/usr/local/cuda/bin $path)
+    export PATH
+    # nvcc 13.2 refuses gcc >= 16, and it's not mere caution: forcing it with
+    # -allow-unsupported-compiler dies inside libstdc++ 16's <type_traits>.
+    # gcc15/gcc15-c++ is the Fedora compat package providing this.
+    if [[ -x /usr/bin/g++-15 ]]; then
+        export NVCC_PREPEND_FLAGS='-ccbin /usr/bin/g++-15'
+        export CUDAHOSTCXX=/usr/bin/g++-15   # CMake reads this, not the above
+    fi
+fi
+
 # ── Editor ────────────────────────────────────────────────────────────
 # nvim when present (full LazyVim setup), nano as the safe fallback.
 if command -v nvim >/dev/null; then export EDITOR=nvim VISUAL=nvim; else export EDITOR=nano; fi
