@@ -180,6 +180,9 @@ step "Enabling services"
 sudo systemctl enable --now tuned bluetooth nvidia-powerd 2>/dev/null || true
 # mask the nvidia-settings autostart that fails under niri.
 systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/null || true
+# mask the JetBrains Toolbox autostart — the updater idles at ~500MB just to
+# poll for IDE updates; launch it by hand when you actually need to update.
+systemctl --user mask 'app-jetbrains\x2dtoolbox@autostart.service' 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
 # keep the analog card profile matching the headphone jack (see the unit)
 systemctl --user enable --now audio-jack-profile.service 2>/dev/null || true
