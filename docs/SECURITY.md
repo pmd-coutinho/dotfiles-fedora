@@ -16,18 +16,20 @@ This repo is **public**. Audit summary and the security-relevant design choices.
 - `bootstrap.sh` installs `mise` via `curl https://mise.run | sh` (unpinned
   remote code). Accepted for a personal bootstrap; pin+verify if that changes.
 
-## KeePassXC lookup (`bin/.local/bin/kp-walker`)
+## KeePassXC lookup (`bin/.local/bin/kp-fuzzel`)
 
-- Master password is read via `walker --password` and fed to `keepassxc-cli`
-  over **stdin** (never argv).
+- Master password is read via `fuzzel --dmenu --password` and fed to
+  `keepassxc-cli` over **stdin** (never argv).
 - **Type** actions pipe the secret to `wtype` via **stdin** (`wtype -`), not as
   an argument — so it never appears in `/proc/<pid>/cmdline`.
 - **Copy** actions use `wl-copy --sensitive` (sets the password-manager hint so
   compliant clipboard-history managers skip storing it) and auto-clear the live
-  clipboard after 45s. **Verified (2026-06-18)**: elephant-clipboard (the walker
-  `Mod+Shift+S` history) honors the hint — a `--sensitive` copy does not land in
-  history, while normal copies do. So passwords copied via kp-walker stay out of
-  clipboard history.
+  clipboard after 45s. **Verified (2026-08-12)**: cliphist (the `Mod+Shift+S`
+  history, via the `wl-paste --watch cliphist store` niri spawns) honors the
+  hint — a `--sensitive` copy does not land in history, while normal copies do.
+  So passwords copied via kp-fuzzel stay out of clipboard history. (The same was
+  verified for elephant-clipboard on 2026-06-18, back when walker owned the
+  history.)
 
 ## Vault sync (`rclone-vault-sync.service`)
 

@@ -13,11 +13,9 @@ ZSWAP_ARGS="zswap.enabled=1 zswap.compressor=zstd zswap.zpool=zsmalloc zswap.max
 step "Enabling CachyOS kernel COPR"
 dnf -y copr enable bieszczaders/kernel-cachyos || { warn "COPR enable failed"; exit 1; }
 
-step "Installing satty, elephant-files, and the CachyOS kernel (GCC, not -lto)"
-dnf -y install satty elephant-files kernel-cachyos kernel-cachyos-devel-matched \
+step "Installing satty and the CachyOS kernel (GCC, not -lto)"
+dnf -y install satty kernel-cachyos kernel-cachyos-devel-matched \
     || { warn "package install failed"; exit 1; }
-step "Removing useless elephant-archlinuxpkgs"
-dnf -y remove elephant-archlinuxpkgs 2>/dev/null || true
 
 # ── 2. Swap → disk swapfile + zswap (replace zram) ────────────────────
 step "Disabling zram"

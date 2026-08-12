@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# kp-walker — KeePassXC lookup via Walker (--dmenu / --password) for niri/Wayland.
+# kp-fuzzel — KeePassXC lookup via fuzzel (--dmenu / --password) for niri/Wayland.
 # Prompts for the master password, lists entries, then copies/types the chosen field.
 #
 # Env overrides:
@@ -11,7 +11,7 @@ DB="${KP_DB:-$HOME/vault/Passwords.kdbx}"
 KEYFILE="${KP_KEYFILE:-}"
 
 if [[ ! -f "$DB" ]]; then
-  notify-send "kp-walker" "Database not found: $DB" 2>/dev/null || true
+  notify-send "kp-fuzzel" "Database not found: $DB" 2>/dev/null || true
   exit 1
 fi
 
@@ -22,19 +22,20 @@ cli=("$DB")
 # Helper: run keepassxc-cli feeding the master password on stdin
 kp() { printf '%s\n' "$PW" | keepassxc-cli "$@" 2>/dev/null; }
 
-# 1. Master password (masked input)
-PW="$(walker --password --placeholder "Unlock $(basename "$DB")")" || exit 0
+# 1. Master password (masked input). fuzzel --dmenu with empty stdin returns the
+# typed text on Enter; --password masks it as it's typed.
+PW="$(: | fuzzel --dmenu --password --prompt "Unlock " --placeholder "$(basename "$DB")")" || exit 0
 [[ -z "$PW" ]] && exit 0
 
 # 2. List entries recursively as full paths, drop group lines (trailing /)
 mapfile -t entries < <(kp ls -R -f "${cli[@]}" | grep -v '/$' || true)
 if [[ ${#entries[@]} -eq 0 ]]; then
-  notify-send "kp-walker" "No entries (wrong password or empty DB?)" 2>/dev/null || true
+  notify-send "kp-fuzzel" "No entries (wrong password or empty DB?)" 2>/dev/null || true
   exit 1
 fi
 
 # 3. Pick an entry
-sel="$(printf '%s\n' "${entries[@]}" | walker --dmenu --placeholder "Entry")" || exit 0
+sel="$(printf '%s\n' "${entries[@]}" | fuzzel --dmenu --prompt 'entry ' --placeholder "Entry")" || exit 0
 [[ -z "$sel" ]] && exit 0
 
 # 4. Pick an action
@@ -44,7 +45,7 @@ action="$(printf '%s\n' \
   "TOTP → copy" \
   "Password → type" \
   "Username → type" \
-  | walker --dmenu --placeholder "Action for: $sel")" || exit 0
+  | fuzzel --dmenu --prompt 'action ' --placeholder "Action for: $sel")" || exit 0
 [[ -z "$action" ]] && exit 0
 
 # Copy stdin to the clipboard, then auto-clear after 45s in a detached process

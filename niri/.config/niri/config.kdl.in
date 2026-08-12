@@ -101,8 +101,13 @@ spawn-at-startup "nm-applet"
 // blueman-applet is a supervised user unit (blueman-applet.service), not a bare
 // spawn — an unsupervised applet that dies takes the bluetooth tray icon with it
 // and nothing brings it back.
-// walker launcher daemon (elephant backend runs as a user service)
-spawn-at-startup "walker" "--gapplication-service"
+// Launcher + pickers are fuzzel (Mod+D / Mod+E / Mod+Slash / Mod+Shift+S,
+// see binds). fuzzel cold-starts fast enough that no warm daemon is needed —
+// nothing to spawn here. Clipboard history is cliphist, fed by these two
+// watchers (text + images); passwords copied via kp-fuzzel use wl-copy
+// --sensitive, which cliphist skips.
+spawn-sh-at-startup "wl-paste --type text  --watch cliphist store"
+spawn-sh-at-startup "wl-paste --type image --watch cliphist store"
 
 // Auto-start apps (window rules route + maximize each on its workspace).
 spawn-at-startup "firefox"
@@ -145,7 +150,7 @@ workspace "10-obsidian" { open-on-output "Huawei Technologies Co., Inc. HUAWEI A
 
 // ── Window rules ──────────────────────────────────────────────────────
 // Rounded corners everywhere, matching the 12px radius used across
-// waybar/swaync/walker.
+// quickshell/fuzzel.
 window-rule {
     geometry-corner-radius 12
     clip-to-geometry true
@@ -189,18 +194,20 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     Mod+T hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
-    Mod+D hotkey-overlay-title="Run an Application: walker" { spawn "walker"; }
+    Mod+D hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen" { spawn-sh "qs ipc call lock lock"; }
     Mod+Shift+N hotkey-overlay-title="Notification Center" { spawn "qs" "ipc" "call" "notifs" "toggle"; }
-    Mod+Shift+S hotkey-overlay-title="Clipboard History (text + images)" { spawn "walker" "-m" "clipboard"; }
-    Mod+E hotkey-overlay-title="Emoji / symbol picker" { spawn "walker" "-m" "symbols"; }
-    Mod+Slash hotkey-overlay-title="File search" { spawn "walker" "-m" "files"; }
-    Mod+P hotkey-overlay-title="KeePassXC lookup (copy/type password, user, TOTP)" { spawn-sh "~/.local/bin/kp-walker"; }
+    Mod+Shift+S hotkey-overlay-title="Clipboard History (text + images)" { spawn-sh "~/.local/bin/fz-clipboard"; }
+    Mod+E hotkey-overlay-title="Emoji / symbol picker" { spawn-sh "~/.local/bin/fz-emoji"; }
+    Mod+Slash hotkey-overlay-title="File search" { spawn-sh "~/.local/bin/fz-files"; }
+    Mod+P hotkey-overlay-title="KeePassXC lookup (copy/type password, user, TOTP)" { spawn-sh "~/.local/bin/kp-fuzzel"; }
+    Mod+Ctrl+Equal hotkey-overlay-title="Calculator (qalc → clipboard)" { spawn-sh "~/.local/bin/fz-calc"; }
     // Voxide (~/dev/dictation-app): --trigger taps the already-running instance
     // over its $XDG_RUNTIME_DIR socket. Swap the path for bare "voxide" once installed.
     Mod+Shift+D hotkey-overlay-title="Dictation: Voxide toggle" { spawn-sh "~/dev/dictation-app/src-tauri/target/release/voxide --trigger dictate"; }
     Mod+Shift+Escape hotkey-overlay-title="Dictation: Voxide cancel" { spawn-sh "~/dev/dictation-app/src-tauri/target/release/voxide --trigger cancel"; }
     Mod+Alt+D hotkey-overlay-title="Dictation: toggle, verbatim (types the spoken language, e.g. Portuguese)" { spawn-sh "~/.local/share/dictation/dictate.sh transcribe"; }
+    Mod+Ctrl+D hotkey-overlay-title="Dictation: Handy toggle" { spawn-sh "handy --toggle-transcription"; }
 
     Super+Alt+S allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
 

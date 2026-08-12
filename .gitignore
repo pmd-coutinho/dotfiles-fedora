@@ -10,7 +10,7 @@ vscode/.config/Code/User/settings.json
 bin/.local/bin/*
 !bin/.local/bin/audio-jack-profile
 !bin/.local/bin/color-pick
-!bin/.local/bin/kp-walker
+!bin/.local/bin/kp-fuzzel
 !bin/.local/bin/niri-vivaldi-private-watch
 !bin/.local/bin/qr-scan
 !bin/.local/bin/screen-ocr

@@ -20,4 +20,4 @@ else
 fi
 echo "Launching Toolbox — in its window, install Rider. It self-registers a .desktop entry."
 setsid "$DEST/jetbrains-toolbox" >/dev/null 2>&1 &
-echo "Done. Rider will appear in walker once Toolbox finishes installing it."
+echo "Done. Rider will appear in fuzzel once Toolbox finishes installing it."

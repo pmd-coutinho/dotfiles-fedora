@@ -18,7 +18,7 @@ sudo dnf -y install \
   "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || true
 for c in scottames/ghostty atim/starship \
-         errornointernet/walker errornointernet/packages errornointernet/quickshell \
+         errornointernet/packages errornointernet/quickshell \
          bieszczaders/kernel-cachyos \
          ifas/zellij; do   # ifas tracks latest (0.44.3); varlad's COPR stalled at 0.42.2
     sudo dnf -y copr enable "$c"
@@ -37,12 +37,8 @@ sudo dnf -y install \
   yazi jujutsu \
   starship atuin zoxide stow zellij mosh \
   swayidle wlsunset \
-  walker elephant elephant-calc elephant-files elephant-clipboard \
-  elephant-symbols elephant-unicode elephant-websearch elephant-runner \
-  elephant-desktopapplications elephant-menus elephant-nirisessions \
-  elephant-providerlist elephant-bluetooth elephant-bookmarks \
-  elephant-snippets elephant-todo elephant-windows elephant-1password \
   keepassxc rclone \
+  fuzzel qalculate \
   satty grim slurp wl-clipboard cliphist \
   papirus-icon-theme adw-gtk3-theme jetbrains-mono-fonts \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
@@ -118,8 +114,8 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
-for pkg in alacritty atuin autostart bin btop dictation elephant environment gh-dash ghostty git gtk \
-           jj lazygit mise niri nvim quickshell satty starship systemd walker yazi zellij zsh; do
+for pkg in alacritty atuin autostart bin btop dictation environment fuzzel gh-dash ghostty git gtk \
+           jj lazygit mise niri nvim quickshell satty starship systemd yazi zellij zsh; do
     # capture instead of piping straight to grep: `stow | grep -i conflict` threw
     # away every failure whose wording wasn't "conflict", so real errors passed
     # silently. PIPESTATUS is unavailable here (no pipe), so test stow directly.
@@ -182,10 +178,6 @@ bash ~/.local/share/dictation/setup.sh || warn "run ~/.local/share/dictation/set
 # ── 6. Services ──────────────────────────────────────────────────────────
 step "Enabling services"
 sudo systemctl enable --now tuned bluetooth nvidia-powerd 2>/dev/null || true
-systemctl --user enable --now elephant 2>/dev/null || true
-elephant service enable 2>/dev/null || true
-# auto-rescan elephant when apps are installed/removed (so walker sees them)
-systemctl --user enable --now elephant-rescan.path 2>/dev/null || true
 # mask the nvidia-settings autostart that fails under niri.
 systemctl --user mask 'app-nvidia\x2dsettings\x2duser@autostart.service' 2>/dev/null || true
 systemctl --user enable --now niri-vivaldi-private-watch.service 2>/dev/null || true
