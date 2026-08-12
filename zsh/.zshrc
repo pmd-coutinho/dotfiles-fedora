@@ -414,6 +414,20 @@ if [[ -d /usr/local/cuda/bin ]]; then
     fi
 fi
 
+# ── bindgen / libclang ────────────────────────────────────────────────
+# Fedora's clang-libs installs libclang.so into /usr/lib64 but its builtin
+# headers into /usr/lib/clang/<major>. libclang locates its resource dir
+# relative to its own .so, so it looks in /usr/lib64/clang/<major>, which the
+# package never creates — and every bindgen build fails with a bare
+# "'stdbool.h' file not found" (a 3-line wrapper.h reproduces it). Packaging
+# bug in clang-libs-22.1.8-4.fc44; the guard disables this once it's fixed.
+if [[ ! -d /usr/lib64/clang ]]; then
+    _clang_res=(/usr/lib/clang/*(N/))   # [-1] = highest version present
+    (( $#_clang_res )) && \
+        export BINDGEN_EXTRA_CLANG_ARGS="-resource-dir ${_clang_res[-1]} $BINDGEN_EXTRA_CLANG_ARGS"
+    unset _clang_res
+fi
+
 # ── Editor ────────────────────────────────────────────────────────────
 # nvim when present (full LazyVim setup), nano as the safe fallback.
 if command -v nvim >/dev/null; then export EDITOR=nvim VISUAL=nvim; else export EDITOR=nano; fi
@@ -443,3 +457,11 @@ command -v starship >/dev/null && eval "$(starship init zsh)"  # prompt last
 # ── Syntax highlighting (must be sourced last) ────────────────────────
 [[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
     source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# >>> oh-my-opencode-slim background subagents >>>
+export OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS=true
+# <<< oh-my-opencode-slim background subagents <<<
+
+# >>> Codex installer >>>
+export PATH="/home/pedrocoutinho/.local/bin:$PATH"
+# <<< Codex installer <<<
