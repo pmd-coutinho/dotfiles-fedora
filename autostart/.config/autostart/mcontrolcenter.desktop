@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MControlCenter
+GenericName=Change MSI Laptop Settings
+Comment=Reapply MSI laptop settings (battery threshold, fan, shift mode) at login
+Exec=mcontrolcenter
+Icon=mcontrolcenter
+Categories=System;Settings;Utility;
+X-GNOME-Autostart-enabled=true
