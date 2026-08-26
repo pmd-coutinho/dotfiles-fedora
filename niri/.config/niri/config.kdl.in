@@ -191,6 +191,10 @@ window-rule { match app-id=r#"^obsidian$"#;                open-on-workspace "10
 window-rule { match app-id=r#"^org\.keepassxc\.KeePassXC$"#; open-on-workspace "8-giga";    open-focused true; open-maximized true; }
 
 binds {
+    // >>> jcode launch hotkeys (managed) >>>
+    Super+Semicolon hotkey-overlay-title="jcode: npb-nuxt-orderpro" { spawn "sh" "-c" "if [ -d '/home/pedrocoutinho/dev/npb-nuxt-orderpro' ]; then cd '/home/pedrocoutinho/dev/npb-nuxt-orderpro'; else cd \"$HOME\"; fi; exec 'alacritty' '/home/pedrocoutinho/.jcode/builds/versions/0.75.3/jcode-linux-x86_64.bin' --spawn-hotkey 'cmd+;'"; }
+    Super+Apostrophe hotkey-overlay-title="jcode: home" { spawn "sh" "-c" "if [ -d '/home/pedrocoutinho' ]; then cd '/home/pedrocoutinho'; else cd \"$HOME\"; fi; exec 'alacritty' '/home/pedrocoutinho/.jcode/builds/versions/0.75.3/jcode-linux-x86_64.bin' --spawn-hotkey 'cmd+'\\'''"; }
+    // <<< jcode launch hotkeys (managed) <<<
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     Mod+T hotkey-overlay-title="Open a Terminal: ghostty" { spawn "ghostty"; }
@@ -385,9 +389,12 @@ binds {
 }
 
 // ── Render device ─────────────────────────────────────────────────────
-// The 4K144 monitor is now wired to the Intel iGPU (USB-C/DP), so niri's
-// default (render on the iGPU) is correct. If a heavy monitor ever moves
-// back to an NVIDIA-wired port, re-enable this to avoid cross-GPU copies:
-// debug {
-//     render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
-// }
+// The 4K144 Gigabyte (DP-4) is wired to the NVIDIA dGPU; the laptop panel and
+// the Huawei sit on the Intel iGPU. Render on the GPU that owns the heaviest
+// output so the 3840x2160@144 frames are scanned out directly and only the two
+// small Intel outputs pay for cross-GPU copies. Not hot-reloadable: niri must
+// be restarted for a change here to take effect. If the 4K moves back to an
+// Intel port, comment this out (iGPU is niri's default render node).
+debug {
+    render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+}
