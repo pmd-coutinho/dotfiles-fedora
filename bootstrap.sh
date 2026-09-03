@@ -273,6 +273,16 @@ done
 sudo firewall-cmd -q --reload
 systemctl --user daemon-reload
 systemctl --user enable --now app-dev.lizardbyte.app.Sunshine.service
+# Tailscale: play from outside the house without exposing Sunshine's ports.
+# Moonlight on the MacBook adds this host by its MagicDNS name; the tailnet
+# interface goes in firewalld's trusted zone so streaming never depends on
+# what the default zone happens to allow.
+sudo dnf -y config-manager addrepo --overwrite --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+sudo dnf -y install tailscale
+sudo systemctl enable --now tailscaled
+sudo firewall-cmd -q --permanent --zone=trusted --add-interface=tailscale0
+sudo firewall-cmd -q --reload
+sudo tailscale up --ssh=false || warn "run 'sudo tailscale up' and log in"
 echo "  First run: set the web-UI login with 'sunshine --creds <user> <pass>' (or at"
 echo "  https://localhost:47990), then pair Moonlight from the PIN page there."
 
