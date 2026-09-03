@@ -62,6 +62,29 @@ ShellRoot {
         function dnd(): void {
             Notifs.dnd = !Notifs.dnd;
         }
+        // explicit set/get for scripts that must restore the previous state
+        // (sunshine/.config/sunshine/game-mode); the toggle above is for keybinds
+        function setDnd(on: bool): void {
+            Notifs.dnd = on;
+        }
+        function isDnd(): bool {
+            return Notifs.dnd;
+        }
+    }
+
+    // caffeine = suspend the shell's idle lock / screens-off (Services/Caffeine.qml)
+    IpcHandler {
+        target: "caffeine"
+
+        function toggle(): void {
+            Caffeine.toggle();
+        }
+        function set(on: bool): void {
+            Caffeine.active = on;
+        }
+        function get(): bool {
+            return Caffeine.active;
+        }
     }
 
     IpcHandler {

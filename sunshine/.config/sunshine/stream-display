@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# stream-display on|off — repurpose the Gigabyte M28U as the Moonlight display.
+#
+# Sunshine runs `on` before a stream starts and `off` when it ends
+# (global_prep_cmd in sunshine.conf). niri 26.04 has no virtual outputs yet
+# (niri-wm/niri#3101), so instead of a headless display we:
+#   on:  save the M28U's current mode+scale, switch it to the client's
+#        resolution/refresh (SUNSHINE_CLIENT_WIDTH/HEIGHT/FPS, default
+#        1920x1080@120), set scale 1 so fullscreen games render at native
+#        stream resolution, and turn the laptop panel + Huawei off so
+#        every workspace lands on the streamed output.
+#   off: restore the saved mode/scale and turn the other outputs back on.
+#
+# Outputs are located by model via `niri msg -j outputs`, never by connector
+# name — the NVIDIA/Intel drivers assign different connector names (see the
+# comment above the output blocks in niri/.config/niri/config.kdl).
+set -uo pipefail
+
+STREAM_MODEL="M28U"
+OTHER_MODELS=("0x1621" "HUAWEI AD80HW")     # laptop panel, Huawei
+STATE="${XDG_RUNTIME_DIR:-/tmp}/sunshine-stream-display.json"
+FALLBACK_W=1920 FALLBACK_H=1080 FALLBACK_FPS=120
+
+log() { echo "stream-display: $*" >&2; }
+
+outputs_json() { niri msg -j outputs; }
+
+# connector name (e.g. DP-4) for an output whose model contains $1
+connector_of() {
+    outputs_json | jq -r --arg m "$1" 'to_entries[] | select(.value.model | contains($m)) | .key' | head -1
+}
+
+case "${1:-}" in
+on)
+    stream=$(connector_of "$STREAM_MODEL")
+    if [ -z "$stream" ]; then log "no output matching '$STREAM_MODEL' — leaving displays alone"; exit 0; fi
+
+    w=${SUNSHINE_CLIENT_WIDTH:-$FALLBACK_W}
+    h=${SUNSHINE_CLIENT_HEIGHT:-$FALLBACK_H}
+    fps=${SUNSHINE_CLIENT_FPS:-$FALLBACK_FPS}
+
+    # Save what to restore (current mode + scale) unless a stale save exists
+    # from a stream whose `off` never ran — then keep the older, truer one.
+    if [ ! -s "$STATE" ]; then
+        outputs_json | jq --arg c "$stream" '.[$c] | {
+            connector: $c,
+            mode: (.modes[.current_mode] | "\(.width)x\(.height)@\(.refresh_rate/1000)"),
+            scale: .logical.scale
+        }' > "$STATE"
+    fi
+
+    # Pick the available mode at WxH whose refresh is closest to the client's
+    # fps; fall back to FALLBACK_* if the client asked for something the
+    # panel can't do (e.g. a 4K@60 request from a non-120 Hz client is fine
+    # too — it just gets what it asked for if it exists).
+    pick() {
+        outputs_json | jq -r --arg c "$stream" --argjson w "$1" --argjson h "$2" --argjson f "$3" '
+            [.[$c].modes[] | select(.width == $w and .height == $h)]
+            | sort_by(((.refresh_rate/1000) - $f) | fabs) | .[0]
+            | select(. != null) | "\(.width)x\(.height)@\(.refresh_rate/1000)"'
+    }
+    mode=$(pick "$w" "$h" "$fps")
+    [ -n "$mode" ] || mode=$(pick "$FALLBACK_W" "$FALLBACK_H" "$FALLBACK_FPS")
+    if [ -z "$mode" ]; then log "no usable mode on $stream"; exit 0; fi
+
+    log "client ${w}x${h}@${fps} → $stream mode $mode scale 1; others off"
+    niri msg output "$stream" mode "$mode"
+    niri msg output "$stream" scale 1
+    for m in "${OTHER_MODELS[@]}"; do
+        c=$(connector_of "$m"); [ -n "$c" ] && niri msg output "$c" off
+    done
+    ;;
+off)
+    for m in "${OTHER_MODELS[@]}"; do
+        c=$(connector_of "$m"); [ -n "$c" ] && niri msg output "$c" on
+    done
+    if [ -s "$STATE" ]; then
+        stream=$(jq -r .connector "$STATE"); mode=$(jq -r .mode "$STATE"); scale=$(jq -r .scale "$STATE")
+        log "restoring $stream → $mode scale $scale"
+        niri msg output "$stream" mode "$mode"
+        niri msg output "$stream" scale "$scale"
+        rm -f "$STATE"
+    else
+        log "no saved state; nothing to restore"
+    fi
+    ;;
+*)
+    echo "usage: stream-display on|off" >&2; exit 2 ;;
+esac

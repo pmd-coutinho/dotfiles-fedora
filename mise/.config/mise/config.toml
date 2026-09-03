@@ -16,7 +16,6 @@ minimum_release_age_excludes = ["claude", "opencode", "codex", "pi"]
 [tools]
 claude = "latest"
 opencode = "latest"
-codex = "latest"
 dotnet = "10"
 "github:can1357/oh-my-pi" = "latest"
 node = "lts"

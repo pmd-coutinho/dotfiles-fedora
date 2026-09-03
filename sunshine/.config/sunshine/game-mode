@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# game-mode on|off — quiet the desktop while a Moonlight stream is running.
+#
+# Sunshine runs `on` before a stream and `off` after it (global_prep_cmd in
+# sunshine.conf, right after stream-display). Everything is saved first and
+# restored on `off`, so a toggle you had set by hand survives the stream:
+#   * notifications → do-not-disturb (quickshell owns the notification server)
+#   * caffeine on   → the shell's 10m idle lock / 15m screens-off can't fire
+#                     mid-game (Moonlight input usually keeps niri awake, but
+#                     not while you sit in a loading screen or a long cutscene)
+#   * power profile → performance via tuned-ppd's PowerProfiles D-Bus API
+#                     (system bus; already the case on AC, matters on battery)
+# Night light is left alone: wlsunset works through the CRTC gamma LUT, which
+# KMS capture never sees, so it cannot tint the stream.
+set -uo pipefail
+
+STATE="${XDG_RUNTIME_DIR:-/tmp}/sunshine-game-mode.json"
+PPD=(net.hadess.PowerProfiles /net/hadess/PowerProfiles)
+
+log() { echo "game-mode: $*" >&2; }
+
+# quickshell IPC — tolerate the shell being down (a stream is still useful)
+qs_get() { qs ipc call "$1" "$2" 2>/dev/null; }
+qs_set() { qs ipc call "$1" "$2" "$3" >/dev/null 2>&1 || log "qs ipc $1 $2 failed (shell down?)"; }
+
+profile_get() { busctl get-property "${PPD[@]}" net.hadess.PowerProfiles ActiveProfile 2>/dev/null | awk '{gsub(/"/,"",$2); print $2}'; }
+profile_set() { busctl set-property "${PPD[@]}" net.hadess.PowerProfiles ActiveProfile s "$1" 2>/dev/null || log "could not set power profile $1"; }
+
+case "${1:-}" in
+on)
+    if [ -s "$STATE" ]; then
+        log "state file exists — previous 'off' never ran, keeping its saved values"
+    else
+        jq -n --arg dnd "$(qs_get notifs isDnd)" --arg caf "$(qs_get caffeine get)" --arg prof "$(profile_get)" \
+            '{dnd: $dnd, caffeine: $caf, profile: $prof}' > "$STATE"
+    fi
+    log "dnd on, caffeine on, power profile performance"
+    qs_set notifs setDnd true
+    qs_set caffeine set true
+    [ "$(profile_get)" = performance ] || profile_set performance
+    ;;
+off)
+    if [ ! -s "$STATE" ]; then log "no saved state; nothing to restore"; exit 0; fi
+    dnd=$(jq -r .dnd "$STATE"); caf=$(jq -r .caffeine "$STATE"); prof=$(jq -r .profile "$STATE")
+    log "restoring dnd=$dnd caffeine=$caf profile=$prof"
+    # empty = the shell was unreachable when we saved; leave that knob alone
+    [ -n "$dnd" ] && qs_set notifs setDnd "$dnd"
+    [ -n "$caf" ] && qs_set caffeine set "$caf"
+    [ -n "$prof" ] && [ "$prof" != "$(profile_get)" ] && profile_set "$prof"
+    rm -f "$STATE"
+    ;;
+*)
+    echo "usage: game-mode on|off" >&2; exit 2 ;;
+esac

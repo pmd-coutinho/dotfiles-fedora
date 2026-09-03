@@ -53,3 +53,12 @@ jj/.config/jj/repos/
 **/*.age
 secrets/
 *.secret
+
+# Sunshine writes its pairing state (root CA + private key, paired-client
+# certs, web-UI credentials) and log next to its config. bootstrap mkdir's
+# ~/.config/sunshine before stow so the dir is never tree-folded into the
+# repo; this makes sure the secrets can't be committed even if it were.
+sunshine/.config/sunshine/sunshine_state.json
+sunshine/.config/sunshine/credentials/
+sunshine/.config/sunshine/*.log
+sunshine/.config/sunshine/covers/

@@ -20,7 +20,9 @@ sudo dnf -y install \
 for c in scottames/ghostty atim/starship \
          errornointernet/packages errornointernet/quickshell \
          bieszczaders/kernel-cachyos \
+         lizardbyte/beta \
          ifas/zellij; do   # ifas tracks latest (0.44.3); varlad's COPR stalled at 0.42.2
+    # lizardbyte/beta: Sunshine — 'stable' only has builds for Fedora versions older than its last release
     sudo dnf -y copr enable "$c"
 done
 
@@ -44,6 +46,7 @@ sudo dnf -y install \
   brightnessctl playerctl pavucontrol pulseaudio-utils network-manager-applet blueman solaar \
   cups printer-driver-brlaser \
   wtype ffmpeg \
+  Sunshine gamemode \
   wf-recorder tesseract tesseract-langpack-eng tesseract-langpack-por zbar ImageMagick \
   gnome-keyring tuned tuned-ppd \
   greetd tuigreet \
@@ -114,8 +117,11 @@ cd "$DOTS"
 # back up any real files stow would collide with
 # NOTE: no 'vscode' here — VS Code settings.json is seeded from a template by
 # setup-editors.sh (the live file holds machine state and must not be tracked).
+# Sunshine drops its pairing state (CA key, client certs, web creds) next to
+# its config; a folded ~/.config/sunshine -> repo symlink would put them in git.
+mkdir -p ~/.config/sunshine
 for pkg in alacritty atuin autostart bin btop dictation environment fuzzel gh-dash ghostty git gtk \
-           jj lazygit mise niri nvim quickshell satty starship systemd yazi zellij zsh; do
+           gamemode jj lazygit mise niri nvim quickshell satty starship sunshine systemd yazi zellij zsh; do
     # capture instead of piping straight to grep: `stow | grep -i conflict` threw
     # away every failure whose wording wasn't "conflict", so real errors passed
     # silently. PIPESTATUS is unavailable here (no pipe), so test stow directly.
@@ -238,6 +244,37 @@ sudo bash "$DOTS/setup-round10.sh" || warn "run setup-round10.sh manually later"
 
 echo "  .NET SDK: run 'mise use -g dotnet@9' (or the version your solutions target)."
 echo "  Note: GUI-launched Rider won't inherit mise PATH — set its SDK path or DOTNET_ROOT."
+
+# ── 8b. Sunshine (Moonlight game-streaming host) ─────────────────────────
+# Config + display-switch script are the `sunshine` stow package (see
+# sunshine/.config/sunshine/sunshine.conf). Streams repurpose the Gigabyte
+# M28U at the client's resolution/refresh — niri has no virtual outputs yet.
+step "Sunshine: KMS-capture capability, input group, firewall, user service"
+# KMS capture needs CAP_SYS_ADMIN on the binary. The rpm sets it via
+# %caps(cap_sys_admin,cap_sys_nice+p) — re-apply the same pair (not just
+# sys_admin, which would DROP sys_nice) so a replaced binary never silently
+# falls back to slow wlr capture (Sunshine logs 'Screencasting with KMS').
+sudo setcap cap_sys_admin,cap_sys_nice+p "$(readlink -f "$(command -v sunshine)")"
+# uinput (mouse/keyboard/gamepad injection): the rpm ships the udev rule,
+# reloads udev in %post and adds a modules-load.d entry; the user just needs
+# the input group (takes effect at next login).
+sudo usermod -aG input "$USER"
+sudo modprobe uinput || true
+# Feral GameMode (Dota 2 runs under `gamemoderun %command%` from Flatpak Steam;
+# the sandbox D-Bus-activates the host gamemoded): the `gamemode` group carries
+# the `nice -10` limit that lets it renice the game — also next login.
+sudo usermod -aG gamemode "$USER"
+# Moonlight ports (no firewalld service file ships with the rpm):
+# 47984/47989 TCP pairing+https, 47990 TCP web UI, 48010 TCP RTSP,
+# 47998-48000 UDP video/control/audio, 48010 UDP mic.
+for p in 47984/tcp 47989/tcp 47990/tcp 48010/tcp 47998-48000/udp 48010/udp; do
+    sudo firewall-cmd -q --permanent --add-port="$p"
+done
+sudo firewall-cmd -q --reload
+systemctl --user daemon-reload
+systemctl --user enable --now app-dev.lizardbyte.app.Sunshine.service
+echo "  First run: set the web-UI login with 'sunshine --creds <user> <pass>' (or at"
+echo "  https://localhost:47990), then pair Moonlight from the PIN page there."
 
 # ── 9. OS hardening (Round 4): nvidia suspend, journald, inotify, snapshots
 step "OS hardening (NVIDIA suspend VRAM, journald cap, inotify, snapper)"
