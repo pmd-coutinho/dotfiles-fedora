@@ -1,4 +1,3 @@
-pragma ComponentBehavior: Bound
 // Screen tools in one place: screenshot, record, OCR, colour pick, QR scan.
 //
 // Every entry runs the same script as its keybind, so this is a discoverable
@@ -6,139 +5,78 @@ pragma ComponentBehavior: Bound
 // row precisely so the menu teaches them and then stops being needed.
 import QtQuick
 import Quickshell
+import qs.Components
 import qs.Services
 import qs.Theme
 
 MenuWindow {
     id: menu
 
-    boxWidth: 340
+    boxWidth: Theme.menuWidthWide
 
-    component ToolRow: Rectangle {
-        id: row
-
-        required property string glyph
-        required property string label
-        required property string bind
-        required property var run
-        property color glyphColor: Theme.mauve
-
-        width: parent.width
-        height: 30
-        radius: Theme.radiusSmall
-        color: area.containsMouse ? Theme.surface0 : "transparent"
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            x: 8
-            width: 20
-            text: row.glyph
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontMedium
-            color: row.glyphColor
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            x: 34
-            width: parent.width - 34 - bindLabel.width - 16
-            elide: Text.ElideRight
-            text: row.label
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontLabel
-            color: Theme.text
-        }
-
-        Text {
-            id: bindLabel
-            anchors.right: parent.right
-            anchors.rightMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            text: row.bind
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontTiny
-            color: Theme.overlay1
-        }
-
-        MouseArea {
-            id: area
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: {
-                // close first: several of these open a slurp overlay, and the
-                // scrim would otherwise be in the way of the region select
-                menu.close();
-                row.run();
-            }
-        }
+    // close first: several of these open a slurp overlay, and the scrim would
+    // otherwise be in the way of the region select
+    function run(cmd) {
+        menu.close();
+        Quickshell.execDetached(cmd);
     }
 
-    component Header: Text {
-        leftPadding: 8
-        topPadding: 4
-        bottomPadding: 2
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSmall
-        font.weight: Font.Bold
-        color: Theme.mauve
-    }
+    SectionHeader { text: "capture" }
 
-    Header { text: "capture" }
-
-    ToolRow {
-        glyph: "󰹑"
+    MenuRow {
+        glyph: Icons.screenshot
         label: "Screenshot — region or monitor"
-        bind: "Print"
-        run: () => Quickshell.execDetached(["screenshot-region"])
+        detail: "Print"
+        onTriggered: menu.run(["screenshot-region"])
     }
 
-    ToolRow {
-        glyph: "󰍹"
+    MenuRow {
+        glyph: Icons.screenshotFull
         label: "Screenshot — whole desktop"
-        bind: "Shift+Print"
-        run: () => Quickshell.execDetached(["sh", "-c", "grim - | satty -f -"])
+        detail: "Shift+Print"
+        onTriggered: menu.run(["sh", "-c", "grim - | satty -f -"])
     }
 
-    Header { text: "record" }
+    SectionHeader { text: "record" }
 
-    ToolRow {
-        glyph: Recorder.active ? "󰓛" : "󰕧"
-        glyphColor: Recorder.active ? Theme.red : Theme.mauve
+    MenuRow {
+        glyph: Recorder.active ? Icons.stop : Icons.record
+        glyphColor: Recorder.active ? Theme.error : Theme.accent
         label: Recorder.active ? "Stop recording" : "Record — region or monitor"
-        bind: "Mod+Shift+Print"
-        run: () => Quickshell.execDetached(["screen-record"])
+        detail: "Mod+Shift+Print"
+        onTriggered: menu.run(["screen-record"])
     }
 
-    ToolRow {
+    MenuRow {
         // starting a second recording would just stop the first (the script is
         // a toggle), so hide this while one is running
         visible: !Recorder.active
-        glyph: "󰕧"
+        glyph: Icons.record
         label: "Record — with audio"
-        bind: "Mod+Alt+Print"
-        run: () => Quickshell.execDetached(["screen-record", "-a"])
+        detail: "Mod+Alt+Print"
+        onTriggered: menu.run(["screen-record", "-a"])
     }
 
-    Header { text: "extract" }
+    SectionHeader { text: "extract" }
 
-    ToolRow {
-        glyph: "󱄽"
+    MenuRow {
+        glyph: Icons.ocr
         label: "OCR text → clipboard"
-        bind: "Mod+Shift+T"
-        run: () => Quickshell.execDetached(["screen-ocr"])
+        detail: "Mod+Shift+T"
+        onTriggered: menu.run(["screen-ocr"])
     }
 
-    ToolRow {
-        glyph: "󰝥"
+    MenuRow {
+        glyph: Icons.colorPick
         label: "Pick a colour → hex"
-        bind: "Mod+Shift+C"
-        run: () => Quickshell.execDetached(["color-pick"])
+        detail: "Mod+Shift+C"
+        onTriggered: menu.run(["color-pick"])
     }
 
-    ToolRow {
-        glyph: "󰐳"
+    MenuRow {
+        glyph: Icons.qr
         label: "Scan QR / barcode"
-        bind: "Mod+Shift+Q"
-        run: () => Quickshell.execDetached(["qr-scan"])
+        detail: "Mod+Shift+Q"
+        onTriggered: menu.run(["qr-scan"])
     }
 }

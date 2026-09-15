@@ -1,21 +1,35 @@
-// One floating pill ("island") — mirrors the old waybar .modules-* CSS:
-// alpha(base,.92) fill, surface0 border, 12px radius, 6px inner padding.
+// One floating pill ("island"): shared Surface chrome with a RowLayout inside.
+//
+// Children are layout items, so they must not anchor vertically (the layout
+// centres them) and they size through implicitWidth. Rigid items pin
+// Layout.minimumWidth to their implicitWidth (BarItem does this by default);
+// the two elastic ones (window title, media title) leave it at 0, so when
+// Bar.qml clamps this island's width they are what shrinks.
 import QtQuick
+import QtQuick.Layouts
+import qs.Components
 import qs.Theme
 
-Rectangle {
-    default property alias content: inner.data
+Surface {
+    id: island
 
+    default property alias items: layout.data
+
+    elevation: 1
+    radius: height / 2   // pill
     height: Theme.barHeight
-    implicitWidth: inner.implicitWidth + 12
-    radius: Theme.islandRadius
-    color: Theme.islandBg
-    border.color: Theme.islandBorder
-    border.width: 1
+    implicitWidth: layout.implicitWidth + 2 * Theme.islandPadX
 
-    Row {
-        id: inner
-        anchors.centerIn: parent
-        height: parent.height
+    // smooth clock toggles and title changes instead of a snap
+    Behavior on width {
+        NumberAnimation { duration: Theme.durationMedium; easing.type: Theme.easeStandard }
+    }
+
+    RowLayout {
+        id: layout
+        anchors.fill: parent
+        anchors.leftMargin: Theme.islandPadX
+        anchors.rightMargin: Theme.islandPadX
+        spacing: Theme.barItemGap
     }
 }

@@ -12,9 +12,18 @@ import qs.Osd
 import qs.Polkit
 import qs.SessionMenu
 import qs.Services
+import qs.Theme
 import qs.Wallpaper
 
 ShellRoot {
+    // Push the wallpaper-derived accent into the generated Theme: Theme cannot
+    // import qs.Services itself (Wallpapers imports qs.Theme for the snap list).
+    Binding {
+        target: Theme
+        property: "accent"
+        value: Wallpapers.accent
+    }
+
     Wallpaper {}
     Bar {}
     Popups {}
@@ -42,10 +51,17 @@ ShellRoot {
         id: screenToolsMenu
     }
 
+    // month view under the clock, ditto
+    CalendarMenu {
+        id: calendarMenu
+    }
+
     Component.onCompleted: {
         Bus.trayMenu = trayMenu;
         Bus.audioMenu = audioMenu;
         Bus.screenToolsMenu = screenToolsMenu;
+        Bus.calendarMenu = calendarMenu;
+        Bus.sessionMenu = sessionMenu;
     }
 
     // the session locker (idle, before-sleep and Super+Alt+L all route here
@@ -112,6 +128,23 @@ ShellRoot {
         }
         function stopped(): void {
             Recorder.active = false;
+        }
+    }
+
+    // TEMPORARY (redesign branch): open shell surfaces from a terminal so they
+    // can be screenshotted/tested without a pointer. Removed before merge.
+    Item { id: debugAnchor; width: 40; height: 26 }
+    IpcHandler {
+        target: "debug"
+
+        function menu(name: string): void {
+            const m = ({ calendar: calendarMenu, audio: audioMenu, tools: screenToolsMenu })[name];
+            if (m)
+                m.openFor(debugAnchor, Niri.focusedScreen);
+        }
+        function closeMenus(): void {
+            for (const m of [calendarMenu, audioMenu, screenToolsMenu, trayMenu])
+                m.close();
         }
     }
 

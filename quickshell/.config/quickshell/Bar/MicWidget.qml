@@ -8,9 +8,11 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
+import qs.Components
+import qs.Services
 import qs.Theme
 
-BarText {
+BarItem {
     id: root
 
     readonly property PwNode source: Pipewire.defaultAudioSource
@@ -45,12 +47,7 @@ BarText {
             .filter(Boolean)
     }
 
-    visible: inUse
-    // muted-but-recording is worth showing differently: the app is capturing,
-    // it just gets silence
-    text: muted ? Icons.micOff : Icons.micOn
-    color: muted ? Theme.overlay0 : Theme.red
-    font.weight: Font.Bold
+    shown: inUse
 
     tip: {
         if (!inUse)
@@ -62,13 +59,26 @@ BarText {
             })
             .filter(n => n !== "?");
         const head = muted ? "mic in use (muted)" : "mic in use";
-        return names.length > 0 ? head + "\n\n" + names.join("\n") : head;
+        return names.length > 0 ? head + ": " + names.join(", ") : head;
+    }
+    hint: "click: mute · right: audio settings"
+
+    Icon {
+        anchors.verticalCenter: parent.verticalCenter
+        glyph: Icons.mic(root.muted)
+        // muted-but-recording is worth showing differently: the app is
+        // capturing, it just gets silence
+        color: root.muted ? Theme.textMuted : Theme.error
     }
 
-    onModuleClicked: button => {
+    onClicked: button => {
         if (button === Qt.LeftButton && source?.audio)
             source.audio.muted = !source.audio.muted;
-        else if (button === Qt.RightButton)
-            Quickshell.execDetached(["pavucontrol"]);
+        else if (button === Qt.RightButton) {
+            if (Bus.controlCenter)
+                Bus.controlCenter.open("audio");
+            else
+                Quickshell.execDetached(["pavucontrol"]);
+        }
     }
 }

@@ -1,9 +1,11 @@
 pragma ComponentBehavior: Bound
 // System tray (StatusNotifier): left-click activates, middle-click secondary,
-// right-click opens the item's native DBus menu.
+// right-click opens the item's native DBus menu (drawn by TrayMenu.qml).
 import QtQuick
+import QtQuick.Layouts
 import Quickshell.Widgets
 import Quickshell.Services.SystemTray
+import qs.Components
 import qs.Services
 import qs.Theme
 
@@ -12,42 +14,42 @@ Row {
 
     property var bar
 
-    anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-    spacing: 10
-    leftPadding: 10
-    rightPadding: 6
+    spacing: 0
     visible: SystemTray.items.values.length > 0
+    Layout.minimumWidth: implicitWidth
 
     Repeater {
         model: SystemTray.items
 
-        Item {
+        BarItem {
             id: slot
 
             required property var modelData
 
-            anchors.verticalCenter: parent.verticalCenter
-            implicitWidth: 16
-            implicitHeight: 16
+            bar: root.bar
+            padX: 4
+            gap: 0
+            active: Bus.trayMenu?.isOpenFor(slot) ?? false
+            tip: slot.modelData.tooltipTitle !== "" ? slot.modelData.tooltipTitle
+               : slot.modelData.title !== "" ? slot.modelData.title
+               : slot.modelData.id
+            hint: slot.modelData.hasMenu ? "right: menu" : ""
 
             IconImage {
-                anchors.fill: parent
+                anchors.verticalCenter: parent.verticalCenter
+                implicitSize: Theme.iconSize
                 source: slot.modelData.icon
-                opacity: slot.modelData.status === Status.Passive ? 0.5 : 1
+                opacity: slot.modelData.status === Status.Passive ? Theme.disabledOpacity : 1
             }
 
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
-                onClicked: mouse => {
-                    if (mouse.button === Qt.RightButton || slot.modelData.onlyMenu) {
-                        if (slot.modelData.hasMenu)
-                            Bus.trayMenu?.openMenu(slot, slot.modelData.menu, root.bar.screen);
-                    } else if (mouse.button === Qt.LeftButton) {
-                        slot.modelData.activate();
-                    } else {
-                        slot.modelData.secondaryActivate();
-                    }
+            onClicked: button => {
+                if (button === Qt.RightButton || slot.modelData.onlyMenu) {
+                    if (slot.modelData.hasMenu)
+                        Bus.trayMenu?.openMenu(slot, slot.modelData.menu, root.bar.screen);
+                } else if (button === Qt.LeftButton) {
+                    slot.modelData.activate();
+                } else {
+                    slot.modelData.secondaryActivate();
                 }
             }
         }

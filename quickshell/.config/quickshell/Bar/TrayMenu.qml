@@ -6,7 +6,7 @@ pragma ComponentBehavior: Bound
 // Window placement, the dismiss scrim and the menu box come from MenuWindow.qml.
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
+import qs.Components
 import qs.Theme
 
 MenuWindow {
@@ -16,7 +16,7 @@ MenuWindow {
     // submenu navigation stack of QsMenuEntry handles
     property var stack: []
 
-    boxWidth: 240
+    boxWidth: Theme.menuWidthNarrow
 
     // Not called openFor: that would shadow MenuWindow's and recurse. Callers
     // use this, which records the handle and delegates placement to the base.
@@ -27,8 +27,8 @@ MenuWindow {
     }
 
     // dropping the handle on close matters — it holds the app's DBus menu open
-    onVisibleChanged: {
-        if (!visible) {
+    onShownChanged: {
+        if (!shown) {
             rootHandle = null;
             stack = [];
         }
@@ -39,110 +39,44 @@ MenuWindow {
         menu: menuWin.stack.length > 0 ? menuWin.stack[menuWin.stack.length - 1] : menuWin.rootHandle
     }
 
-
     // back row while inside a submenu
-    Rectangle {
+    MenuRow {
         visible: menuWin.stack.length > 0
-        width: parent.width
-        height: 28
-        radius: Theme.radiusSmall
-        color: backArea.containsMouse ? Theme.surface0 : "transparent"
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            x: 8
-            text: "󰅁 back"
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontLabel
-            color: Theme.subtext0
-        }
-        MouseArea {
-            id: backArea
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: menuWin.stack = menuWin.stack.slice(0, -1)
-        }
+        glyph: Icons.chevronLeft
+        glyphColor: Theme.textMuted
+        label: "back"
+        onTriggered: menuWin.stack = menuWin.stack.slice(0, -1)
     }
 
     Repeater {
         model: opener.children
 
-        Rectangle {
-            id: row
+        Column {
+            id: entry
 
             required property var modelData
             readonly property bool isSep: modelData.isSeparator
 
             width: parent.width
-            height: isSep ? 9 : 28
-            radius: Theme.radiusSmall
-            color: !isSep && rowArea.containsMouse && modelData.enabled
-                ? Theme.surface0 : "transparent"
 
-            Rectangle {
-                visible: row.isSep
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - 16
-                x: 8
-                height: 1
-                color: Theme.surface0
+            MenuSeparator {
+                visible: entry.isSep
             }
 
-            Row {
-                visible: !row.isSep
-                anchors.verticalCenter: parent.verticalCenter
-                x: 8
-                spacing: Theme.spacingSm
-
-                Text {
-                    visible: row.modelData.buttonType !== 0
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: row.modelData.checkState === Qt.Checked ? Icons.checked : Icons.unchecked
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontLabel
-                    color: row.modelData.checkState === Qt.Checked ? Theme.mauve : Theme.overlay0
-                }
-
-                IconImage {
-                    visible: row.modelData.icon !== ""
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 14
-                    height: 14
-                    source: row.modelData.icon
-                }
-
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: row.modelData.text
-                    font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontLabel
-                    color: row.modelData.enabled ? Theme.text : Theme.overlay0
-                }
-            }
-
-            Text {
-                visible: !row.isSep && row.modelData.hasChildren
-                anchors.right: parent.right
-                anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                text: "󰅂"
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontLabel
-                color: Theme.overlay0
-            }
-
-            MouseArea {
-                id: rowArea
-                anchors.fill: parent
-                hoverEnabled: true
-                enabled: !row.isSep
-                onClicked: {
-                    if (!row.modelData.enabled)
-                        return;
-                    if (row.modelData.hasChildren) {
-                        menuWin.stack = menuWin.stack.concat([row.modelData]);
+            MenuRow {
+                visible: !entry.isSep
+                icon: entry.modelData.icon
+                label: entry.modelData.text
+                checkable: entry.modelData.buttonType !== 0
+                checked: entry.modelData.checkState === Qt.Checked
+                selected: checked
+                hasSubmenu: entry.modelData.hasChildren
+                rowEnabled: entry.modelData.enabled
+                onTriggered: {
+                    if (entry.modelData.hasChildren) {
+                        menuWin.stack = menuWin.stack.concat([entry.modelData]);
                     } else {
-                        row.modelData.triggered();
+                        entry.modelData.triggered();
                         menuWin.close();
                     }
                 }

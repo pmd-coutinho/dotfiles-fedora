@@ -1,19 +1,35 @@
-// Notification bell — native state from the quickshell notification server.
-// Click toggles the panel, right-click toggles do-not-disturb.
+// Notification bell with an unread badge. Click opens the notification list,
+// right-click toggles do-not-disturb.
 import QtQuick
+import qs.Components
 import qs.Services
 import qs.Theme
 
-BarText {
-    text: Notifs.dnd ? "󰂛" : Notifs.count > 0 ? "󱅫" : "󰂚"
-    color: Theme.mauve
-    font.pixelSize: Theme.fontMedium
-    rightPadding: 14
+BarItem {
+    active: Notifs.panelOpen
+    tip: (Notifs.count === 0 ? "no notifications" : Notifs.count + " notification" + (Notifs.count === 1 ? "" : "s"))
+       + (Notifs.dnd ? " · do not disturb" : "")
+    hint: "click: notifications · right: do not disturb"
 
-    onModuleClicked: button => {
-        if (button === Qt.LeftButton)
-            Notifs.panelOpen = !Notifs.panelOpen;
-        else if (button === Qt.RightButton)
+    Icon {
+        anchors.verticalCenter: parent.verticalCenter
+        glyph: Icons.bellIcon(Notifs.dnd, Notifs.count > 0)
+        color: Notifs.dnd ? Theme.textMuted : Theme.accent
+    }
+
+    Badge {
+        anchors.verticalCenter: parent.verticalCenter
+        count: Notifs.dnd ? 0 : Notifs.count
+    }
+
+    onClicked: button => {
+        if (button === Qt.LeftButton) {
+            if (Bus.controlCenter)
+                Bus.controlCenter.open("notifications");
+            else
+                Notifs.panelOpen = !Notifs.panelOpen;
+        } else if (button === Qt.RightButton) {
             Notifs.dnd = !Notifs.dnd;
+        }
     }
 }

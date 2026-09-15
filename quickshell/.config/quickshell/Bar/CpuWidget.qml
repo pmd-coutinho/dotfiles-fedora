@@ -1,13 +1,31 @@
-// CPU usage — pure view over the SysInfo singleton, which samples once for the
-// whole shell (this widget used to sample once per monitor, with per-monitor
-// previous-sample state, so the bars could disagree).
+// CPU load as a ring — pure view over the SysInfo singleton, which samples once
+// for the whole shell. Click opens btop.
 import QtQuick
+import Quickshell
+import qs.Components
 import qs.Services
 import qs.Theme
 
-BarText {
+BarItem {
     readonly property real usage: SysInfo.cpuPct
 
-    text: "  " + (usage < 0 ? "--" : Math.round(usage)) + "%"
-    color: Theme.loadColor(usage)
+    tip: usage < 0 ? "cpu" : "cpu " + Math.round(usage) + "%"
+    hint: "click: btop"
+
+    Icon {
+        anchors.verticalCenter: parent.verticalCenter
+        glyph: Icons.cpu
+        color: Theme.loadColor(usage)
+    }
+
+    Ring {
+        anchors.verticalCenter: parent.verticalCenter
+        value: usage / 100
+        color: Theme.loadColor(usage)
+    }
+
+    onClicked: button => {
+        if (button === Qt.LeftButton)
+            Quickshell.execDetached(["ghostty", "-e", "btop"]);
+    }
 }

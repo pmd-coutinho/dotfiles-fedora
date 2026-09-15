@@ -1,8 +1,21 @@
 pragma ComponentBehavior: Bound
-// The bar — Catppuccin Mocha "floating islands", one per output, 1:1 port of
-// the old waybar look (30px strip, 6/10px margins, three pill groups).
+// The bar — three floating islands per output: workspaces + window title on
+// the left, the clock in the centre, status modules on the right.
+//
+// Geometry: the window is `barMarginTop + barHeight + barShadowPad` tall with
+// no compositor margins — the top inset is drawn inside so it is never counted
+// twice (commit 6a4c180 measured that double count), and the pad below the
+// pills exists only so their shadow has somewhere to be drawn. The exclusive
+// zone stops at the pills' bottom edge; the shadow fades into niri's `gaps`.
+// The input mask is the three pills, so the pad strip is click-through.
+//
+// Layout: the centre island is intrinsic; the side islands clamp their own
+// width to the space left of / right of it, and their elastic children (window
+// title, media title) shrink. That replaces the old `mediaBudget` loop-in-a-
+// binding that stopped a long track name from running into the clock.
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 import qs.Theme
 
 Scope {
@@ -21,126 +34,79 @@ Scope {
                 left: true
                 right: true
             }
-            margins {
-                top: Theme.barMarginTop
-                left: Theme.barMarginSide
-                right: Theme.barMarginSide
-            }
-            implicitHeight: Theme.barHeight
-            // Just the bar's own height (+ barGapBelow, 0 by default). The
-            // compositor adds `margins.top` ON TOP of the exclusive zone, so
-            // including barMarginTop here reserved it twice — that double count
-            // was the real source of the oversized gap under the bar (measured:
-            // 6px margin + 42px zone reserved 48px for a bar whose bottom edge
-            // was at 36). niri's own `gaps` then provides the visual separation.
-            exclusiveZone: Theme.barHeight + Theme.barGapBelow
+            implicitHeight: Theme.barMarginTop + Theme.barHeight + Theme.barShadowPad
+            exclusiveZone: Theme.barMarginTop + Theme.barHeight + Theme.barGapBelow
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.namespace: "qs-bar"
             color: "transparent"
+            mask: Region {
+                regions: [
+                    Region { item: leftIsland },
+                    Region { item: centreIsland },
+                    Region { item: rightIsland }
+                ]
+            }
 
             // ── shared hover tooltip (one per bar) ──
             property Item tipTarget: null
             function showTip(item) { tipTarget = item; }
             function hideTip(item) { if (tipTarget === item) tipTarget = null; }
 
+            BarTooltip {
+                target: panel.tipTarget
+            }
 
-            PopupWindow {
-                id: tipWin
-                visible: panel.tipTarget !== null && (panel.tipTarget.tip ?? "") !== ""
-                color: "transparent"
-                implicitWidth: tipText.implicitWidth + 24
-                implicitHeight: tipText.implicitHeight + 16
-                anchor {
-                    window: panel
-                    rect.x: panel.tipTarget
-                        ? panel.tipTarget.mapToItem(null, panel.tipTarget.width / 2, 0).x - tipWin.implicitWidth / 2
-                        : 0
-                    rect.y: Theme.barHeight + Theme.barMarginTop
+            Item {
+                id: content
+
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    right: parent.right
+                    topMargin: Theme.barMarginTop
+                    leftMargin: Theme.barMarginSide
+                    rightMargin: Theme.barMarginSide
+                }
+                height: Theme.barHeight
+
+                // ── centre island: clock (intrinsic width, the others yield to it) ──
+                Island {
+                    id: centreIsland
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    ClockWidget { bar: panel }
                 }
 
-                Rectangle {
-                    anchors.fill: parent
-                    color: Theme.mantle
-                    border.color: Theme.surface0
-                    border.width: 1
-                    radius: Theme.islandRadius
+                // ── left island: workspaces + window title ──
+                Island {
+                    id: leftIsland
 
-                    Text {
-                        id: tipText
-                        anchors.centerIn: parent
-                        text: panel.tipTarget?.tip ?? ""
-                        textFormat: Text.PlainText
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSize
-                        color: Theme.text
+                    anchors.left: parent.left
+                    width: Math.max(0, Math.min(implicitWidth, centreIsland.x - Theme.spacingMd))
+
+                    Workspaces {
+                        bar: panel
+                        output: panel.output
+                    }
+                    WindowTitle {
+                        bar: panel
+                        output: panel.output
                     }
                 }
-            }
 
-            // ── left island: workspaces + window title ──
-            Island {
-                anchors.left: parent.left
+                // ── right island: status modules ──
+                Island {
+                    id: rightIsland
 
-                Workspaces {
-                    output: panel.output
-                }
-                WindowTitle {
-                    output: panel.output
-                }
-            }
-
-            // ── center island: clock ──
-            Island {
-                id: centerIsland
-
-                anchors.horizontalCenter: parent.horizontalCenter
-
-                ClockWidget {
-                    bar: panel
-                }
-            }
-
-            // ── right island: status modules ──
-            Island {
-                anchors.right: parent.right
-
-                Row {
-                    id: rightRow
-
-                    // The three islands are anchored independently, so nothing
-                    // stops this one growing left into the clock. Everything
-                    // here is fixed-width except the media title, so give that
-                    // whatever is left between the clock and the right edge.
-                    // Without this a long track name overlaps the clock on a
-                    // 1920-wide output (there's room at 2560, which is why it
-                    // only showed up on the FHD screens).
-                    readonly property real mediaBudget: {
-                        const toClock = (panel.width - centerIsland.width) / 2
-                            - Theme.barMarginSide - Theme.spacingMd;
-                        let others = 0;
-                        let gaps = 0;
-                        for (const c of children) {
-                            // Must not read ANY property of `media` here: its
-                            // width and visibility both derive from this budget,
-                            // so touching either is a binding loop (was one).
-                            if (c === media || !c.visible)
-                                continue;
-                            others += c.width;
-                            gaps += 1;
-                        }
-                        return Math.max(0, toClock - others - spacing * gaps);
-                    }
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: parent.height
-                    spacing: Theme.spacingSm
+                    anchors.right: parent.right
+                    width: Math.max(0, Math.min(implicitWidth,
+                        content.width - (centreIsland.x + centreIsland.width) - Theme.spacingMd))
 
                     RecordingWidget { bar: panel }
                     MicWidget { bar: panel }
                     ScreenToolsWidget { bar: panel }
-                    MediaWidget {
-                        id: media
-                        bar: panel
-                        maxWidth: rightRow.mediaBudget
-                    }
+                    MediaWidget { bar: panel }
                     TrayWidget { bar: panel }
                     Divider {}
                     CpuWidget { bar: panel }

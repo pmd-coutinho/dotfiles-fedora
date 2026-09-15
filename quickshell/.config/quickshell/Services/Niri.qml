@@ -41,18 +41,39 @@ Singleton {
         return workspaces.filter(w => w.output === output);
     }
 
-    // title shown in the bar of a given output: the active window of that
+    // the window the bar shows for a given output: the active window of that
     // output's active workspace (matches waybar niri/window separate-outputs)
-    function activeWindowTitleOn(output) {
+    function activeWindowOn(output) {
         const ws = workspaces.find(w => w.output === output && w.is_active);
         if (!ws || ws.active_window_id === null || ws.active_window_id === undefined)
-            return "";
-        const win = windows.find(w => w.id === ws.active_window_id);
-        return win?.title ?? "";
+            return null;
+        return windows.find(w => w.id === ws.active_window_id) ?? null;
+    }
+
+    function windowsOn(workspaceId) {
+        return windows.filter(w => w.workspace_id === workspaceId);
     }
 
     function focusWorkspace(ws) {
         Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", ws.name ?? String(ws.idx)]);
+    }
+
+    // Step to the previous/next workspace of one output (bar scroll). niri's
+    // index reference is relative to the focused monitor, so focus that output
+    // first when it isn't; named workspaces are global and can go direct.
+    function focusWorkspaceRelative(output, step) {
+        const list = workspacesOn(output);
+        const i = list.findIndex(w => w.is_active);
+        if (i < 0)
+            return;
+        const target = list[Math.max(0, Math.min(list.length - 1, i + step))];
+        if (!target || target.is_active)
+            return;
+        if (output !== focusedOutput && !target.name)
+            Quickshell.execDetached(["sh", "-c",
+                "niri msg action focus-monitor " + output + " && niri msg action focus-workspace " + target.idx]);
+        else
+            focusWorkspace(target);
     }
 
     // NIRI_SOCKET is unset when qs is started outside a niri session (e.g. from
