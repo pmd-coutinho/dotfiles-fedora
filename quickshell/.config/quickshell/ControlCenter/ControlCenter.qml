@@ -4,8 +4,9 @@ pragma ComponentBehavior: Bound
 // for wifi / bluetooth / audio / do-not-disturb / power. Replaces the swaync-
 // shaped Notifications/Panel.qml.
 //
-// ONE global window that moves to the screen captured at open (a per-screen
-// Variants would keep three windows mounted for nothing). `Notifs.panelOpen`
+// ONE global window on the main output (Config.mainOutput, falling back to the
+// focused one); a per-screen Variants would keep three windows mounted for
+// nothing. `Notifs.panelOpen`
 // is the intent (persisted, driven by the bell and `qs ipc call notifs
 // toggle`); `mounted` is whether the layer surface exists; `shown` drives the
 // slide/fade. A layer-shell window can't animate `visible`, so the drawer
@@ -78,7 +79,7 @@ Scope {
             if (Notifs.panelOpen) {
                 unmount.stop();
                 if (!root.mounted) {
-                    root.screenAtOpen = Niri.focusedScreen;
+                    root.screenAtOpen = Niri.mainScreen;
                     root.mounted = true;
                 }
                 arm.restart();
@@ -93,7 +94,7 @@ Scope {
     // the drawer state survives a hot reload (panelOpen is persisted)
     Component.onCompleted: {
         if (Notifs.panelOpen) {
-            root.screenAtOpen = Niri.focusedScreen;
+            root.screenAtOpen = Niri.mainScreen;
             root.mounted = true;
             arm.restart();
         }
@@ -132,7 +133,7 @@ Scope {
     PanelWindow {
         id: win
 
-        screen: root.screenAtOpen ?? Niri.focusedScreen
+        screen: root.screenAtOpen ?? Niri.mainScreen
         visible: root.mounted
         anchors {
             top: true

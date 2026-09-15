@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
-// Output / input device lists plus card profiles — the body of the audio
-// picker, shared by the bar's middle-click menu and the control center's audio
-// page. Fully native: Pipewire.preferredDefaultAudioSink is writable, so picking
+// Output / input device lists plus card profiles — the body of the control
+// center's audio page (right-click on the volume module). Fully native: Pipewire.preferredDefaultAudioSink is writable, so picking
 // is a property assignment, not a `wpctl set-default` shell-out.
 import QtQuick
 import Quickshell.Services.Pipewire

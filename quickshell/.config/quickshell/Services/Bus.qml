@@ -8,7 +8,6 @@ import Quickshell
 
 Singleton {
     property var trayMenu: null
-    property var audioMenu: null
     property var screenToolsMenu: null
     property var calendarMenu: null
     // ControlCenter/ControlCenter.qml — open(page) with "controls" | "notifications"

@@ -1,6 +1,5 @@
 // Default sink volume via native pipewire — click mutes, scroll ±5%,
-// middle-click opens the output/input picker, right-click the audio page of
-// the control center.
+// right-click opens the control center's audio page (devices + profiles).
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
@@ -19,15 +18,15 @@ BarItem {
         objects: root.sink ? [root.sink] : []
     }
 
-    // Bus.audioMenu is assigned in shell.qml's Component.onCompleted, so it can
-    // be null on the first evaluation — fall back to the raw node description
-    // rather than rendering the string "undefined".
-    readonly property string sinkLabel: sink
-        ? (Bus.audioMenu?.label(sink) ?? sink.description ?? sink.name ?? "output")
-        : "no output"
+    // the short name where pipewire has one ("WH-1000XM4"), the description
+    // otherwise — the tooltip is a glance, not a device inventory
+    readonly property string sinkLabel: !sink ? "no output"
+        : sink.nickname !== "" ? sink.nickname
+        : sink.description !== "" ? sink.description
+        : sink.name
 
-    tip: sink ? (muted ? "muted · " : Math.round(vol * 100) + "% · ") + sinkLabel : sinkLabel
-    hint: "click: mute · scroll: volume · middle: pick device · right: settings"
+    tip: (muted ? "muted" : Math.round(vol * 100) + "%") + " · " + sinkLabel
+    hint: "click: mute · scroll: volume · right: devices"
 
     Icon {
         anchors.verticalCenter: parent.verticalCenter
@@ -44,8 +43,6 @@ BarItem {
     onClicked: button => {
         if (button === Qt.LeftButton && sink?.audio)
             sink.audio.muted = !sink.audio.muted;
-        else if (button === Qt.MiddleButton)
-            Bus.audioMenu?.openFor(root, root.bar.screen);
         else if (button === Qt.RightButton) {
             if (Bus.controlCenter)
                 Bus.controlCenter.open("audio");

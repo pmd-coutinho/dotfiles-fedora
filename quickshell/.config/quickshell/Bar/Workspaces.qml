@@ -136,7 +136,8 @@ Row {
 
                     AppIcon {
                         required property var modelData
-                        anchors.verticalCenter: parent.verticalCenter
+                        // parent is null for a beat while the model churns
+                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                         appId: modelData
                         opacity: pill.active ? 1 : 0.8
                     }

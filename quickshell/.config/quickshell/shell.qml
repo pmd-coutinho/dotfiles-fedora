@@ -43,11 +43,6 @@ ShellRoot {
         id: trayMenu
     }
 
-    // audio output/input picker, same one-global-window reasoning as TrayMenu
-    AudioMenu {
-        id: audioMenu
-    }
-
     // screenshot / record / OCR / colour / QR, ditto
     ScreenToolsMenu {
         id: screenToolsMenu
@@ -65,7 +60,6 @@ ShellRoot {
 
     Component.onCompleted: {
         Bus.trayMenu = trayMenu;
-        Bus.audioMenu = audioMenu;
         Bus.screenToolsMenu = screenToolsMenu;
         Bus.calendarMenu = calendarMenu;
         Bus.sessionMenu = sessionMenu;

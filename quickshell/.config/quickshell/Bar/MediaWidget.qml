@@ -58,8 +58,8 @@ BarItem {
         lines.push(player.identity ?? player.dbusName);
         return lines.join("\n");
     }
-    hint: "click: play/pause · right: next · middle: switch player"
-        + (Media.players.length > 1 ? " (" + Media.players.length + " open)" : "")
+    hint: "click: play/pause · right: next"
+        + (Media.players.length > 1 ? " · " + Media.players.length + " players open (switch in the control center)" : "")
 
     Icon {
         id: glyph
@@ -89,7 +89,5 @@ BarItem {
             player.togglePlaying();
         else if (button === Qt.RightButton && player.canGoNext)
             player.next();
-        else if (button === Qt.MiddleButton)
-            Media.cycle();
     }
 }

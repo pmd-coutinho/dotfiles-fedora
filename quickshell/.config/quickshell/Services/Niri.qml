@@ -37,6 +37,10 @@ Singleton {
     readonly property var focusedScreen:
         Quickshell.screens.find(s => s.name === focusedOutput) ?? Quickshell.screens[0] ?? null
 
+    // Config.mainOutput when connected, else wherever focus is
+    readonly property var mainScreen:
+        Quickshell.screens.find(s => s.name === Config.mainOutput) ?? focusedScreen
+
     function workspacesOn(output) {
         return workspaces.filter(w => w.output === output);
     }

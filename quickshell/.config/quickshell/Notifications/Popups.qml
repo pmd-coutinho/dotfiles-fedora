@@ -1,10 +1,10 @@
 pragma ComponentBehavior: Bound
 // Popup toasts — top-right, on the overlay layer.
 //
-// Output: `Notifs.popupOutput` pins them to one connector (`qs ipc call notifs
-// setPopupOutput eDP-1`); empty follows the focused output. Either way the
-// screen is LATCHED while a stack is on screen, so a burst doesn't hop
-// monitors mid-read. The window is full-height and click-through outside the
+// Output: Config.mainOutput (the laptop panel), or the connector set with
+// `qs ipc call notifs setPopupOutput <name>`; the focused output only when
+// neither is connected. Either way the screen is LATCHED while a stack is on
+// screen, so a burst doesn't hop monitors mid-read. The window is full-height and click-through outside the
 // cards (input mask), so cards can slide out below the stack without the
 // window resizing under them.
 import QtQuick
@@ -31,7 +31,7 @@ Scope {
                 linger.restart();   // keep the window mapped through the last slide-out
             } else if (!root.latchedScreen) {
                 root.latchedScreen = Quickshell.screens.find(s => s.name === Notifs.popupOutput)
-                    ?? Niri.focusedScreen;
+                    ?? Niri.mainScreen;
             }
         }
     }
@@ -42,7 +42,7 @@ Scope {
     }
 
     PanelWindow {
-        screen: root.latchedScreen ?? Niri.focusedScreen
+        screen: root.latchedScreen ?? Niri.mainScreen
         visible: Notifs.popups.length > 0 || linger.running
 
         anchors {

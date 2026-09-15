@@ -1,5 +1,5 @@
-// Output / input devices and card profiles — the same list as the bar's
-// middle-click picker (Bar/AudioDevices.qml), just left open after a pick.
+// Output / input devices and card profiles (Bar/AudioDevices.qml); the
+// volume module's right-click lands here. Stays open after a pick.
 import QtQuick
 import Quickshell
 import qs.Bar

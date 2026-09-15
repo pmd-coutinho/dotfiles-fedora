@@ -17,6 +17,12 @@ Singleton {
         screensOffLocked: 60
     })
 
+    // Toasts and the control center always open here (the laptop panel is the
+    // one that's always in front of you); they fall back to the focused output
+    // when it isn't connected. `qs ipc call notifs setPopupOutput` overrides
+    // the toast side of this at runtime.
+    readonly property string mainOutput: "eDP-1"
+
     // Show an OSD when caps lock toggles. This is also what keeps the caps-lock
     // LED poll (Services/Keyboard.qml, 3 reads/s) running outside the lock
     // screen — turn it off to have the poll only while locked.

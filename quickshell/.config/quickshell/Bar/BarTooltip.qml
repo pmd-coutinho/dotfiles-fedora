@@ -64,7 +64,7 @@ PopupWindow {
             Text {
                 text: tip.target?.tip ?? ""
                 textFormat: Text.PlainText
-                wrapMode: Text.Wrap
+                elide: Text.ElideRight
                 width: Math.min(implicitWidth, Theme.tooltipMaxWidth)
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontLabel
@@ -75,6 +75,8 @@ PopupWindow {
                 visible: text !== ""
                 text: tip.target?.hint ?? ""
                 textFormat: Text.PlainText
+                elide: Text.ElideRight
+                width: Math.min(implicitWidth, Theme.tooltipMaxWidth)
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSmall
                 color: Theme.textHint
