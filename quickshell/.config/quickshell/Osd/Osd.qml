@@ -1,7 +1,8 @@
 pragma ComponentBehavior: Bound
 // On-screen display for value changes: volume / mic / brightness levels, and
 // state flips the bar alone would let you miss — caps lock, do-not-disturb,
-// caffeine, night light, the power profile, and play/pause with the track.
+// caffeine, night light, the power profile, and (off by default,
+// Config.mediaOsd) play/pause with the track.
 //
 // Every kind is one entry in `kinds` (icon, colour, whether it has a bar, how
 // to label the payload); Osd.show(kind, payload) is the single entry point,
@@ -188,7 +189,7 @@ Scope {
         function onProfileChanged() { root.show("power", { profile: PowerProfiles.profile }); }
     }
     Connections {
-        target: Media.player
+        target: Config.mediaOsd ? Media.player : null
         function onIsPlayingChanged() { root.showMedia(); }
         function onPostTrackChanged() { if (Media.player?.isPlaying) root.showMedia(); }
     }

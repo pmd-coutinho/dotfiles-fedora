@@ -28,6 +28,11 @@ Singleton {
     // screen — turn it off to have the poll only while locked.
     readonly property bool capsOsd: true
 
+    // Show an OSD on play/pause and track change. Off: the bar's now-playing
+    // widget and the control center's media card already show it, and a pill
+    // over every song change gets old fast.
+    readonly property bool mediaOsd: false
+
     // Night light colour temperature (wlsunset -t); shown in the control center.
     readonly property int nightLightKelvin: 4000
 
