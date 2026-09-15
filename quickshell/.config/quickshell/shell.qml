@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import qs.Bar
+import qs.ControlCenter
 import qs.Idle
 import qs.Lock
 import qs.Notifications
@@ -27,7 +28,6 @@ ShellRoot {
     Wallpaper {}
     Bar {}
     Popups {}
-    Panel {}
     Osd {}
     Idle {}
     Polkit {}
@@ -56,12 +56,18 @@ ShellRoot {
         id: calendarMenu
     }
 
+    // the right-edge drawer: quick settings + notification list
+    ControlCenter {
+        id: controlCenter
+    }
+
     Component.onCompleted: {
         Bus.trayMenu = trayMenu;
         Bus.audioMenu = audioMenu;
         Bus.screenToolsMenu = screenToolsMenu;
         Bus.calendarMenu = calendarMenu;
         Bus.sessionMenu = sessionMenu;
+        Bus.controlCenter = controlCenter;
     }
 
     // the session locker (idle, before-sleep and Super+Alt+L all route here
@@ -85,6 +91,25 @@ ShellRoot {
         }
         function isDnd(): bool {
             return Notifs.dnd;
+        }
+        // pin toasts to one connector name ("" = follow focus)
+        function setPopupOutput(name: string): void {
+            Notifs.popupOutput = name;
+        }
+    }
+
+    IpcHandler {
+        target: "controlcenter"
+
+        function toggle(): void {
+            controlCenter.toggle();
+        }
+        // controls | notifications | wifi | bluetooth | audio | dnd | power
+        function open(page: string): void {
+            controlCenter.open(page);
+        }
+        function close(): void {
+            controlCenter.close();
         }
     }
 
