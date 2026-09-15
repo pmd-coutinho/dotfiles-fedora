@@ -86,7 +86,7 @@ Surface {
             return;
         progress = 1;
         countdown.restart();
-        if (hover.hovered)
+        if (holding)
             countdown.pause();
     }
 
@@ -101,16 +101,19 @@ Surface {
         }
     }
 
+    // hovering or typing a reply holds the countdown
+    readonly property bool holding: hover.hovered || reply.activeFocus
+    onHoldingChanged: {
+        if (!countdown.running)
+            return;
+        if (holding)
+            countdown.pause();
+        else
+            countdown.resume();
+    }
+
     HoverHandler {
         id: hover
-        onHoveredChanged: {
-            if (!countdown.running)
-                return;
-            if (hovered)
-                countdown.pause();
-            else
-                countdown.resume();
-        }
     }
 
     // ── gestures ──
@@ -335,6 +338,15 @@ Surface {
                 border.width: 1
                 border.color: reply.activeFocus ? Theme.accent : Theme.outline
 
+                // eats the click so the card's tap (activate) doesn't fire, and
+                // hands the keyboard to the field — the toast window only has
+                // on-demand keyboard focus, which a click like this claims
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.IBeamCursor
+                    onClicked: reply.forceActiveFocus()
+                }
+
                 TextInput {
                     id: reply
                     anchors.fill: parent
@@ -349,7 +361,14 @@ Surface {
                             return;
                         card.live.sendInlineReply(text);
                         text = "";
+                        focus = false;
                         Notifs.hidePopupsLike(card.entry);
+                    }
+                    Keys.onEscapePressed: {
+                        if (text !== "")
+                            text = "";
+                        else
+                            focus = false;
                     }
                 }
                 Text {

@@ -22,6 +22,8 @@ Scope {
 
     readonly property var visibleGroups: Notifs.popupGroups.slice(0, Config.maxPopups)
     readonly property int hiddenCount: Math.max(0, Notifs.popupGroups.length - Config.maxPopups)
+    // a toast with an inline-reply field is up: let a click on it take the keyboard
+    readonly property bool wantsKeyboard: visibleGroups.some(g => g.latest?.notif?.hasInlineReply ?? false)
 
     Connections {
         target: Notifs
@@ -56,6 +58,9 @@ Scope {
         exclusionMode: ExclusionMode.Normal
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "qs-toasts"
+        // None by default so toasts never steal typing; OnDemand only while a
+        // reply field is showing, and even then only after a click on it
+        WlrLayershell.keyboardFocus: root.wantsKeyboard ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         color: "transparent"
         implicitWidth: Theme.toastWidth + root.pad + Theme.barMarginSide
         mask: Region { item: stack }
