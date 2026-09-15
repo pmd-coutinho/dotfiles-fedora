@@ -7,11 +7,18 @@ pragma ComponentBehavior: Bound
 // polkit-mate-agent must be stopped for this to register — `registered` below
 // is the thing to check if prompts stop appearing.
 //
-// Styled to match Lock/Lock.qml, since both are "prove who you are" surfaces.
+// Every output is scrimmed while a prompt is up; the card sits on the output
+// that had focus. Enter/Esc still work, and there are Cancel / Authenticate
+// buttons for the pointer. AuthFlow in quickshell 0.3.1 has no requesting-
+// process identity (no pid, no app name) — the action's icon and id are the
+// best "who is asking" hint available, so both are shown.
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Widgets
 import Quickshell.Services.Polkit
+import qs.Components
 import qs.Services
 import qs.Theme
 
@@ -20,6 +27,16 @@ Scope {
 
     readonly property bool registered: agent.isRegistered
     readonly property var flow: agent.flow
+
+    property bool mounted: false
+    property bool shown: false
+    property var targetScreen: null
+    property bool submitted: false
+    property bool succeeded: false
+    // a response went out and polkit hasn't asked for the next one yet
+    readonly property bool busy: submitted && !(flow?.isResponseRequired ?? false) && !(flow?.isCompleted ?? true)
+
+    signal rejected()
 
     PolkitAgent {
         id: agent
@@ -30,145 +47,239 @@ Scope {
             console.warn("polkit: agent not registered — is polkit-mate-agent still running?");
     }
 
+    onFlowChanged: {
+        if (flow) {
+            submitted = false;
+            succeeded = false;
+            targetScreen = Niri.focusedScreen;
+            unmount.stop();
+            mounted = true;
+            arm.restart();
+        } else {
+            arm.stop();
+            shown = false;
+            unmount.restart();
+        }
+    }
+
+    Connections {
+        target: root.flow
+        function onIsResponseRequiredChanged() {
+            if (root.flow.isResponseRequired)
+                root.submitted = false;   // next prompt (or a retry)
+        }
+        function onAuthenticationFailed() {
+            root.submitted = false;
+            root.rejected();
+        }
+        function onSupplementaryIsErrorChanged() {
+            if (root.flow.supplementaryIsError)
+                root.rejected();
+        }
+        function onAuthenticationSucceeded() {
+            root.succeeded = true;
+        }
+    }
+
+    function submit(text) {
+        if (!flow || text === "")
+            return;
+        submitted = true;
+        flow.submit(text);
+    }
+
+    Timer {
+        id: arm
+        interval: 16
+        onTriggered: root.shown = true
+    }
+
+    Timer {
+        id: unmount
+        interval: Theme.durationMedium + 50
+        onTriggered: if (!root.flow) root.mounted = false
+    }
+
     LazyLoader {
-        active: root.flow !== null
+        active: root.mounted
 
-        PanelWindow {
-            id: win
+        Variants {
+            model: Quickshell.screens
 
-            readonly property var flow: root.flow
+            PanelWindow {
+                id: win
 
-            screen: Niri.focusedScreen
-            anchors {
-                top: true
-                left: true
-                right: true
-                bottom: true
-            }
-            exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Overlay
-            // keyboard has to be ours: the user is about to type a password
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-            color: Theme.alpha(Theme.crust, 0.6)
+                required property ShellScreen modelData
+                readonly property bool primary: modelData === root.targetScreen
 
-            Item {
-                anchors.fill: parent
-                focus: true
-                Keys.onEscapePressed: win.flow?.cancelAuthenticationRequest()
+                screen: modelData
+                anchors {
+                    top: true
+                    left: true
+                    right: true
+                    bottom: true
+                }
+                exclusionMode: ExclusionMode.Ignore
+                WlrLayershell.layer: WlrLayer.Overlay
+                WlrLayershell.namespace: "qs-polkit"
+                // keyboard has to be ours: the user is about to type a password
+                WlrLayershell.keyboardFocus: primary ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+                color: "transparent"
 
                 Rectangle {
-                    anchors.centerIn: parent
-                    width: 460
-                    height: content.implicitHeight + 48
-                    radius: Theme.islandRadius
-                    color: Theme.alpha(Theme.base, 0.98)
-                    border.width: 1
-                    border.color: Theme.surface0
+                    anchors.fill: parent
+                    color: Theme.crust
+                    opacity: root.shown ? 0.6 : 0
 
-                    Column {
-                        id: content
-                        anchors.centerIn: parent
-                        width: parent.width - 48
-                        spacing: 14
+                    Behavior on opacity {
+                        NumberAnimation { duration: Theme.durationMedium }
+                    }
+                }
 
-                        Text {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: "󰒃  authentication required"
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontLarge
-                            font.weight: Font.Bold
-                            color: Theme.mauve
-                        }
+                Loader {
+                    anchors.fill: parent
+                    active: win.primary
 
-                        Text {
-                            width: parent.width
-                            wrapMode: Text.WordWrap
-                            horizontalAlignment: Text.AlignHCenter
-                            text: win.flow?.message ?? ""
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontSize
-                            color: Theme.text
-                        }
+                    sourceComponent: FocusScope {
+                        focus: true
 
-                        // which action is being authorised — useful for spotting
-                        // a prompt you did not expect
-                        Text {
-                            width: parent.width
-                            visible: (win.flow?.actionId ?? "") !== ""
-                            horizontalAlignment: Text.AlignHCenter
-                            elide: Text.ElideMiddle
-                            text: win.flow?.actionId ?? ""
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontTiny
-                            color: Theme.overlay1
-                        }
+                        Keys.onEscapePressed: root.flow?.cancelAuthenticationRequest()
 
-                        Rectangle {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: win.flow?.isResponseRequired ?? false
-                            width: 300
-                            height: 46
-                            radius: Theme.islandRadius
-                            color: Theme.surface0
-                            border.width: 2
-                            border.color: (win.flow?.supplementaryIsError ?? false)
-                                ? Theme.red : Theme.mauve
+                        Surface {
+                            id: card
 
-                            TextInput {
-                                id: field
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                focus: true
-                                // polkit tells us whether this response is a
-                                // secret (password) or plain (e.g. a token id)
-                                echoMode: (win.flow?.responseVisible ?? false)
-                                    ? TextInput.Normal : TextInput.Password
-                                passwordCharacter: "•"
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontMedium
-                                color: Theme.text
-                                verticalAlignment: TextInput.AlignVCenter
-                                horizontalAlignment: TextInput.AlignHCenter
+                            anchors.centerIn: parent
+                            elevation: 2
+                            width: 460
+                            height: content.implicitHeight + 2 * Theme.spacingXl
+                            borderColor: root.succeeded ? Theme.success : Theme.outline
+                            borderWidth: root.succeeded ? 2 : 1
+                            scale: root.shown ? 1 : 0.96
+                            opacity: root.shown ? 1 : 0
 
-                                onAccepted: {
-                                    if (text === "")
-                                        return;
-                                    win.flow?.submit(text);
-                                    text = "";
+                            Behavior on scale {
+                                NumberAnimation { duration: Theme.durationMedium; easing.type: Theme.easeStandard }
+                            }
+                            Behavior on opacity {
+                                NumberAnimation { duration: Theme.durationMedium }
+                            }
+
+                            ColumnLayout {
+                                id: content
+                                anchors {
+                                    left: parent.left
+                                    right: parent.right
+                                    top: parent.top
+                                    margins: Theme.spacingXl
+                                }
+                                spacing: Theme.spacingMd
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: Theme.spacingMd
+
+                                    IconImage {
+                                        implicitSize: 40
+                                        source: Quickshell.iconPath(root.flow?.iconName || "dialog-password", "security-high")
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 2
+
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "Authentication required"
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Theme.fontLarge
+                                            font.weight: Theme.weightBold
+                                            color: Theme.accent
+                                        }
+
+                                        // which action is being authorised — useful
+                                        // for spotting a prompt you did not expect
+                                        Text {
+                                            Layout.fillWidth: true
+                                            visible: (root.flow?.actionId ?? "") !== ""
+                                            elide: Text.ElideMiddle
+                                            text: root.flow?.actionId ?? ""
+                                            font.family: Theme.fontFamily
+                                            font.pixelSize: Theme.fontTiny
+                                            color: Theme.textHint
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    wrapMode: Text.WordWrap
+                                    text: root.flow?.message ?? ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSize
+                                    color: Theme.textPrimary
+                                }
+
+                                PasswordField {
+                                    id: field
+                                    Layout.fillWidth: true
+                                    visible: root.flow?.isResponseRequired ?? false
+                                    // polkit tells us whether this response is a
+                                    // secret (password) or plain (e.g. a token id)
+                                    secret: !(root.flow?.responseVisible ?? false)
+                                    placeholder: root.flow?.inputPrompt || "password…"
+                                    failed: root.flow?.supplementaryIsError ?? false
+                                    checking: root.busy
+                                    onAccepted: t => root.submit(t)
+                                    onEscaped: root.flow?.cancelAuthenticationRequest()
+                                    onVisibleChanged: if (visible) takeFocus()
+                                    Component.onCompleted: takeFocus()
+
+                                    Connections {
+                                        target: root
+                                        function onRejected() { field.shake(); }
+                                    }
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    visible: (root.flow?.supplementaryMessage ?? "") !== ""
+                                    wrapMode: Text.WordWrap
+                                    text: root.flow?.supplementaryMessage ?? ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontLabel
+                                    color: (root.flow?.supplementaryIsError ?? false) ? Theme.error : Theme.textSecondary
+                                }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    Layout.topMargin: Theme.spacingXs
+                                    spacing: Theme.spacingSm
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: "enter · esc"
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: Theme.fontTiny
+                                        color: Theme.textMuted
+                                    }
+
+                                    Button {
+                                        text: "Cancel"
+                                        onClicked: root.flow?.cancelAuthenticationRequest()
+                                    }
+
+                                    Button {
+                                        kind: "primary"
+                                        text: "Authenticate"
+                                        enabled: field.text !== "" && !root.busy
+                                        onClicked: {
+                                            const t = field.text;
+                                            field.clear();
+                                            root.submit(t);
+                                        }
+                                    }
                                 }
                             }
-
-                            Text {
-                                anchors.centerIn: parent
-                                visible: field.text === ""
-                                text: win.flow?.inputPrompt ?? "password…"
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSize
-                                font.italic: true
-                                color: Theme.overlay0
-                            }
-                        }
-
-                        Text {
-                            width: parent.width
-                            visible: (win.flow?.supplementaryMessage ?? "") !== ""
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                            text: win.flow?.supplementaryMessage ?? ""
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontLabel
-                            color: (win.flow?.supplementaryIsError ?? false)
-                                ? Theme.red : Theme.subtext0
-                        }
-
-                        Text {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: "enter to confirm · esc to cancel"
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontTiny
-                            color: Theme.overlay0
                         }
                     }
                 }

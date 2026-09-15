@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# fz-wallpaper — pick a wallpaper with fuzzel and hand it to quickshell
+# (Services/Wallpapers.qml crossfades it in and re-derives the accent).
+#
+#   fz-wallpaper          set it on every output
+#   fz-wallpaper DP-4     set it on one output (connector name, see `niri msg outputs`)
+#
+# Images come from $WALLPAPER_DIR (default ~/Pictures/wallpapers). The path is
+# stored ~-relative so wallpaper.json stays portable between machines.
+set -euo pipefail
+
+dir="${WALLPAPER_DIR:-$HOME/Pictures/wallpapers}"
+[ -d "$dir" ] || { notify-send -a "Wallpaper" "No wallpaper directory" "$dir"; exit 1; }
+
+if command -v fd >/dev/null 2>&1; then
+    list=$(fd --type f -e jpg -e jpeg -e png -e webp . "$dir" --base-directory "$dir" | sort)
+else
+    list=$(find "$dir" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) -printf '%P\n' | sort)
+fi
+[ -n "$list" ] || { notify-send -a "Wallpaper" "No images" "$dir"; exit 1; }
+
+# cancelled picker → fuzzel exits non-zero → nothing to do
+sel=$(printf '%s\n' "$list" | fuzzel --dmenu --prompt 'wallpaper ' ) || exit 0
+[ -n "$sel" ] || exit 0
+
+case "$dir" in
+    "$HOME"/*) path="~/${dir#"$HOME"/}/$sel" ;;
+    *) path="$dir/$sel" ;;
+esac
+
+if [ $# -ge 1 ]; then
+    qs ipc call wallpaper setOn "$1" "$path"
+else
+    qs ipc call wallpaper set "$path"
+fi

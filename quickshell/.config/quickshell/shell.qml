@@ -28,7 +28,9 @@ ShellRoot {
     Wallpaper {}
     Bar {}
     Popups {}
-    Osd {}
+    Osd {
+        id: osd
+    }
     Idle {}
     Polkit {}
 
@@ -68,6 +70,7 @@ ShellRoot {
         Bus.calendarMenu = calendarMenu;
         Bus.sessionMenu = sessionMenu;
         Bus.controlCenter = controlCenter;
+        Bus.osd = osd;
     }
 
     // the session locker (idle, before-sleep and Super+Alt+L all route here
@@ -95,6 +98,25 @@ ShellRoot {
         // pin toasts to one connector name ("" = follow focus)
         function setPopupOutput(name: string): void {
             Notifs.popupOutput = name;
+        }
+    }
+
+    // show an OSD from a script: `qs ipc call osd popup volume 0.4`,
+    // `qs ipc call osd popup media '{"playing":true,"title":"x"}'`
+    // (not `show`: that word is a `qs ipc` subcommand and the CLI eats it)
+    IpcHandler {
+        target: "osd"
+
+        function popup(kind: string, value: string): void {
+            let payload;
+            try {
+                payload = JSON.parse(value);
+            } catch (e) {
+                payload = null;
+            }
+            if (payload === null || typeof payload !== "object")
+                payload = { value: Number(value) || 0, on: value === "true" || value === "1" };
+            osd.show(kind, payload);
         }
     }
 

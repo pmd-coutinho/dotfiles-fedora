@@ -206,6 +206,7 @@ binds {
     Mod+Slash hotkey-overlay-title="File search" { spawn-sh "~/.local/bin/fz-files"; }
     Mod+P hotkey-overlay-title="KeePassXC lookup (copy/type password, user, TOTP)" { spawn-sh "~/.local/bin/kp-fuzzel"; }
     Mod+Ctrl+Equal hotkey-overlay-title="Calculator (qalc → clipboard)" { spawn-sh "~/.local/bin/fz-calc"; }
+    Mod+Shift+W hotkey-overlay-title="Wallpaper picker" { spawn-sh "~/.local/bin/fz-wallpaper"; }
     // Voxide (~/dev/dictation-app): --trigger taps the already-running instance
     // over its $XDG_RUNTIME_DIR socket. Swap the path for bare "voxide" once installed.
     Mod+Shift+D hotkey-overlay-title="Dictation: Voxide toggle" { spawn-sh "~/dev/dictation-app/src-tauri/target/release/voxide --trigger dictate"; }
