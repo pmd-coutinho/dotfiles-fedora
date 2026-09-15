@@ -29,8 +29,12 @@ BarItem {
     }
 
     shown: player !== null
+    // Elastic in a RowLayout means fillWidth: a non-fill item is FIXED at its
+    // preferred width and never shrinks, whatever its minimumWidth says. With
+    // the natural width as the maximum it never grows past the title either.
+    Layout.fillWidth: true
     Layout.minimumWidth: 0
-    Layout.maximumWidth: Theme.mediaMaxWidth
+    Layout.maximumWidth: implicitWidth
     // An elided Text whose width follows ours reports implicitWidth 0, so the
     // natural width has to come from a separate measurement.
     implicitWidth: shown

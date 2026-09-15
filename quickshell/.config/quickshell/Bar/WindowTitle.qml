@@ -18,8 +18,10 @@ BarItem {
     interactive: false
     shown: title !== ""
     tip: title
+    // see MediaWidget.qml: elastic = fillWidth capped at the natural width
+    Layout.fillWidth: true
     Layout.minimumWidth: 0
-    Layout.maximumWidth: Theme.titleMaxWidth
+    Layout.maximumWidth: implicitWidth
     // An elided Text whose width follows ours reports implicitWidth 0, so the
     // natural width has to come from a separate measurement.
     implicitWidth: shown
