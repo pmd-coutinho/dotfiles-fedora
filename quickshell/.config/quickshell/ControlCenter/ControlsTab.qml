@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 // quick-toggle grid and the media card.
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import Quickshell.Bluetooth
 import Quickshell.Networking
 import Quickshell.Services.Pipewire

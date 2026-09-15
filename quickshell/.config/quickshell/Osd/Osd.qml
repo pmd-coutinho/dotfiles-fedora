@@ -6,7 +6,7 @@ pragma ComponentBehavior: Bound
 // Every kind is one entry in `kinds` (icon, colour, whether it has a bar, how
 // to label the payload); Osd.show(kind, payload) is the single entry point,
 // reachable from other components through Bus.osd and from scripts through
-// `qs ipc call osd show <kind> <value>`. The OSD also subscribes itself to the
+// `qs ipc call osd popup <kind> <value>`. The OSD also subscribes itself to the
 // services, so nothing else has to remember to call it. Media keys keep
 // calling wpctl/brightnessctl unchanged — the OSD only observes.
 //
@@ -14,7 +14,6 @@ pragma ComponentBehavior: Bound
 // stays mounted through the exit animation (`mounted` outlives `shown`).
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower

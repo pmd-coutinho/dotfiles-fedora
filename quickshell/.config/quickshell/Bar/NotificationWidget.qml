@@ -17,9 +17,10 @@ BarItem {
         color: Notifs.dnd ? Theme.textMuted : Theme.accent
     }
 
+    // unread, not total: the badge clears once the list has been looked at
     Badge {
         anchors.verticalCenter: parent.verticalCenter
-        count: Notifs.dnd ? 0 : Notifs.count
+        count: Notifs.dnd ? 0 : Notifs.unread
     }
 
     onClicked: button => {

@@ -178,23 +178,6 @@ ShellRoot {
         }
     }
 
-    // TEMPORARY (redesign branch): open shell surfaces from a terminal so they
-    // can be screenshotted/tested without a pointer. Removed before merge.
-    Item { id: debugAnchor; width: 40; height: 26 }
-    IpcHandler {
-        target: "debug"
-
-        function menu(name: string): void {
-            const m = ({ calendar: calendarMenu, audio: audioMenu, tools: screenToolsMenu })[name];
-            if (m)
-                m.openFor(debugAnchor, Niri.focusedScreen);
-        }
-        function closeMenus(): void {
-            for (const m of [calendarMenu, audioMenu, screenToolsMenu, trayMenu])
-                m.close();
-        }
-    }
-
     IpcHandler {
         target: "wallpaper"
 

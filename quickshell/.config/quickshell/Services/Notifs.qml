@@ -39,8 +39,29 @@ Singleton {
         property double dndUntil: 0
         property string popupOutput: ""
         // arrival times by notification id, so a hot reload (which re-delivers
-        // live notifications with lastGeneration=true) keeps their real time
-        property var timesById: ({})
+        // live notifications with lastGeneration=true) keeps their real time.
+        // A JSON string, not an object: a persisted JS object can't cross the
+        // engine boundary on reload ("JSValue can't be reassigned to another
+        // engine") and came back undefined.
+        property string timesJson: "{}"
+    }
+
+    function times() {
+        try {
+            const t = JSON.parse(persist.timesJson);
+            return t && typeof t === "object" ? t : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function setTime(key, time) {
+        const t = times();
+        if (time === undefined)
+            delete t[key];
+        else
+            t[key] = time;
+        persist.timesJson = JSON.stringify(t);
     }
 
     // ── records ──
@@ -408,10 +429,10 @@ Singleton {
             notif.tracked = true;
 
             const key = String(notif.id);
-            const known = persist.timesById[key];
+            const known = root.times()[key];
             const redelivered = notif.lastGeneration && known !== undefined;
             const time = redelivered ? known : Date.now();
-            persist.timesById = Object.assign({}, persist.timesById, { [key]: time });
+            root.setTime(key, time);
             const uid = notif.id + "@" + time;
 
             const rec = root.snapshot(notif, { uid: uid, id: notif.id, time: time });
@@ -444,9 +465,7 @@ Singleton {
                 const cur = root.find(uid);
                 if (cur && cur.notif === notif)
                     root.removeRecord(uid);
-                const t = Object.assign({}, persist.timesById);
-                delete t[key];
-                persist.timesById = t;
+                root.setTime(key, undefined);
             });
 
             // don't re-toast what a hot reload just re-delivered
