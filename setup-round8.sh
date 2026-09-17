@@ -21,7 +21,7 @@ dnf -y install gum lnav \
 
 # ── Prebuilt release binaries → ~/.local/bin ──────────────────────────────
 # fetch_bin (lib/common.sh) is version-pinned + sha256-verified, fail-closed.
-step "Fetching prebuilt binaries (hurl, mergiraf, trip, kondo, ouch, pay-respects)"
+step "Fetching prebuilt binaries (hurl, mergiraf, trip, kondo, ouch, pay-respects, msi-mux-switch)"
 asuser mkdir -p "$UHOME/.local/bin"
 fetch_bin hurl \
   "https://github.com/Orange-OpenSource/hurl/releases/download/8.0.1/hurl-8.0.1-x86_64-unknown-linux-gnu.tar.gz" \
@@ -42,6 +42,13 @@ fetch_bin ouch \
 fetch_bin pay-respects \
   "https://github.com/iffse/pay-respects/releases/download/v0.8.8/pay-respects-0.8.8-x86_64-unknown-linux-musl.tar.zst" \
   "20bb89e9fa114b20ce78b57ece77134e79e314fd0d5086e9695c0de7f98ccaaf"
+# GPU MUX switch (Discrete <-> MSHybrid) for this MSI Vector 16 HX — see README
+# "GPU MUX". Characterized upstream on the MS-15M3; on this MS-15M1 it needs
+# `--allow-unsupported-hardware --allow-unvalidated-bios`, AC power, then a full
+# shutdown. Runs via sudo; needs debugfs + the in-tree msi-wmi-platform driver.
+fetch_bin msi-mux-switch \
+  "https://github.com/steelbrain/msi-gpu-mux-switch/releases/download/v0.2.0/linux-amd64-msi-mux-switch.zip" \
+  "8b7f7421571602697400da8007415721192576bf8ccd4fc72cb0ac6fd34c744f"
 
 # ── uv tools (user-level, isolated venvs → ~/.local/bin) ──────────────────
 step "uv tools: posting (API client), isd (systemd TUI)"

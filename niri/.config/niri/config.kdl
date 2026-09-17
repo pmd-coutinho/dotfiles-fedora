@@ -390,12 +390,13 @@ binds {
 }
 
 // ── Render device ─────────────────────────────────────────────────────
-// The 4K144 Gigabyte (DP-4) is wired to the NVIDIA dGPU; the laptop panel and
-// the Huawei sit on the Intel iGPU. Render on the GPU that owns the heaviest
-// output so the 3840x2160@144 frames are scanned out directly and only the two
-// small Intel outputs pay for cross-GPU copies. Not hot-reloadable: niri must
-// be restarted for a change here to take effect. If the 4K moves back to an
-// Intel port, comment this out (iGPU is niri's default render node).
+// The laptop runs in the MUX's Discrete Graphics mode (since 2026-09-17, see
+// README "GPU MUX"): the panel and both external monitors are wired to the
+// RTX 4080 and the Intel iGPU has no outputs, so the NVIDIA card is the only
+// sensible render node. Pinning it keeps that true even if the iGPU's render
+// node enumerates first. Not hot-reloadable: niri must be restarted for a
+// change here to take effect. If the machine ever goes back to MSHybrid mode
+// this still holds as long as the 4K144 Gigabyte stays on an NVIDIA port.
 debug {
     render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
 }

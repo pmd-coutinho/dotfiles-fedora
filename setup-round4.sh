@@ -12,7 +12,19 @@ step "Enabling NVreg_PreserveVideoMemoryAllocations"
 cat > /etc/modprobe.d/nvidia-power.conf <<'EOF'
 options nvidia NVreg_PreserveVideoMemoryAllocations=1 NVreg_TemporaryFilePath=/var/tmp
 EOF
-step "Rebuilding initramfs (nvidia options live in the ramdisk)"
+# ── 1b. Plymouth: keep the LUKS prompt visible in Discrete (MUX) GPU mode ──
+# Fedora builds plymouth with UseSimpledrmNoLuks=1: with LUKS it waits for a
+# "real" KMS driver instead of the firmware framebuffer. RPM Fusion keeps the
+# nvidia modules out of the initramfs, and in Discrete mode the Intel GPU has
+# no outputs, so plymouth's graphical splash has no device and the passphrase
+# prompt is drawn nowhere (blank screen under `rhgb quiet`). Pin it to simpledrm.
+step "Pinning plymouth to simpledrm (LUKS prompt on the NVIDIA-only display path)"
+cat > /etc/plymouth/plymouthd.conf <<'PLY'
+# Administrator customizations go in this file
+[Daemon]
+UseSimpledrm=1
+PLY
+step "Rebuilding initramfs (nvidia options + plymouthd.conf live in the ramdisk)"
 dracut -f --regenerate-all || warn "dracut failed — check before relying on suspend"
 
 # ── 2. journald size cap ─────────────────────────────────────────────────
