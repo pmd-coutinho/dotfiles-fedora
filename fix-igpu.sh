@@ -6,7 +6,11 @@
 #   driver: plymouth hands the splash from simpledrm to the first real DRM card
 #   that appears, and an output-less i915 turns the LUKS passphrase prompt into
 #   a black screen (typing blind doesn't help — the prompt is torn down).
-#   → blacklist i915 + xe in the initramfs and the running system, drop force_probe.
+#   → blacklist i915 + xe in the initramfs only (rd.driver.blacklist), drop
+#     force_probe. i915 must still load after switch-root: the Intel HD Audio
+#     controller (SOF) carries an HDMI codec that binds to the i915 audio
+#     component, and with i915 blacklisted system-wide its probe defers forever
+#     ("init of i915 and HDMI codec failed") — no speakers, mic or jack.
 #
 #   MSHybrid mode: kernel 7.0 moved Raptor Lake-S graphics (8086:a788) from i915
 #   to xe, but xe only binds it behind force_probe; without it the laptop panel +
@@ -34,9 +38,8 @@ fi
 echo "==> MUX mode: $mode"
 
 if [ "$mode" = discrete ]; then
-    BL="$BASE_BL,i915,xe"
     REMOVE="xe.force_probe rd.driver.blacklist modprobe.blacklist"
-    ADD="rd.driver.blacklist=$BL modprobe.blacklist=$BL"
+    ADD="rd.driver.blacklist=$BASE_BL,i915,xe modprobe.blacklist=$BASE_BL,xe"
 else
     BL="$BASE_BL"
     REMOVE="rd.driver.blacklist modprobe.blacklist"
